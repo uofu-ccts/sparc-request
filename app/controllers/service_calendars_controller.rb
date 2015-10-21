@@ -49,6 +49,9 @@ class ServiceCalendarsController < ApplicationController
     checked = params[:checked]
     qty = params[:qty].to_i
     column = params[:column]
+    # @keep_custom = params[:keep_custom]
+    # puts "&&&&&&&&&&&"
+    # puts @keep_custom.inspect
 
     case tab
     when 'template'

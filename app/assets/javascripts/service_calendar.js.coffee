@@ -24,6 +24,27 @@
 $(document).ready ->
   $('.visit_number a, .service_calendar_row').live 'click', ->
     $('.service_calendar_spinner').show()
+    # line_item_visit_billing = $(this).closest('.line_item').find('.line_item_visit_billing')
+    # insurance_and_effort_billing = 0
+
+    # $(line_item_visit_billing).siblings().each (i, element) ->
+    #   insurance_and_effort_billing += parseInt($(this).val(), 10)
+
+    # if insurance_and_effort_billing >= 1
+    #   confirm_qty_change = confirm "Custom quantity will be erased."
+    #   if confirm_qty_change == false
+    #     keep_custom = false
+    #     $.ajax
+    #       type: 'PUT'
+    #       url: $(this).attr('update') + "&keep_custom=#{$(this).is(':keep_custom')}"
+    #       error: (jqXHR, textStatus, errorThrown) ->
+    #         if jqXHR.status == 500 and jqXHR.getResponseHeader('Content-Type').split(';')[0] == 'text/javascript'
+    #           errors = JSON.parse(jqXHR.responseText)
+    #         else
+    #           errors = [textStatus]
+    #         for error in errors
+    #           alert(error);
+    #           obj.prop('keep_custom', false)
 
   $('.line_item_visit_template').live 'change', ->
     $('.service_calendar_spinner').show()
@@ -43,25 +64,6 @@ $(document).ready ->
       $('.service_calendar_spinner').hide()
       arm_id = $(this).data("arm_id")
       calculate_max_rates(arm_id)
-
-  $(document).on('click', 'a.service_calendar_row', (event) ->
-    line_item_visit_billing = $(this).closest('.line_item').find('.line_item_visit_billing')
-    insurance_and_effort_billing = 0
-
-    $(line_item_visit_billing).siblings().each (i, element) ->
-      insurance_and_effort_billing += parseInt($(this).val(), 10)
-
-    if insurance_and_effort_billing >= 1
-      confirm_qty_change = confirm "Custom quantity will be erased."
-      if confirm_qty_change == false
-        x = event.isDefaultPrevented()
-        console.log(x)
-        console.log("false!")
-        # event.stopImmediatePropagation
-        event.preventDefault()
-        # event.stopPropagation()
-
-  )
 
   $('.line_item_visit_quantity').live 'change', ->
     $('.service_calendar_spinner').show()
