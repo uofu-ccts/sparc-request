@@ -24,8 +24,8 @@ class Appointment < ActiveRecord::Base
   belongs_to :calendar
   belongs_to :visit_group
   belongs_to :organization
-  has_many :procedures, :dependent => :destroy
-  has_many :visits, :through => :procedures
+  has_many :procedures, dependent: :destroy
+  has_many :visits, through: :procedures
   has_many :notes
   attr_accessible :visit_group_id
   attr_accessible :organization_id
@@ -40,7 +40,7 @@ class Appointment < ActiveRecord::Base
   attr_accessible :formatted_completed_date
 
   def formatted_completed_date
-    format_date self.completed_at
+    format_date completed_at
   end
 
   def formatted_completed_date=(d)
