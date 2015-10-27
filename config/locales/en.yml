@@ -19,23 +19,23 @@
 # TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 en:
-  application_title: "SPARC Request"
-  about_title: "About SPARC Request"
   about_text: "SPARC Request (Services, Pricing, & Application for Research Centers) is a web-based research management system that provides a central portal (one-stop shop) to researchers and their study teams to browse for research services and resources, as well as submit service and pricing requests with a focus on billing compliance and proposal/budget development. The free software is open to MUSC affiliates and CTSA institutions to adopt and capitalize on efficiencies."
-  portal_title: "SPARC Request Portal"
-  admin_portal_title: "SPARC Request Administration"
-  catalog_manager_title: "SPARC Request Catalog Manager"
-  error_contact: "(843) 792-8300 or success@musc.edu"
-  issue_contact: "Please contact the SUCCESS Center at (843) 792-8300 or success@musc.edu for assistance with this process or with any questions you may have."
-  feedback: "Feedback"
-  bug_enhancement_link: "Report a bug or request an enhancement"
+  about_title: "About SPARC Request"
   activerecord:
     attributes:
       protocol:
-        human_subjects_info: "The NCT #"
         has_cofc: "Does your study have a Certificate of Confidentiality"
+        human_subjects_info: "The NCT #"
       human_subjects_info:
         nct_number: "The NCT #"
+  admin_portal_title: "SPARC Request Administration"
+  application_title: "SPARC Request"
+  bug_enhancement_link: "Report a bug or request an enhancement"
+  catalog_manager_title: "SPARC Request Catalog Manager"
+  error_contact: "(843) 792-8300 or success@musc.edu"
+  feedback: "Feedback"
+  issue_contact: "Please contact the SUCCESS Center at (843) 792-8300 or success@musc.edu for assistance with this process or with any questions you may have."
+  portal_title: "SPARC Request Portal"
 
   # bottom navigation
   bottom_navigation:
