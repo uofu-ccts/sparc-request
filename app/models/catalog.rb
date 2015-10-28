@@ -27,7 +27,7 @@ class Catalog
     ps_array = []
 
     Provider.all.each do |provider|
-      if !provider.pricing_setups or provider.pricing_setups.empty? # all programs better have a setup
+      if !provider.pricing_setups || provider.pricing_setups.empty? # all programs better have a setup
         provider.programs.each do |program|
           if user.can_edit_entity?(program, true) and (!program.pricing_setups or program.pricing_setups.empty?)
             ps_array << provider if user.can_edit_entity?(provider, true) and not ps_array.include?(provider)
