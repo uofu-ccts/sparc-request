@@ -24,9 +24,9 @@
   - if @review #display review calendar pppv header
     %th.your_cost_header{:rowspan => 2}= t(:calendar_page)[:headers][:your_cost]
     %th.number_of_subjects_header{:rowspan => 2}= t(:calendar_page)[:headers][:subjects]
-    %th{:colspan => 5, :height => 40, :width => 375}
+    %th.find_me_1{:colspan => 5, :height => 40, :width => 375}
       = generate_visit_navigation arm, @service_request, @pages, tab, portal
-    %th{:rowspan => 2}= t(:calendar_page)[:headers][:total_per_patient]
+    %th.find_me_2{:rowspan => 2}= t(:calendar_page)[:headers][:total_per_patient]
     %th.total_per_study{:rowspan => 2}= t(:calendar_page)[:headers][:total_per_study]
 
     %tr.table_header
@@ -40,9 +40,9 @@
       %th.unit_costs_header{:colspan => 2}= t(:calendar_page)[:headers][:unit_costs]
     %th.qty_type_header{:rowspan => 2}= t(:calendar_page)[:headers][:clinical_qty]
     %th.number_of_subjects_header{:rowspan => 2}= t(:calendar_page)[:headers][:subjects]
-    %th{:colspan => 5, :height => 40, :width => 375}
+    %th.find_me_3{:colspan => 5, :height => 40, :width => 375}
       = generate_visit_navigation arm, @service_request, @pages, @tab, @portal
-    %th{:rowspan => 2}= t(:calendar_page)[:headers][:total_per_patient]
+    %th.find_me_4{:rowspan => 2}= t(:calendar_page)[:headers][:total_per_patient]
     %th.total_per_study{:rowspan => 2}= t(:calendar_page)[:headers][:total_per_study]
 
     %tr.table_header
@@ -57,18 +57,20 @@
     - unless @portal
       %th.qty_type_header{:rowspan => 2}= t(:calendar_page)[:headers][:clinical_qty]
     %th.number_of_subjects_header{:rowspan => 2}= t(:calendar_page)[:headers][:subjects]
-    %th
-    %th{:colspan => 5, :height => 40, :width => 375}
+    -if @tab == 'template'
+      %th.find_me_5
+    %th.find_me_6{:colspan => 5, :height => 40, :width => 375}
       = generate_visit_navigation arm, service_request, @pages, @tab, @portal
-    %th{:colspan => 2}= image_tag 'spinner.gif', :class => 'service_calendar_spinner'
+    %th.find_me_7{:colspan => 2}= image_tag 'spinner.gif', :class => 'service_calendar_spinner'
 
     %tr.table_header
       %th.service_rate_header= t(:calendar_page)[:headers][:service_rate]
       %th.your_cost_header= t(:calendar_page)[:headers][:your_cost]
-      %th &nbsp;
-      = generate_visit_header_row arm, service_request, @pages[arm.id].to_i, @sub_service_request, @portal
+      -if @tab == 'template'
+        %th.find_me_8 &nbsp;
+        = generate_visit_header_row arm, service_request, @pages[arm.id].to_i, @sub_service_request, @portal
       - if @portal
-        %th &nbsp;
+        %th.find_me_9 &nbsp;
       - else
-        %th= t(:calendar_page)[:headers][:total_per_patient]
+        %th.find_me_10= t(:calendar_page)[:headers][:total_per_patient]
         %th.total_per_study= t(:calendar_page)[:headers][:total_per_study]
