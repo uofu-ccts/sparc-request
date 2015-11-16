@@ -50,7 +50,7 @@ $(document).ready ->
       '#study_type_answer_access_study_info_answer':
         'false'            : ['#study_type_answer_epic_inbasket', '#study_type_answer_research_active', '#study_type_answer_restrict_sending']
 
-    ready: ->
+    ready: ->           
       FormFxManager.registerListeners($('.user-edit-protocol-view'), Sparc.study.display_dependencies)
 
       ####### If send to epic is selected we need to do some crazy stuff,  using FormFxManager for some of it but it couldn't handle the complexity, using a combination, see below ########

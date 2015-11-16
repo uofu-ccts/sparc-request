@@ -41,14 +41,6 @@
             = f.text_field :title
 
           .field
-            = f.label :has_cofc, t(:study_form)[:has_cofc], :style => 'width: 250px'
-            %span.non_standard_usage_of_radio_buttons
-              = f.radio_button :has_cofc, true
-              = f.label :has_cofc, 'Yes'
-              = f.radio_button :has_cofc, false
-              = f.label :has_cofc, 'No'
-
-          .field
             = f.label :funding_status, t(:protocol_shared)[:funding_status]
             = f.select :funding_status, options_for_select(FUNDING_STATUSES, study.funding_status), :include_blank => t(:study_form)[:status_blank]
 
@@ -101,7 +93,8 @@
             = f.label :sponsor_name, t(:study_form)[:sponsor_name]
             = f.text_field :sponsor_name
 
-          .epic-questions{:style => "#{USE_EPIC ? nil : 'display:none;'}"}
+        %fieldset 
+          .epic-questions
             .field
               = f.label :selected_for_epic, t(:study_form)[:push_to_epic]
               %span.non_standard_usage_of_radio_buttons
