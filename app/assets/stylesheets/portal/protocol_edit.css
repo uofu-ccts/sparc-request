@@ -102,6 +102,15 @@
   font-size: 1.2em;
 }
 
+.user-edit-protocol-view .box .info label.width-fix{
+  width: 160px !important;
+  display: block;
+  float: left;
+  margin: 4px 10px 0 0;
+  padding: 2px;
+  font-size: 1.2em;
+}
+
 .user-edit-protocol-view .box .info label.long {
   width: 650px !important;
 }
