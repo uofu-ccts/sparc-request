@@ -25,17 +25,16 @@ class Organization < ActiveRecord::Base
   audited
   acts_as_taggable
 
-  belongs_to :parent, :class_name => 'Organization'
-  has_many :submission_emails, :dependent => :destroy
-  has_many :pricing_setups, :dependent => :destroy
   has_one :subsidy_map, :dependent => :destroy
 
+  belongs_to :parent, :class_name => 'Organization'
+
+  has_many :submission_emails, :dependent => :destroy
+  has_many :pricing_setups, :dependent => :destroy
   has_many :super_users, :dependent => :destroy
   has_many :identities, :through => :super_users
-
   has_many :service_providers, :dependent => :destroy
   has_many :identities, :through => :service_providers
-
   has_many :catalog_managers, :dependent => :destroy
   has_many :clinical_providers, :dependent => :destroy
   has_many :identities, :through => :catalog_managers
@@ -112,33 +111,24 @@ class Organization < ActiveRecord::Base
     end
   end
 
-  # Returns an array of all children (and children of children) of this organization (deep search).
-  # Optionally includes self
-  def all_children (all_children=[], include_self=true, orgs)
-    self.children(orgs).each do |child|
-      all_children << child
-      child.all_children(all_children, orgs)
-    end
-
-    all_children << self if include_self
-
-    all_children.uniq
+  def all_children
+    [
+      children,
+      children.map(&:all_children)
+    ].flatten
   end
 
-  # Returns an array of all services that are offered by this organization as well of all of its
-  # deep children.
-  def all_child_services include_self=true
-    orgs = Organization.find(:all)
-    all_services = []
-    children = self.all_children [], include_self, orgs
-    children.each do |child|
-      if child.services
-        services = Service.where(:organization_id => child.id).includes(:pricing_maps)
-        all_services = all_services | services.sort_by{|x| x.name}
-      end
+  def all_child_services(include_self=true)
+    organization_ids = all_children.map(&:id)
+
+    if include_self
+      organization_ids.unshift id
     end
 
-    all_services
+    Service.
+      where(organization_id: organization_ids).
+      includes(:pricing_maps).
+      sort_by(&:name)
   end
 
   ###############################################################################

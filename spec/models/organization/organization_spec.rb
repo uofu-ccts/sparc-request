@@ -118,42 +118,6 @@ RSpec.describe 'organization' do
       end
     end
 
-    describe 'children' do
-
-      it 'should return only the provider if it is an institution' do
-        expect(institution.children(Organization.all)).to include(provider)
-        expect(institution.children(Organization.all)).not_to include(program)
-      end
-
-      it 'should return the program if it is a provider' do
-        expect(provider.children(Organization.all)).to include(program)
-      end
-
-      it 'should return the core if it is a program' do
-        expect(program.children(Organization.all)).to include(core)
-      end
-    end
-
-    describe 'all children' do
-
-      it 'should return itself if it is a core' do
-        expect(core.all_children(Organization.all)).to eq([core])
-      end
-
-      it 'should return the core if it is a program' do
-        expect(program.all_children(Organization.all)).to include(core)
-        expect(program.all_children(Organization.all)).not_to include(core2)
-      end
-
-      it 'should return multiple programs and cores if it is a provider' do
-        expect(provider.all_children(Organization.all)).to include(core, core2, program, program2)
-      end
-
-      it 'should return everything if it is an institution' do
-        expect(institution.all_children(Organization.all)).to include(core, core2, program, program2, provider)
-      end
-    end
-
     describe 'service providers for services' do
 
       let!(:provider_organization)       { create(:provider) }
@@ -174,47 +138,6 @@ RSpec.describe 'organization' do
       it "should return false if there is a service provider, but it's only on the current organization" do
         service_provider = create(:service_provider, organization_id: program_organization.id)
         expect(program_organization.service_providers_for_child_services?).to eq(false)
-      end
-    end
-
-    describe 'all child services' do
-
-      let!(:service2) { create(:service, organization_id: core2.id) }
-      let!(:program3) { create(:program, parent_id: provider.id) }
-      let!(:service3) { create(:service, organization_id: program3.id) }
-      let!(:program4) { create(:program) }
-      let!(:core3)    { create(:core, parent_id: program4.id) }
-
-      before :each do
-        service.update_attributes(organization_id: core.id)
-      end
-
-      it 'should return the correct service for a core' do
-        expect(core.all_child_services).to eq([service])
-      end
-
-      it 'should return the services under a program with cores' do
-        expect(program.all_child_services).to eq([service])
-      end
-
-      it 'should return the services under a program without cores' do
-        expect(program3.all_child_services).to eq([service3])
-      end
-
-      it 'should return the services under a program that offers both services and cores' do
-        prog = create(:program)
-        prog_core = create(:core, parent_id: prog.id)
-        serv1 = create(:service, organization_id: prog.id)
-        serv2 = create(:service, organization_id: prog_core.id)
-        expect(prog.all_child_services).to include(serv1, serv2)
-      end
-
-      it 'should return the services under a provider' do
-        expect(provider.all_child_services).to include(service, service2, service3)
-      end
-
-      it 'should return the services under an institution' do
-        expect(institution.all_child_services).to include(service, service2, service3)
       end
     end
   end
