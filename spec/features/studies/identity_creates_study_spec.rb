@@ -40,11 +40,10 @@ RSpec.describe "Identity creates Study", js: true do
     expect(page).to have_content("Title can't be blank")
     expect(page).to have_content("Funding status can't be blank")
     expect(page).to have_content("Sponsor name can't be blank")
-    expect(page).to have_content("Does your study have a Certificate of Confidentiality must be answered")
+    expect(page).to have_content("Study type questions must be selected")
   end
 
   scenario "with valid form data" do
-    find('#study_has_cofc_true').click
     fill_in "study_short_title", with: "Bob"
     fill_in "study_title", with: "Dole"
     fill_in "study_sponsor_name", with: "Captain Kurt 'Hotdog' Zanzibar"

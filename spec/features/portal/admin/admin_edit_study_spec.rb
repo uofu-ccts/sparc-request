@@ -45,7 +45,6 @@ RSpec.describe 'editing a study', js: true do
     end
 
     it "should raise an error message if study's status is funded but no funding source is selected" do
-      find('#study_has_cofc_true').click
       select('Funded', from: 'Proposal Funding Status')
       select('Select a Funding Source', from: 'study_funding_source')
       click_button 'Save'

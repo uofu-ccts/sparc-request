@@ -73,7 +73,6 @@ def fill_in_study_info
   fill_in "study_short_title", with: "Bob"
   fill_in "study_title", with: "Dole"
   fill_in "study_sponsor_name", with: "Captain Kurt 'Hotdog' Zanzibar"
-  find('#study_has_cofc_true').click
   select "Funded", from: "study_funding_status"
   select "Federal", from: "study_funding_source"
   find('#study_selected_for_epic_true').click
