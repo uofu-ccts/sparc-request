@@ -30,6 +30,7 @@ RSpec.describe "editing a study", js: true do
 
   before :each do
     visit edit_portal_protocol_path service_request.protocol.id
+    find('#study_selected_for_epic_true').click
     wait_for_javascript_to_finish
   end
 

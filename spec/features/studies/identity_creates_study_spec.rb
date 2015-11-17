@@ -35,6 +35,7 @@ RSpec.describe "Identity creates Study", js: true do
   end
 
   scenario "with invalid form data" do
+    find('#study_selected_for_epic_true').click
     find('.continue_button').click
     expect(page).to have_content("Short title can't be blank")
     expect(page).to have_content("Title can't be blank")

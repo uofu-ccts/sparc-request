@@ -11,7 +11,6 @@ RSpec.describe "Identity edits Study", js: true do
     visit protocol_service_request_path service_request.id
     find('.edit-study').click
 
-    find('#study_has_cofc_true').click
     select "Funded", from: "study_funding_status"
     select "Federal", from: "study_funding_source"
     fill_in "study_short_title", with: "Bob"
