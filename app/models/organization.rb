@@ -42,6 +42,7 @@ class Organization < ActiveRecord::Base
   has_many :services, :dependent => :destroy
   has_many :sub_service_requests, :dependent => :destroy
   has_many :available_statuses, :dependent => :destroy
+  has_many :children, class_name: 'Organization', foreign_key: :parent_id
 
   attr_accessible :name
   attr_accessible :order
@@ -109,19 +110,6 @@ class Organization < ActiveRecord::Base
     else
       return self.parents.select {|x| !x.submission_emails.empty?}.first.try(:submission_emails) || []
     end
-  end
-
-  # Returns the immediate children of this organization (shallow search)
-  def children orgs
-    children = []
-
-    orgs.each do |org|
-      if org.parent_id == self.id
-        children << org
-      end
-    end
-
-    children
   end
 
   # Returns an array of all children (and children of children) of this organization (deep search).
