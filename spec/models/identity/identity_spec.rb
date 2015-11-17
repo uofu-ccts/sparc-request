@@ -233,17 +233,6 @@ RSpec.describe "Identity" do
 
     describe "collection methods" do
 
-      describe "catalog manager organizations" do
-
-        it "should collect all organizations that the user has catalog manager permissions on" do
-          expect(user.catalog_manager_organizations).to include(institution)
-        end
-
-        it "should also collect all child organizations" do
-          expect(user.catalog_manager_organizations).to include(provider, program)
-        end
-      end
-
       describe "admin organizations" do
 
         it "should collect all organizations that the user has super user permissions on" do

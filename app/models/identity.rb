@@ -319,18 +319,14 @@ class Identity < ActiveRecord::Base
   ########################### COLLECTION METHODS ################################
   ###############################################################################
 
-  # Collects all organizations that this identity has catalog manager permissions on, as well as
-  # any child (deep) of any of those organizations.
-  # Returns an array of organizations.
   def catalog_manager_organizations
-    organizations = Organization.find(:all)
-    orgs = []
+    organizations = Array.new
 
-    self.catalog_managers.map(&:organization).each do |org|
-      orgs << org.all_children(organizations)
+    catalog_managers.map(&:organization).each do |organization|
+      organizations.push [organization, organization.all_children]
     end
 
-    orgs.flatten.uniq
+    organizations.flatten
   end
 
   # Returns an array of organizations where the user has clinical provider rights.
@@ -356,7 +352,6 @@ class Identity < ActiveRecord::Base
   def admin_organizations su_only = {:su_only => false}
     orgs = Organization.find(:all)
     organizations = []
-    attached_array = []
     arr = organizations_for_users(orgs, su_only)
 
     arr.each do |org|

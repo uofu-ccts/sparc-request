@@ -142,7 +142,6 @@ RSpec.describe 'organization' do
     end
   end
 
-
   describe 'current_pricing_setup' do
 
     it 'should raise an exception if there are no pricing setups' do
