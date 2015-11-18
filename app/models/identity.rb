@@ -278,8 +278,10 @@ class Identity < ActiveRecord::Base
   end
 
   # Used in clinical fulfillment to determine whether the user can edit a particular core.
-  def can_edit_core? org_id
-    self.clinical_provider_organizations.map{|x| x.id}.include?(org_id) ? true : false
+  def can_edit_core?(organization_id)
+    organizations = (clinical_provider_organizations + super_user_organizations).flatten.uniq
+
+    organizations.map(&:id).include? organization_id
   end
 
   # Determines whether the user has permission to edit historical data for a given organization.
@@ -339,6 +341,16 @@ class Identity < ActiveRecord::Base
     organizations.flatten
   end
 
+  def super_user_organizations
+    organizations = Array.new
+
+    super_users.map(&:organization).each do |organization|
+      organizations.push [organization, organization.all_children]
+    end
+
+    organizations.flatten
+  end
+
   def clinical_provider_organizations
     organizations = Array.new
 
@@ -346,55 +358,17 @@ class Identity < ActiveRecord::Base
       organizations.push [organization, organization.all_children]
     end
 
-    admin_organizations({ su_only: true }).each do |organization|
-      organizations.push organization
-    end
-
     organizations.flatten
   end
 
-  # Collects all organizations that this identity has super user or service provider permissions
-  # on, as well as any child (deep) of any of those organizations.
-  # Returns an array of organizations.
-  # If you pass in "su_only" it only returns organizations for whom you are a super user.
-  def admin_organizations(su_only={ su_only: false })
-    organizations = Array.new
-
-    organizations_for_users(su_only).each do |organization|
-      organizations.push organization.all_children
-    end
-
-    organizations.flatten.uniq
-  end
-
-  def organizations_for_users(su_only)
-    arr = []
-    self.super_users.each do |user|
-      orgs.each do |org|
-        if user.organization_id == org.id
-          arr << org
-        end
-      end
-    end
-
-    unless su_only[:su_only] == true
-      self.service_providers.each do |user|
-        orgs.each do |org|
-          if user.organization_id == org.id
-            arr << org
-          end
-        end
-      end
-    end
-    arr = arr.flatten.compact.uniq
-
-    arr
+  def admin_organizations
+    (super_user_organizations + service_provider_organizations).flatten.uniq
   end
 
   def clinical_provider_rights?
     #TODO should look at all tagged with CTRC
     org = Organization.tagged_with("ctrc").first
-    if !self.clinical_providers.empty? or self.admin_organizations({:su_only => true}).include?(org)
+    if !self.clinical_providers.empty? or super_user_organizations.include?(org)
       return true
     else
       return false

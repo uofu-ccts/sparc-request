@@ -190,22 +190,6 @@ RSpec.describe "Identity" do
         end
       end
 
-      describe "can edit core" do
-
-        it "should return true if the user is a clinical provider on the given core" do
-          expect(user2.can_edit_core?(core.id)).to eq(true)
-        end
-
-        it "should return true if the user is a super user on the given core" do
-          expect(user.can_edit_core?(core.id)).to eq(true)
-        end
-
-        it "should return false if the user is not a clinical provider on a given core" do
-          random_user = create(:identity)
-          expect(random_user.can_edit_core?(core.id)).to eq(false)
-        end
-      end
-
       describe "clinical provider for ctrc" do
 
         it "should return true if the user is a clinical provider on the ctrc" do
@@ -233,28 +217,13 @@ RSpec.describe "Identity" do
 
     describe "collection methods" do
 
-      describe "admin organizations" do
-
-        it "should collect all organizations that the user has super user permissions on" do
-          expect(user.admin_organizations).to include(institution)
-        end
-
-        it "should also collect all child organizations" do
-          expect(user.admin_organizations).to include(provider, program)
-        end
-
-        it "should not ignore nil organizations" do
-          sp = create(:service_provider, identity_id: user.id, organization_id: 9999)
-          expect(lambda {user.admin_organizations}).not_to raise_exception
-        end
-      end
-
       describe "admin service requests by status" do
 
         it "should return all of a user's sub service requests under admin organizations sorted by status" do
           hash = user.admin_service_requests_by_status
           expect(hash).to include('draft')
         end
+
         it "should return a specific organization's sub service requests if givin an org id" do
           sub_service_request.update_attributes(status: "submitted", organization_id: institution.id)
           hash = user.admin_service_requests_by_status(institution.id)

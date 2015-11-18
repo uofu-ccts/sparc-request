@@ -21,5 +21,7 @@
 FactoryGirl.define do
 
   factory :super_user do
+    identity nil
+    organization nil
   end
 end
