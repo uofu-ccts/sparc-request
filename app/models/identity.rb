@@ -329,42 +329,45 @@ class Identity < ActiveRecord::Base
     organizations.flatten
   end
 
-  # Returns an array of organizations where the user has clinical provider rights.
+  def service_provider_organizations
+    organizations = Array.new
+
+    service_providers.map(&:organization).each do |organization|
+      organizations.push [organization, organization.all_children]
+    end
+
+    organizations.flatten
+  end
+
   def clinical_provider_organizations
-    organizations = Organization.find(:all)
-    orgs = []
+    organizations = Array.new
 
-    self.clinical_providers.map(&:organization).each do |org|
-      orgs << org.all_children(organizations)
+    clinical_providers.map(&:organization).each do |organization|
+      organizations.push [organization, organization.all_children]
     end
 
-    self.admin_organizations({:su_only => true}).each do |org|
-      orgs << org
+    admin_organizations({ su_only: true }).each do |organization|
+      organizations.push organization
     end
 
-    orgs.flatten.uniq
+    organizations.flatten
   end
 
   # Collects all organizations that this identity has super user or service provider permissions
   # on, as well as any child (deep) of any of those organizations.
   # Returns an array of organizations.
   # If you pass in "su_only" it only returns organizations for whom you are a super user.
-  def admin_organizations su_only = {:su_only => false}
-    orgs = Organization.find(:all)
-    organizations = []
-    arr = organizations_for_users(orgs, su_only)
+  def admin_organizations(su_only={ su_only: false })
+    organizations = Array.new
 
-    arr.each do |org|
-      organizations << org.all_children(orgs)
+    organizations_for_users(su_only).each do |organization|
+      organizations.push organization.all_children
     end
 
-    ##In case orgs is empty, return an empty array, instead of crashing.
-    organizations.flatten!.compact.uniq rescue return []
-
-    organizations
+    organizations.flatten.uniq
   end
 
-  def organizations_for_users(orgs, su_only)
+  def organizations_for_users(su_only)
     arr = []
     self.super_users.each do |user|
       orgs.each do |org|
