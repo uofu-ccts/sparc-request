@@ -121,7 +121,7 @@ RSpec.describe "service calendar", js: true do
 
         it 'should move visit 1 to the end position' do
           wait_for_javascript_to_finish
-          first(:xpath, "//a[@class='move_visits']").click
+          find('.move_visits', match: :first).click
           wait_for_javascript_to_finish
           select("Visit 1", from: "visit_to_move_1")
           select("Move to last position", from: "move_to_position_1")
@@ -164,7 +164,7 @@ RSpec.describe "service calendar", js: true do
       context 'check all buttons' do
 
         describe "selecting check all row button and accepting the validation alert" do
-            
+
           it "should overwrite the quantities in the row if they are not customized" do
             click_link "check_row_#{arm1.line_items_visits.first.id}_template"
             wait_for_javascript_to_finish
@@ -173,9 +173,9 @@ RSpec.describe "service calendar", js: true do
         end
 
         describe "selecting check all row button and canceling the validation alert" do
-            
+
           it "should not overwrite the quantities in the row if they are customized" do
-            
+
             Visit.update_all(research_billing_qty: 2)
             visit service_calendar_service_request_path service_request.id
             wait_for_javascript_to_finish
@@ -189,7 +189,7 @@ RSpec.describe "service calendar", js: true do
         end
 
         describe "selecting check all column button and accepting the validation alert" do
-            
+
           it "should overwrite the quantities in the column if they are not customized" do
             first("#check_all_column_3").click
             wait_for_javascript_to_finish
@@ -198,7 +198,7 @@ RSpec.describe "service calendar", js: true do
         end
 
         describe "selecting check all column button and canceling the validation alert" do
-            
+
           it "should not overwrite the quantities in the column if they are customized" do
             Visit.update_all(research_billing_qty: 2)
             visit service_calendar_service_request_path service_request.id
