@@ -135,7 +135,7 @@ RSpec.describe "service calendar", js: true do
 
         it 'should move visit 2 between visits 6 and 7' do
           wait_for_javascript_to_finish
-          first(:xpath, "//a[@class='move_visits']").click
+          find('.move_visits', match: :first).click
           wait_for_javascript_to_finish
           select("Visit 2", from: "visit_to_move_1")
           wait_for_javascript_to_finish
