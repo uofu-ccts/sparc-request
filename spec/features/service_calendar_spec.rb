@@ -151,7 +151,7 @@ RSpec.describe "service calendar", js: true do
         it "should not mess up the visit ids" do
           arm1.visit_groups.each do |vg|
             wait_for_javascript_to_finish
-            first(:xpath, "//a[@class='move_visits']").click
+            find('.move_visits', match: :first).click
             wait_for_javascript_to_finish
             select("#{vg.name}", from: "visit_to_move_1")
             select("Move to last position", from: "move_to_position_1")
