@@ -49,9 +49,9 @@ $(document).ready ->
     $(this).siblings().toggle().css('font-style': 'italic')
 
   $(document).on('click', '.add_service' , ->
-    sr_id = $(this).prop('sr_id')
+    sr_id = $(this).attr('sr_id')
     id = $(this).prop('id')
-    first_service = $(this).prop('first_service')
+    first_service = $(this).attr('first_service')
     li_count = $('#line_item_count').val()
 
     if first_service == 'true' && li_count == '0'

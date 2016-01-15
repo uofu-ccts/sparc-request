@@ -28,11 +28,9 @@
 // the compiled file.
 //
 //= require jquery/dist/jquery.min
-//= require jquery-migrate/index
 //= require jquery-ui/jquery-ui.min
 //= require jquery_ujs
 //= require underscore/underscore
-//= require infotip
 //= require shared
 //= require form_fx_manager
 //= require form_manager
