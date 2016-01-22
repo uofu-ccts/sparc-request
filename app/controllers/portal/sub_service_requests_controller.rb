@@ -52,7 +52,6 @@ class Portal::SubServiceRequestsController < Portal::BaseController
 
   def update_from_fulfillment
     @sub_service_request = SubServiceRequest.find(params[:id])
-    @study_tracker = params[:study_tracker] == "true"
     saved_status = @sub_service_request.status
 
     if @sub_service_request.update_attributes(params[:sub_service_request])
@@ -123,7 +122,6 @@ class Portal::SubServiceRequestsController < Portal::BaseController
 
     @arm_id = params[:arm_id].to_i if params[:arm_id]
     @selected_arm = params[:arm_id] ? Arm.find(@arm_id) : @service_request.arms.first
-    @study_tracker = params[:study_tracker] == "true"
     @line_items = @sub_service_request.line_items
 
     ActiveRecord::Base.transaction do
@@ -135,7 +133,6 @@ class Portal::SubServiceRequestsController < Portal::BaseController
 
         @new_line_items.each do |line_item|
           line_item.update_attribute(:sub_service_request_id, @sub_service_request.id)
-          @sub_service_request.update_cwf_data_for_new_line_item(line_item)
         end
 
         # Have to reload the service request to get the correct direct cost total for the subsidy
@@ -167,7 +164,6 @@ class Portal::SubServiceRequestsController < Portal::BaseController
     @service_request = @sub_service_request.service_request
     @candidate_one_time_fees = @sub_service_request.candidate_services.select {|x| x.one_time_fee}
 
-    @study_tracker = params[:study_tracker] == "true"
     @line_items = @sub_service_request.line_items
     
     if @sub_service_request.create_line_item(

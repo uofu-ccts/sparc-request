@@ -27,7 +27,6 @@ class Portal::AdminController < Portal::BaseController
     redirect_to root_path if admin_orgs.empty?
     
     @service_requests = @user.admin_service_requests_by_status(nil, admin_orgs)
-    @study_tracker = false
     @admin = true
   end
   

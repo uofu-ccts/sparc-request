@@ -187,22 +187,6 @@ RSpec.describe "submitting a in form", js: true do
         wait_for_javascript_to_finish
         expect(Arm.all.size).to eq(number_of_arms - 1)
       end
-
-      it "should not allow you to delete an arm that has patient data" do
-        number_of_arms = Arm.all.size
-        subject        = create(:subject, arm_id: arm1.id)
-        appointment    = create(:appointment, calendar_id: subject.calendar.id)
-        visit service_details_service_request_path service_request.id
-
-        accept_alert("This arm has subject data and cannot be removed") do
-          find_by_id("1").click_link("Remove Arm")
-          wait_for_javascript_to_finish
-        end
-
-        find(:xpath, "//a/img[@alt='Savecontinue']/..").click
-        wait_for_javascript_to_finish
-        expect(Arm.all.size).to eq(number_of_arms)
-      end
     end
   end
 end

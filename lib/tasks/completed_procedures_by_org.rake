@@ -1,3 +1,4 @@
+#No longer valid, leaving in as possible example for new cwf
 task :completed_procedures => :environment do
 
   def prompt(*args)

@@ -1,3 +1,4 @@
+#No longer valid, leaving in as possible example for new cwf
 namespace :data do
   desc "Delete unused/duplicated procedures and appointments"
   task :destroy_appointments => :environment do

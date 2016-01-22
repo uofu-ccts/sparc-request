@@ -113,8 +113,6 @@ begin
   USER_CREDENTIALS               = config['user_credentials']
   AVAILABLE_STATUSES             = config['available_statuses']
   DEFAULT_STATUSES               = config['default_statuses']
-  SUBJECT_ETHNICITIES            = config['subject_ethnicities']
-  SUBJECT_GENDERS                = config['subject_genders']
   AUDIT_ACTIONS                  = config['audit_actions']
   ALERT_TYPES                    = config['alert_types']
   ALERT_STATUSES                 = config['alert_statuses']

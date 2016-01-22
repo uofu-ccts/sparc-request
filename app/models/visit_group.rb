@@ -27,7 +27,6 @@ class VisitGroup < ActiveRecord::Base
 
   belongs_to :arm
   has_many :visits, :dependent => :destroy
-  has_many :appointments
   attr_accessible :name
   attr_accessible :position
   attr_accessible :arm_id
@@ -37,12 +36,6 @@ class VisitGroup < ActiveRecord::Base
   acts_as_list :scope => :arm
 
   after_create :set_default_name
-  after_save :set_arm_edited_flag_on_subjects
-  before_destroy :remove_appointments
-
-  def set_arm_edited_flag_on_subjects
-    self.arm.set_arm_edited_flag_on_subjects
-  end
 
   def set_default_name
     if name.nil? || name == ""
@@ -69,19 +62,4 @@ class VisitGroup < ActiveRecord::Base
   def any_visit_quantities_customized?(service_request)
     visits.any? { |visit| ((visit.quantities_customized?) && (visit.line_items_visit.line_item.service_request_id == service_request.id)) }
   end
-
-
-  private
-
-  def remove_appointments
-    appointments = self.appointments
-    appointments.each do |app|
-      if app.completed?
-        app.update_attributes(position: self.position, name: self.name, visit_group_id: nil)
-      else
-        app.destroy
-      end
-    end
-  end
-
 end

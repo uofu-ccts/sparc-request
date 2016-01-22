@@ -206,19 +206,12 @@ $(document).ready ->
         $(this).attr('current_units_per_quantity', user_input)
         $('#unit_max_error').hide()
         $(this).css('border', '')
-        # If it passes validation and is within study tracker, save by ajax
-        if $(this).data('study_tracker') == true
-          save_line_item_by_ajax(this)
-        else
-          update_otf_line_item this
+        update_otf_line_item this
     recalculate_one_time_fee_totals()
     return false
 
   $(document).on('change', '.line_item_quantity', ->
-    if $(this).data('study_tracker') == true
-      save_line_item_by_ajax(this)
-    else
-      update_otf_line_item(this)
+    update_otf_line_item(this)
     recalculate_one_time_fee_totals()
     return false
   )
@@ -275,34 +268,6 @@ $(document).ready ->
           $(obj).attr('current_quantity', original_val)
     .complete =>
       $('.service_calendar_spinner').hide()
-
-
-# methods for saving one time fee attributes
-  save_line_item_by_ajax = (obj) ->
-      object_id = $(obj).data("line_item_id")
-      name = $(obj).attr('name')
-      key = name.replace("line_item_", '')
-      data = {}
-      data[key] = $(obj).val()
-      put_attribute(object_id, data)
-
-
-  put_attribute = (id, data) ->
-    $.ajax
-      type: 'PUT'
-      url:  "/portal/admin/line_items/#{id}/update_from_cwf"
-      data: JSON.stringify(data)
-      dataType: "script"
-      contentType: 'application/json; charset=utf-8'
-      success: ->
-        $().toastmessage('showSuccessToast', I18n["service_request_success"])
-      error: (jqXHR, textStatus, errorThrown) ->
-        if jqXHR.status == 500 and jqXHR.getResponseHeader('Content-Type').split(';')[0] == 'text/javascript'
-          errors = JSON.parse(jqXHR.responseText)
-        else
-          errors = [textStatus]
-        for error in errors
-          $().toastmessage('showErrorToast', "#{error.humanize()}.")
 
 recalculate_one_time_fee_totals = ->
   grand_total = 0

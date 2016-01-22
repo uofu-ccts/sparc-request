@@ -22,7 +22,6 @@ require 'ostruct'
 require 'rails_helper'
 
 # modified:   app/models/affiliation.rb
-# # modified:   app/models/appointment.rb
 # # modified:   app/models/approval.rb
 # # modified:   app/models/arm.rb
 # # modified:   app/models/available_status.rb
@@ -48,7 +47,6 @@ require 'rails_helper'
 # # modified:   app/models/past_status.rb
 # # modified:   app/models/pricing_map.rb
 # # modified:   app/models/pricing_setup.rb
-# # modified:   app/models/procedure.rb
 # # modified:   app/models/program.rb
 # # modified:   app/models/project_role.rb
 # # modified:   app/models/protocol.rb

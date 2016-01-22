@@ -130,7 +130,6 @@ class Portal::ProtocolsController < Portal::BaseController
     @sub_service_request = SubServiceRequest.find(params[:sub_service_request_id])
     @service_request = @sub_service_request.service_request
     @selected_arm = params[:arm_id] ? Arm.find(@arm_id) : @service_request.arms.first
-    @study_tracker = params[:study_tracker] == "true"
   end
 
   def add_arm
@@ -148,11 +147,6 @@ class Portal::ProtocolsController < Portal::BaseController
     @selected_arm.default_visit_days
 
     @selected_arm.reload
-
-    # If any sub service requests under this arm's protocol are in CWF we need to build patient calendars
-    if @service_request.protocol.service_requests.map {|x| x.sub_service_requests.map {|y| y.in_work_fulfillment}}.flatten.include?(true)
-      @selected_arm.populate_subjects
-    end
 
     render 'portal/protocols/change_arm'
   end

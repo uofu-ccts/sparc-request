@@ -69,9 +69,9 @@ module Portal::SubServiceRequestsHelper
   #so that clinical providers can only see ones that are
   #under their core.  Super users and clinical providers on the
   #ctrc can see all ssr's.
-  def user_can_view_ssr?(study_tracker, ssr, user)
+  def user_can_view_ssr?(ssr, user)
     can_view = false
-    if user.is_super_user? || user.clinical_provider_for_ctrc? || (user.is_service_provider?(ssr) && (study_tracker == false)) 
+    if user.is_super_user? || user.clinical_provider_for_ctrc? || user.is_service_provider?(ssr)
       can_view = true
     else
       ssr.line_items.each do |line_item|

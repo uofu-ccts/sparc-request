@@ -31,7 +31,6 @@ class LineItem < ActiveRecord::Base
 
   has_many :line_items_visits, :dependent => :destroy
   has_many :arms, :through => :line_items_visits
-  has_many :procedures
   has_many :admin_rates, :dependent => :destroy
 
   attr_accessible :service_request_id
@@ -69,8 +68,6 @@ class LineItem < ActiveRecord::Base
   validates :quantity, :numericality => true, :on => :update, :if => Proc.new { |li| li.service.one_time_fee }
   validate :quantity_must_be_smaller_than_max_and_greater_than_min, :on => :update, :if => Proc.new { |li| li.service.one_time_fee }
 
-  after_destroy :remove_procedures
-
   # TODO: order by date/id instead of just by date?
   default_scope { order('line_items.id ASC') }
 
@@ -89,50 +86,27 @@ class LineItem < ActiveRecord::Base
     end
   end
 
-  def applicable_rate(appointment_completed_date=nil)
+  def applicable_rate
     rate = nil
-    if appointment_completed_date
-      if has_admin_rates? appointment_completed_date
-        rate = admin_rate_for_date(appointment_completed_date)
-      else
-        pricing_map         = self.pricing_scheme == 'displayed' ? self.service.displayed_pricing_map(appointment_completed_date) : self.service.effective_pricing_map_for_date(appointment_completed_date)
-        pricing_setup       = self.pricing_scheme == 'displayed' ? self.service.organization.pricing_setup_for_date(appointment_completed_date) : self.service.organization.effective_pricing_setup_for_date(appointment_completed_date)
-        funding_source      = self.service_request.protocol.funding_source_based_on_status
-        selected_rate_type  = pricing_setup.rate_type(funding_source)
-        applied_percentage  = pricing_setup.applied_percentage(selected_rate_type)
-
-        rate = pricing_map.applicable_rate(selected_rate_type, applied_percentage)
-      end
+    if has_admin_rates?
+      rate = self.admin_rates.last.admin_cost
     else
-      if has_admin_rates?
-        rate = self.admin_rates.last.admin_cost
-      else
-        pricing_map         = self.pricing_scheme == 'displayed' ? self.service.displayed_pricing_map : self.service.current_effective_pricing_map
-        pricing_setup       = self.pricing_scheme == 'displayed' ? self.service.organization.current_pricing_setup : self.service.organization.effective_pricing_setup_for_date
-        funding_source      = self.service_request.protocol.funding_source_based_on_status
-        selected_rate_type  = pricing_setup.rate_type(funding_source)
-        applied_percentage  = pricing_setup.applied_percentage(selected_rate_type)
+      pricing_map         = self.pricing_scheme == 'displayed' ? self.service.displayed_pricing_map : self.service.current_effective_pricing_map
+      pricing_setup       = self.pricing_scheme == 'displayed' ? self.service.organization.current_pricing_setup : self.service.organization.effective_pricing_setup_for_date
+      funding_source      = self.service_request.protocol.funding_source_based_on_status
+      selected_rate_type  = pricing_setup.rate_type(funding_source)
+      applied_percentage  = pricing_setup.applied_percentage(selected_rate_type)
 
-        rate = pricing_map.applicable_rate(selected_rate_type, applied_percentage)
-      end
+      rate = pricing_map.applicable_rate(selected_rate_type, applied_percentage)
     end
 
     rate
   end
 
-  def has_admin_rates? appointment_completed_date=nil
+  def has_admin_rates?
     has_admin_rates = !self.admin_rates.empty? && !self.admin_rates.last.admin_cost.blank?
-    has_admin_rates = has_admin_rates && self.admin_rates.select{|ar| ar.created_at.to_date <= appointment_completed_date.to_date}.size > 0 if appointment_completed_date
+ 
     has_admin_rates
-  end
-
-  def admin_rate_for_date appointment_completed_date
-    sorted_rates = self.admin_rates.order(:id).reverse
-    sorted_rates.each do |rate|
-      if rate.created_at.to_date <= appointment_completed_date.to_date
-        return rate.admin_cost
-      end
-    end
   end
 
   def attached_to_submitted_request
@@ -141,7 +115,7 @@ class LineItem < ActiveRecord::Base
   end
 
   # Returns the cost per unit based on a quantity and the units per quantity if there is one
-  def per_unit_cost(quantity_total=self.quantity, appointment_completed_date=nil)
+  def per_unit_cost(quantity_total=self.quantity)
     units_per_quantity = self.units_per_quantity
     if quantity_total == 0 || quantity_total.nil?
       0
@@ -150,7 +124,7 @@ class LineItem < ActiveRecord::Base
       # Need to divide by the unit factor here. Defaulted to 1 if there isn't one
       packages_we_have_to_get = (total_quantity.to_f / self.units_per_package.to_f).ceil
       # The total cost is the number of packages times the rate
-      total_cost = packages_we_have_to_get.to_f * self.applicable_rate(appointment_completed_date).to_f
+      total_cost = packages_we_have_to_get.to_f * self.applicable_rate.to_f
       # And the cost per quantity is the total cost divided by the
       # quantity. The result here may not be a whole number if the
       # quantity is not a multiple of units per package.
@@ -373,18 +347,5 @@ class LineItem < ActiveRecord::Base
     end
 
     return true
-  end
-
-  private
-
-  def remove_procedures
-    procedures = self.procedures
-    procedures.each do |pro|
-      if pro.completed?
-        pro.update_attributes(service_id: self.service_id, line_item_id: nil, visit_id: nil)
-      else
-        pro.destroy
-      end
-    end
   end
 end

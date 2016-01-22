@@ -1,3 +1,4 @@
+#No longer valid, leaving in as possible example for new cwf
 desc "Complete procedures report"
 task :complete_procedures_report => :environment do
   puts "######  Generating report ######"

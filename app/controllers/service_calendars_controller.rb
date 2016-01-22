@@ -27,7 +27,6 @@ class ServiceCalendarsController < ApplicationController
     #use session so we know what page to show when tabs are switched
     @tab = params[:tab]
     @portal = params[:portal]
-    @study_tracker = params[:study_tracker] == "true"
     @protocol = @service_request.protocol
     setup_calendar_pages
 
@@ -37,7 +36,6 @@ class ServiceCalendarsController < ApplicationController
 
   def update
     @portal = params[:portal]
-    @study_tracker = params[:study_tracker] == "true"
     @sub_service_request = SubServiceRequest.find(params[:id]) if (params[:id])
     @subsidy = @sub_service_request.try(:subsidy)
     @user = current_identity
@@ -165,7 +163,6 @@ class ServiceCalendarsController < ApplicationController
     session[:service_calendar_pages][arm_id] = page if page && arm_id
     @tab = params[:tab]
     @portal = params[:portal]
-    @study_tracker = params[:study_tracker] == "true"
     @pages = {}
     @protocol = @arm.protocol rescue @service_request.protocol
     @protocol.arms.each do |arm|

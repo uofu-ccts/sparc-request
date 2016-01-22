@@ -27,7 +27,6 @@ class Arm < ActiveRecord::Base
 
   has_many :line_items_visits, :dependent => :destroy
   has_many :line_items, :through => :line_items_visits
-  has_many :subjects
   has_many :visit_groups, -> { order("position") }, :dependent => :destroy
   has_many :visits, :through => :line_items_visits
 
@@ -35,11 +34,9 @@ class Arm < ActiveRecord::Base
   attr_accessible :visit_count
   attr_accessible :subject_count      # maximum number of subjects for any visit grouping
   attr_accessible :new_with_draft     # used for existing arm validations in sparc proper (should always be false unless in first draft)
-  attr_accessible :subjects_attributes
   attr_accessible :protocol_id
   attr_accessible :minimum_visit_count
   attr_accessible :minimum_subject_count
-  accepts_nested_attributes_for :subjects, allow_destroy: true
 
   after_save :update_liv_subject_counts
 
@@ -231,23 +228,6 @@ class Arm < ActiveRecord::Base
       return visit_group.destroy
     else
       return false
-    end
-  end
-
-  def populate_subjects
-    subject_difference = self.subject_count - self.subjects.count
-
-    if subject_difference > 0
-      subject_difference.times do
-        self.subjects.create
-      end
-    end
-  end
-
-  def set_arm_edited_flag_on_subjects
-    if self.subjects
-      subjects = Subject.where(arm_id: self.id)
-      subjects.update_all(arm_edited: true)
     end
   end
 

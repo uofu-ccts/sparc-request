@@ -71,13 +71,6 @@ $(document).ready ->
             spinner.remove()
   }
 
-  $('#study_tracker_tabs').tabs
-    active: ($.cookie("study_tracker_tab_name"))
-    activate: (event, ui) ->
-      idx = ui.newTab.parent().children().index(ui.newTab)
-      $.cookie("study_tracker_tab_name", idx, { expires: 1 })
-
-
   $('.tabs').tabs
     active: ($.cookie("admin_tab_name"))
     show: (event, ui) ->
