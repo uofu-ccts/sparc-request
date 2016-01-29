@@ -12,6 +12,7 @@ gem 'rails-html-sanitizer'
 gem 'capistrano'
 gem 'capistrano-ext'
 gem 'coffee-rails'
+gem 'deadweight'
 gem 'delayed_job_active_record'
 gem 'devise', '~> 3.5.1'
 gem 'dynamic_form'
@@ -91,6 +92,7 @@ group :test do
   gem 'shoulda-matchers', require: false
   gem 'shoulda-callback-matchers'
   gem 'webmock'
+  gem 'deadweight', :require => 'deadweight/hijack/rails'
 end
 
 group :profile do

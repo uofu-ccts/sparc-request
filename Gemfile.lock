@@ -132,8 +132,14 @@ GEM
     connection_pool (2.2.0)
     crack (0.4.2)
       safe_yaml (~> 1.0.0)
+    css_parser (1.2.6)
+      addressable
+      rdoc
     daemons (1.2.3)
     database_cleaner (1.5.0)
+    deadweight (0.2.2)
+      css_parser (~> 1.2.6)
+      nokogiri
     delayed_job (4.0.6)
       activesupport (>= 3.0, < 5.0)
     delayed_job_active_record (4.0.3)
@@ -320,6 +326,8 @@ GEM
       rake (>= 0.8.7)
       thor (>= 0.18.1, < 2.0)
     rake (10.4.2)
+    rdoc (4.2.1)
+      json (~> 1.4)
     redcarpet (3.3.2)
     responders (2.1.0)
       railties (>= 4.2.0, < 5)
@@ -454,6 +462,7 @@ DEPENDENCIES
   coffee-rails
   connection_pool
   database_cleaner
+  deadweight
   delayed_job_active_record
   devise (~> 3.5.1)
   dynamic_form
