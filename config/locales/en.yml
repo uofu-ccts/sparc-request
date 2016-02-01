@@ -380,6 +380,7 @@ en:
     attributes: "Study Attributes"
     code_blank: "Select a Federal Grant Code"
     description: "Before you can complete a service request, please tell us more about your research study. This information will be used by our staff to decide the best way to process your request."
+    epic: "Epic Information"
     federal_grant_code_id: "Federal Grant Code:"
     federal_grant_serial_number: "Federal Grant Serial Number:"
     federal_grant_title: "Federal Grant Title:"
@@ -640,6 +641,9 @@ en:
     service_remove: "Are you sure you want to remove this Related Service?"
     super_user_remove: "Are you sure you want to remove this Super User?"
     survey_delete: "Are you sure you want to remove this Associated Survey?"
+  epic_box:
+    epic_box_error: "Epic Information Error"
+    epic_box_alert: "Please fill out the Epic Information correctly."
   feedback:
     message_error: "Message can't be blank"
   has_fulfillments: "This line item has one or more fulfillments associated with it and can not be deleted."
@@ -841,8 +845,8 @@ en:
     change_primary_pi:
       warning: "<strong>**WARNING**</strong>"
       warning_prompt_1_1: "Adding the new Primary PI "
-      warning_prompt_1_2: " will remove the current Primary PI "
-      warning_prompt_1_3: " from the Protocol."
+      warning_prompt_1_2: " will change the current Primary PI "
+      warning_prompt_1_3: " to a general access user on Protocol "
       warning_prompt_2: "Do you wish to proceed?"
     consolidated_request: 'Export Consolidated Request'
     create:

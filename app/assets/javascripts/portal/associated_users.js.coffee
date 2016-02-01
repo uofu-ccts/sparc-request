@@ -38,7 +38,7 @@ $(document).ready ->
         other          : ['.credentials_other']
 
     ready: ->
-      $('.associated-user-button').live 'click', ->
+      $(document).on 'click', '.associated-user-button', ->
         if $(this).data('permission')
           $('.add-associated-user-dialog').dialog('open')
           $('#add-user-form #protocol_id').val($(this).data('protocol_id'))
@@ -50,17 +50,25 @@ $(document).ready ->
       $('.user_credentials').live 'change', ->
         Sparc.associated_users.redoCredentials()
 
-      # Set the rights if the role is 'pi' or 'business-grants-manager'
-      # and disable all other radio buttons if 'pi'
-      $('#project_role_role').live 'change', ->
+      $(document).on 'change', '.add_user_dialog_box #project_role_role', ->
         role = $(this).val()
         if role == 'pi' or role == 'primary-pi' or role == 'business-grants-manager'
-          $('#project_role_project_rights_none').attr('disabled', true)
-          $('#project_role_project_rights_view').attr('disabled', true)
-          $('#project_role_project_rights_request').attr('disabled', true)
-          $('#project_role_project_rights_approve').attr('checked', true)
+          $('.add_user_dialog_box #project_role_project_rights_none').attr('disabled', true)
+          $('.add_user_dialog_box #project_role_project_rights_view').attr('disabled', true)
+          $('.add_user_dialog_box #project_role_project_rights_request').attr('disabled', true)
+          $('.add_user_dialog_box #project_role_project_rights_approve').attr('checked', true)
         else
-          $('.rights_radios input').attr('disabled', false)
+          $('.rights input').attr('disabled', false)
+
+      $(document).on 'change', '.edit_user_dialog_box #project_role_role', -> 
+        role = $(this).val()
+        if role == 'pi' or role == 'primary-pi' or role == 'business-grants-manager'
+          $('.edit_user_dialog_box #project_role_project_rights_none').attr('disabled', true)
+          $('.edit_user_dialog_box #project_role_project_rights_view').attr('disabled', true)
+          $('.edit_user_dialog_box #project_role_project_rights_request').attr('disabled', true)
+          $('.edit_user_dialog_box #project_role_project_rights_approve').attr('checked', true)
+        else
+          $('.rights input').attr('disabled', false)
 
       $(document).on 'click', '.edit-associated-user-button', ->
         if $(this).data('permission')
@@ -83,7 +91,7 @@ $(document).ready ->
           $('.permissions-dialog').dialog('open')
           $('.permissions-dialog .text').html('Edit.')
 
-      $('.delete-associated-user-button').live 'click', ->
+      $(document).on 'click', '.delete-associated-user-button', ->
         if $(this).data('permission')
           adminUsersList = $(".admin#users")
           current_user_id = $('#current_user_id').val()
@@ -121,11 +129,10 @@ $(document).ready ->
           $('.permissions-dialog').dialog('open')
           $('.permissions-dialog .text').html('Edit.')
 
-      $('#associated_user_role').live 'change', ->
+      $(document).on 'change', '#associated_user_role', ->
         roles_to_hide = ['', 'grad-research-assistant', 'undergrad-research-assistant', 'research-assistant-coordinator', 'technician', 'general-access-user', 'business-grants-manager', 'other']
         role = $(this).val()
         if role == 'other' then $('.role_other').show() else $('.role_other').hide()
-        # if role == '' then Sparc.associated_users.validateRolePresence(role) else Sparc.associated_users.noProblems()
         if roles_to_hide.indexOf(role) >= 0
           $('.commons_name').hide()
           $('.subspecialty').hide()
@@ -151,9 +158,9 @@ $(document).ready ->
             click: ->
               $('#add_authorized_user_submit_button').attr('disabled', true)
 
-              role = $('#project_role_role').val()
-              primary_pi_pr_id = $('#primary_pi_pr_id').val()
-              pr_id = $('#pr_id').val()
+              role = $('.add_user_dialog_box #project_role_role').val()
+              primary_pi_pr_id = $('.add_user_dialog_box #primary_pi_pr_id').val()
+              pr_id = $('.add_user_dialog_box #pr_id').val()
 
               if role == 'primary-pi' && primary_pi_pr_id != pr_id
                 button = $('#add_authorized_user_submit_button')
@@ -166,14 +173,16 @@ $(document).ready ->
                   $('#add-user-form').hide()
 
                   #Add the new elements
-                  primary_pi_full_name = $('#primary_pi_full_name').val()
-                  pr_full_name = $('#full_name').val()
+                  primary_pi_full_name = $('.add_user_dialog_box #primary_pi_full_name').val()
+                  pr_full_name = $('.add_user_dialog_box #full_name').val()
+                  protocol_id = $('#add-user-form #protocol_id').val()
                   warning = I18n["protocol_information"]["change_primary_pi"]["warning"]
                   message1 = I18n["protocol_information"]["change_primary_pi"]["warning_prompt_1_1"]+
                     "(<strong>#{pr_full_name}</strong>)"+
                     I18n["protocol_information"]["change_primary_pi"]["warning_prompt_1_2"]+
                     "(<strong>#{primary_pi_full_name}</strong>)"+
-                    I18n["protocol_information"]["change_primary_pi"]["warning_prompt_1_3"]
+                    I18n["protocol_information"]["change_primary_pi"]["warning_prompt_1_3"]+
+                    "(<strong>#{protocol_id}</strong>)."
                   message2 = I18n["protocol_information"]["change_primary_pi"]["warning_prompt_2"]
                   $('.add-associated-user-dialog').append("<h1 class='change_ppi_prompt' style='color:red;'>#{warning}</h1><p class='change_ppi_prompt' style='font-size:14px;'>#{message1}</p><p class='change_ppi_prompt' style='font-size:14px;'>#{message2}</p>")
 
@@ -183,7 +192,7 @@ $(document).ready ->
                   title_text.text('Change Primary PI')
                 else
                   #Enable removing the old Primary PI
-                  $('#change_primary_pi').val(true)
+                  $('.add_user_dialog_box #change_primary_pi').val(true)
                   
                   #Remove the elements
                   $('.change_ppi_prompt').remove()
@@ -238,6 +247,7 @@ $(document).ready ->
           $('.change_ppi_prompt').remove()
           $('.user-search-container').show()
           $('#add-user-form').show()
+          $('.add_user_dialog_box #change_primary_pi').val(false)
 
     create_edit_associated_user_dialog: () ->
       $('.edit-associated-user-dialog').dialog
@@ -254,9 +264,9 @@ $(document).ready ->
               click: ->
                 $('#edit_authorized_user_submit_button').attr('disabled', true)
 
-                role = $('#project_role_role').val()
-                primary_pi_pr_id = $('#primary_pi_pr_id').val()
-                pr_id = $('#pr_id').val()
+                role = $('.edit_user_dialog_box #project_role_role').val()
+                primary_pi_pr_id = $('.edit_user_dialog_box #primary_pi_pr_id').val()
+                pr_id = $('.edit_user_dialog_box #pr_id').val()
 
                 if role == 'primary-pi' && primary_pi_pr_id != pr_id
                   button = $('#edit_authorized_user_submit_button')
@@ -268,14 +278,16 @@ $(document).ready ->
                     $("#edit_project_role_#{pr_id}").hide()
 
                     #Add the new elements
-                    primary_pi_full_name = $('#primary_pi_full_name').val()
-                    pr_full_name = $('#full_name').val()
+                    primary_pi_full_name = $('.edit_user_dialog_box #primary_pi_full_name').val()
+                    pr_full_name = $('.edit_user_dialog_box #full_name').val()
+                    protocol_id = $('.edit_user_dialog_box #protocol_id').val()
                     warning = I18n["protocol_information"]["change_primary_pi"]["warning"]
                     message1 = I18n["protocol_information"]["change_primary_pi"]["warning_prompt_1_1"]+
                       "(<strong>#{pr_full_name}</strong>)"+
                       I18n["protocol_information"]["change_primary_pi"]["warning_prompt_1_2"]+
                       "(<strong>#{primary_pi_full_name}</strong>)"+
-                      I18n["protocol_information"]["change_primary_pi"]["warning_prompt_1_3"]
+                      I18n["protocol_information"]["change_primary_pi"]["warning_prompt_1_3"]+
+                      "(<strong>#{protocol_id}</strong>)."
                     message2 = I18n["protocol_information"]["change_primary_pi"]["warning_prompt_2"]
                     $('.edit-associated-user-dialog').append("<h1 class='change_ppi_prompt' style='color:red;'>#{warning}</h1><p class='change_ppi_prompt' style='font-size:14px;'>#{message1}</p><p class='change_ppi_prompt' style='font-size:14px;'>#{message2}</p>")
 
@@ -285,7 +297,7 @@ $(document).ready ->
                     title_text.text('Change Primary PI')
                   else
                     #Enable removing the old Primary PI
-                    $('#change_primary_pi').val(true)
+                    $('.edit_user_dialog_box #change_primary_pi').val(true)
                     
                     #Remove the elements
                     $('.change_ppi_prompt').remove()
@@ -337,8 +349,8 @@ $(document).ready ->
             $('#edit_authorized_user_cancel_button').children('span').text('Cancel')
             $('.edit_user_dialog_box .ui-dialog-titlebar').children('.ui-dialog-title').text('Edit an Authorized User')
             $('.change_ppi_prompt').remove()
-            pr_id = $('#pr_id').val()
-            $("#edit_project_role_#{pr_id}").show()
+            $('.edit-associated-user-dialog .associated_users_form').show()
+            $('.edit_user_dialog_box #change_primary_pi').val(false)
 
     reset_fields: () ->
       $('.errorExplanation').html('').hide()
