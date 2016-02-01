@@ -61,7 +61,6 @@ class Portal::ServiceRequestsController < Portal::BaseController
       @subsidy.try(:sub_service_request).try(:reload)
       @subsidy.try(:fix_pi_contribution, percent)
       @candidate_per_patient_per_visit = @sub_service_request.candidate_services.reject {|x| x.one_time_fee}
-      @selected_arm.update_attributes(:minimum_visit_count => @selected_arm.minimum_visit_count + 1)
       @service_request.relevant_service_providers_and_super_users.each do |identity|
         create_visit_change_toast(identity, @sub_service_request) unless identity == @user
       end
@@ -82,7 +81,6 @@ class Portal::ServiceRequestsController < Portal::BaseController
       @subsidy.try(:sub_service_request).try(:reload)
       @subsidy.try(:fix_pi_contribution, percent)
       @candidate_per_patient_per_visit = @sub_service_request.candidate_services.reject {|x| x.one_time_fee}
-      @selected_arm.update_attributes(:minimum_visit_count => @selected_arm.minimum_visit_count - 1)
       @service_request.relevant_service_providers_and_super_users.each do |identity|
         create_visit_change_toast(identity, @sub_service_request) unless identity == @user
       end

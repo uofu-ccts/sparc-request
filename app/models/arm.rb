@@ -35,13 +35,10 @@ class Arm < ActiveRecord::Base
   attr_accessible :subject_count      # maximum number of subjects for any visit grouping
   attr_accessible :new_with_draft     # used for existing arm validations in sparc proper (should always be false unless in first draft)
   attr_accessible :protocol_id
-  attr_accessible :minimum_visit_count
-  attr_accessible :minimum_subject_count
 
   after_save :update_liv_subject_counts
 
   def update_liv_subject_counts
-
     self.line_items_visits.each do |liv|
       if ['first_draft', 'draft', nil].include?(liv.line_item.service_request.status)
         liv.update_attributes(:subject_count => self.subject_count)
@@ -327,10 +324,6 @@ class Arm < ActiveRecord::Base
     end
 
     groupings
-  end
-
-  def update_minimum_counts
-    self.update_attributes(:minimum_visit_count => self.visit_count, :minimum_subject_count => self.subject_count)
   end
 
   def default_visit_days
