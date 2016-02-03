@@ -271,7 +271,6 @@ class ServiceRequestsController < ApplicationController
     @service_request.previous_submitted_at = @service_request.submitted_at
     @service_request.update_attribute(:submitted_at, Time.now)
     @service_request.ensure_ssr_ids
-    @service_request.update_arm_minimum_counts
 
     @protocol = @service_request.protocol
     # As the service request leaves draft, so too do the arms
