@@ -269,8 +269,6 @@ $(document).ready ->
   $(document).on('click', '.remove_arm_link', ->
     if $(this).data('arm_count') <= 1
       alert(I18n["fulfillment_js"]["arm_remove_alert"])
-    else if $(this).data('can_be_deleted') == false
-      alert(I18n["fulfillment_js"]["arm_subject_data_alert"])
     else if confirm(I18n["fulfillment_js"]["arm_delete_confirm"])
       sr_id = $(this).data('service_request_id')
       protocol_id = $('#arm_id').data('protocol_id')

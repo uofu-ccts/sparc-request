@@ -30,6 +30,14 @@ $ ->
   toggleRemoveLink = ->
     $('a.remove_nested_fields').toggle(nested_field_count > 1)
 
+  $(document).on 'nested:fieldRemoved:arms', (event) ->
+    field = event.field
+    button = field.find('.remove_arm')
+
+    field.find('.skinny_fields input').val('1')
+    nested_field_count -= 1
+    toggleRemoveLink()
+
   $(document).on 'nested:fieldAdded:arms', ->
     nested_field_count += 1
     toggleRemoveLink()

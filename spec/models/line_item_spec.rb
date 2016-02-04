@@ -247,19 +247,16 @@ RSpec.describe "Line Item" do
         let!(:pricing_map2)  { create(:pricing_map, service_id: service.id, unit_type: 'ea', effective_date: Date.today, display_date: Date.today, full_rate: 600, exclude_from_indirect_cost: 0, unit_minimum: 1)}
 
         it "should correctly calculate a line item's cost that has multiple fulfillments" do
-          # quantity:10 * rate:(percentage:0.5 * cost:600)
           expect(otf_line_item.direct_cost_for_one_time_fee_with_fulfillments(Date.today, Date.today)).to eq(3000.0)
         end
 
         it "should correctly calculate a line item's cost that has a unit factor greater than one" do
           pricing_map2.update_attributes(unit_factor: 5)
           fulfillment3 = create(:fulfillment, quantity: 6, line_item_id: otf_line_item.id, date: Date.today)
-          # ceiling(quantity:16/unit_factor:5) * rate:(percentage:0.5 * cost:600)
           expect(otf_line_item.reload.direct_cost_for_one_time_fee_with_fulfillments(Date.today, Date.today)).to eq(1200.0)
         end
 
         it "should correctly calculate a line item's cost for a fulfillment that has historical pricing" do
-          # quantity:5 * rate:(percentage:0.5 * cost:2000)
           expect(otf_line_item.direct_cost_for_one_time_fee_with_fulfillments(Date.yesterday, Date.yesterday)).to eq(5000.0)
         end
       end

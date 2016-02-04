@@ -209,10 +209,10 @@ class LineItem < ActiveRecord::Base
         if fulfillment.within_date_range?(start_date, end_date)
           if fulfillment.unit_quantity?
             total_quantity += fulfillment.quantity * fulfillment.unit_quantity
-            fulfillment_rates.push({quantity: fulfillment.quantity, rate: self.applicable_rate(fulfillment.date)})
+            fulfillment_rates.push({quantity: fulfillment.quantity, rate: self.applicable_rate})
           else
             total_quantity += fulfillment.quantity
-            fulfillment_rates.push({quantity: fulfillment.quantity, rate: self.applicable_rate(fulfillment.date)})
+            fulfillment_rates.push({quantity: fulfillment.quantity, rate: self.applicable_rate})
           end
         end
       end
