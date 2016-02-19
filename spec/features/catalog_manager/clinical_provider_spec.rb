@@ -33,6 +33,10 @@ RSpec.feature 'clinical_providers' do
       @program = Organization.where(abbreviation: "Informatics").first
       wait_for_javascript_to_finish
       find('#program_tag_list_clinical_work_fulfillment').click
+      find('#program_process_ssrs').click
+      first('#save_button').click
+      click_link('Office of Biomedical Informatics')
+      wait_for_javascript_to_finish
       within '#cwf_fieldset' do
         find('.legend').click
         wait_for_javascript_to_finish
@@ -44,7 +48,7 @@ RSpec.feature 'clinical_providers' do
       wait_for_javascript_to_finish
     end
 
-    it "should add a clinical provider from an organization", js: true do 
+    it "should add a clinical provider from an organization", js: true do
       expect(page).to have_content("Julia Glenn (glennj@musc.edu)")
     end
 

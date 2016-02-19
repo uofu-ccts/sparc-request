@@ -49,8 +49,13 @@
             %th= f.label :order, t(:organization_form)[:order]
             %td= f.text_field :order
           %tr
-            %th= f.label :split_notify, t(:organization_form)[:split_notify]
-            %td= f.check_box :process_ssrs
+            %th= t(:organization_form)[:split_notify]
+            - if @core.parents.select {|x| x.process_ssrs}.any?
+              %td
+                = t(:organization_form)[:split_notify_disabled]
+                = @core.parents.select {|x| x.process_ssrs}.first.abbreviation
+            - else
+              %td= f.check_box :process_ssrs
           %tr
             %th= f.label :disabled, t(:organization_form)[:disabled]
             %td= f.check_box :is_available, {:checked => (@core.is_available.nil? ? false : !@core.is_available) }, false, true

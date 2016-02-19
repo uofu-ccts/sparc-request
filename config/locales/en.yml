@@ -231,6 +231,8 @@ en:
     service_providers: "Service Providers"
     show_in_cwf: "Show in Fulfillment"
     split_notify: "Split/Notify Here"
+    split_notify_disabled: "Parent with split/notify enabled: "
+    clinical_providers_disabled: "Organization must be set to 'split/notify' to have clinical providers."
     status_legend: "Status Options (Use default statuses below or click to create custom service request statuses)"
     submission_emails: "Submission E-mails"
     submit_button: "Save"
