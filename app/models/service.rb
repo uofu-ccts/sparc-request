@@ -197,14 +197,14 @@ class Service < ActiveRecord::Base
       current_date = (date || Date.today).to_date
       current_maps = pricing_maps.select {|x| x.display_date <= current_date}
       if current_maps.empty?
-        raise ArgumentError, "Service has no current pricing maps!"
+        raise ArgumentError, "Service #{id} (#{name}) has no current pricing maps!"
       else
         pricing_map = current_maps.sort {|a,b| b.display_date <=> a.display_date}.first
       end
 
       return pricing_map
     else
-      raise ArgumentError, "Service has no pricing maps!"
+      raise ArgumentError, "Service #{id} (#{name}) has no pricing maps!"
     end
   end
 
@@ -216,11 +216,11 @@ class Service < ActiveRecord::Base
   # Find a pricing map with a display date corresponding to the given
   # date.
   def pricing_map_for_date(date)
-    raise ArgumentError, "Service has no pricing maps" if self.pricing_maps.empty?
+    raise ArgumentError, "Service #{id} (#{name}) has no pricing maps" if self.pricing_maps.empty?
 
     # TODO: use #where? (warning: potential performance issue)
     current_maps = self.pricing_maps.select { |x| x.display_date.to_date <= date.to_date }
-    raise ArgumentError, "Service has no current pricing maps" if current_maps.empty?
+    raise ArgumentError, "Service #{id} (#{name}) has no current pricing maps" if current_maps.empty?
 
     sorted_maps = current_maps.sort { |lhs, rhs| lhs.display_date <=> rhs.display_date }
     pricing_map = sorted_maps.last
@@ -236,11 +236,11 @@ class Service < ActiveRecord::Base
   # Find a pricing map with an effective date corresponding to the given
   # date.
   def effective_pricing_map_for_date(date=Date.today)
-    raise ArgumentError, "Service has no pricing maps" if self.pricing_maps.empty?
+    raise ArgumentError, "Service #{id} (#{name}) has no pricing maps" if self.pricing_maps.empty?
 
     # TODO: use #where? (warning: potential performance issue)
     current_maps = self.pricing_maps.select { |x| x.effective_date.to_date <= date.to_date }
-    raise ArgumentError, "Service has no current pricing maps" if current_maps.empty?
+    raise ArgumentError, "Service #{id} (#{name}) has no current pricing maps" if current_maps.empty?
 
     sorted_maps = current_maps.sort { |lhs, rhs| lhs.effective_date <=> rhs.effective_date }
     pricing_map = sorted_maps.last
