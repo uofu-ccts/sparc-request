@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160121173336) do
+ActiveRecord::Schema.define(version: 20160229185056) do
 
   create_table "additional_details", force: :cascade do |t|
     t.string   "name",                 limit: 255
@@ -196,12 +196,6 @@ ActiveRecord::Schema.define(version: 20160121173336) do
 
   add_index "charges", ["service_id"], name: "index_charges_on_service_id", using: :btree
   add_index "charges", ["service_request_id"], name: "index_charges_on_service_request_id", using: :btree
-
-  create_table "click_counters", force: :cascade do |t|
-    t.integer  "click_count", limit: 4
-    t.datetime "created_at",            null: false
-    t.datetime "updated_at",            null: false
-  end
 
   create_table "clinical_providers", force: :cascade do |t|
     t.integer  "identity_id",     limit: 4
@@ -870,6 +864,7 @@ ActiveRecord::Schema.define(version: 20160121173336) do
     t.datetime "created_at",                             null: false
     t.datetime "updated_at",                             null: false
     t.datetime "deleted_at"
+    t.date     "original_submitted_date"
   end
 
   add_index "service_requests", ["protocol_id"], name: "index_service_requests_on_protocol_id", using: :btree

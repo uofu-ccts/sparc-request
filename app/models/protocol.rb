@@ -111,7 +111,7 @@ class Protocol < ActiveRecord::Base
     validates :sponsor_name, :presence => true, :if => :is_study?
     validates_associated :human_subjects_info, :message => "must contain 8 numerical digits", :if => :validate_nct
     validates :selected_for_epic, inclusion: [true, false], :if => :is_study?
-    validate  :validate_study_type_answers, if: [:is_study?, :selected_for_epic]
+    validate  :validate_study_type_answers, if: [:is_study?, :selected_for_epic?, "StudyTypeQuestionGroup.active.pluck(:id).first == study_type_question_group_id"]
   end
 
   validation_group :user_details do
@@ -125,9 +125,17 @@ class Protocol < ActiveRecord::Base
   def is_study?
     self.type == 'Study'
   end
+  # virgin project:  a project that has never been a study
+  def virgin_project?
+    selected_for_epic == nil
+  end
 
   def active?
     study_type_question_group.active
+  end
+
+  def activate
+    update_attribute(:study_type_question_group_id, StudyTypeQuestionGroup.active.pluck(:id).first)
   end
 
   def validate_funding_source
@@ -151,7 +159,7 @@ class Protocol < ActiveRecord::Base
       if answers["certificate_of_conf"].answer.nil?
         has_errors = true
       elsif answers["certificate_of_conf"].answer == false
-        if (answers["higher_level_of_privacy"].answer.nil?) 
+        if (answers["higher_level_of_privacy"].answer.nil?)
           has_errors = true
         elsif (answers["higher_level_of_privacy"].answer == false)
           if answers["epic_inbasket"].answer.nil? || answers["research_active"].answer.nil? || answers["restrict_sending"].answer.nil?
@@ -198,6 +206,14 @@ class Protocol < ActiveRecord::Base
 
   def billing_business_manager_email
     billing_business_manager_static_email.blank? ?  billing_managers.map(&:email).try(:join, ', ') : billing_business_manager_static_email
+  end
+
+  def coordinators
+    project_roles.select{|pr| pr.role == 'research-assistant-coordinator'}.map(&:identity)
+  end
+
+  def coordinator_emails
+    coordinators.map(&:email).try(:join, ', ')
   end
 
   def emailed_associated_users

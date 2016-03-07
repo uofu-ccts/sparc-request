@@ -49,6 +49,7 @@ module SparcRails
     config.autoload_paths += Dir[Rails.root.join('app', 'jobs', '*')]
 
     config.assets.paths << Rails.root.join('vendor', 'assets', 'components')
+    config.action_dispatch.default_headers.merge!({'X-Frame-Options' => 'ALLOWALL', 'X-UA-Compatible' => 'IE=edge,chrome=1'})
 
     # Only load the plugins named here, in the order given (default is alphabetical).
     # :all can be used as a placeholder for all plugins not explicitly named.
