@@ -1,5 +1,7 @@
 //= require jquery-2.1.4/dist/jquery.min
-//= require bootstrap/js/bootstrap.min
+//= require jquery-migrate/jquery-migrate
+//= require jquery-ui/jquery-ui
+//= require bootstrap/dist/js/bootstrap.min
 //= require bootstrap-validator/dist/validator.min
 //= require angular/angular.min
 //= require angular-resource/angular-resource.min
