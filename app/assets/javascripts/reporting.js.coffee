@@ -107,10 +107,7 @@ $(document).ready ->
     $("#report_selection").show()
 
   $(document).on "change", ".reporting_field", ->
-    console.log "I was clicked"
     parent_id = "#" + $(this).attr('id')
-    console.log parent_id
-    console.log $(this).val()
     window.check_deps(parent_id)
     if $(this).val() != ""
       $(".check_dep_class.needs_update").each ->
