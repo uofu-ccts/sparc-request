@@ -18,30 +18,22 @@
 # INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 # TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-$(document).ready ->
+window.create_single_date_pickers = ->
+  $('.date_field').datepicker
+    changeMonth: true,
+    changeYear: true,
+    dateFormat: "yy-mm-dd",
+    numberOfMonths: 3,
 
-  $(document).on "click", "#reporting_return_to_list", (event) ->
-    event.preventDefault()
-    $('#defined_reports_step_2').hide()
-    $("#report_selection").show()
+window.check_deps = (parent_id) ->
+  $(".check_dep_class").each ->
+    dep = $(this).data("dependency")
+    if dep.match(parent_id)
+      $(this).addClass("needs_update")
+      $(this).val("")
 
-  $(document).on "change", ".reporting_field", ->
-    parent_id = "#" + $(this).attr('id')
-    window.check_deps(parent_id)
-    if $(this).val() != ""
-      $(".check_dep_class.needs_update").each ->
-        $(this).removeClass('needs_update')
-        $(this).prop('disabled', false)
-        cattype = $(parent_id).val()
-        optionswitch(cattype, "#" + $(this).attr('id'))
-
-  $(document).on "submit", "#reporting_form", (event) ->
-    empty = $('.required_field').filter ->
-      this.value == ""
-
-    if empty.length
-      event.preventDefault()
-      alert "Please fill out all required fields"
+    if $(dep).val() == ""
+      $(this).prop('disabled', true)
 
 optionswitch = (myfilter, res) ->
   #Populate the optionstore if the first time through
@@ -107,19 +99,32 @@ window.create_date_pickers = (from, to) ->
     $("#{from}").datepicker("option", "maxDate", new Date(maxDate))
     $("#{to}").datepicker("option", "maxDate", new Date(maxDate))
 
-window.create_single_date_pickers = ->
-  $('.date_field').datepicker
-    changeMonth: true,
-    changeYear: true,
-    dateFormat: "yy-mm-dd",
-    numberOfMonths: 3,
+$(document).ready ->
 
-window.check_deps = (parent_id) ->
-  $(".check_dep_class").each ->
-    dep = $(this).data("dependency")
-    if $(dep).val() == ""
-      $(this).val("")
-      $(dep).data("resolve", "#" + $(this).prop('id'))
-      $(this).prop('disabled', true)
+  $(document).on "click", "#reporting_return_to_list", (event) ->
+    event.preventDefault()
+    $('#defined_reports_step_2').hide()
+    $("#report_selection").show()
+
+  $(document).on "change", ".reporting_field", ->
+    console.log "I was clicked"
+    parent_id = "#" + $(this).attr('id')
+    console.log parent_id
+    console.log $(this).val()
+    window.check_deps(parent_id)
+    if $(this).val() != ""
+      $(".check_dep_class.needs_update").each ->
+        $(this).removeClass('needs_update')
+        $(this).prop('disabled', false)
+        cattype = $(parent_id).val()
+        optionswitch(cattype, "#" + $(this).attr('id'))
+
+  $(document).on "submit", "#reporting_form", (event) ->
+    empty = $('.required_field').filter ->
+      this.value == ""
+
+    if empty.length
+      event.preventDefault()
+      alert "Please fill out all required fields"
 
 
