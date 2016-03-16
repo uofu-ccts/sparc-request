@@ -36,4 +36,5 @@
 
   $('.new_study').html("<%= escape_javascript(render partial: 'studies/form', locals: {study: @protocol, service_request: @service_request, portal: @portal, current_step: @current_step}) %>")
   $.getScript('/assets/studies.js')
+  $.getScript('/assets/user_search.js.coffee')
 <%- end %>
