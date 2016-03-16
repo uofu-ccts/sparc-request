@@ -46,10 +46,6 @@ RSpec.feature "User wants to create a Study", js: true do
 
   #TODO: Add Authorized Users Specs
   context 'and clicks the New Study button' do
-    scenario 'and sees the cancel button' do
-      expect(page).to have_link 'Cancel'
-    end
-
     scenario 'and sees the continue button' do
       expect(page).to have_link 'Continue'
     end
