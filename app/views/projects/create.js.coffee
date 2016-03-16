@@ -35,7 +35,7 @@
 
   $(document).on 'click', 'a.continue_button', ->
     $('form').submit()
-    console.log("hello world")
 
   $('.new_project').html("<%= escape_javascript(render partial: 'projects/form', locals: {project: @protocol, service_request: @service_request, portal: @portal, current_step: @current_step}) %>")
+  $.getScript('/assets/user_search.js.coffee')
 <%- end %>
