@@ -32,3 +32,4 @@ else
     $('form').submit()
 
   $('.edit_project').html("<%= escape_javascript(render partial: 'projects/form', locals: {project: @protocol, service_request: @service_request, portal: @portal, current_step: @current_step}) %>")
+  $.getScript('/assets/user_search.js.coffee')
