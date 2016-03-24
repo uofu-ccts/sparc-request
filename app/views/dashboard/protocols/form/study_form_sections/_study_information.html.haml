@@ -120,7 +120,7 @@
               = form.radio_button :selected_for_epic, 'false', id: "study_selected_for_epic_false"
               No
 
-    - if admin && !@protocol.virgin_project? && (!@protocol.changed.include?('selected_for_epic') || @protocol.changed_attributes()['selected_for_epic'])
+    - if admin || @admin && !@protocol.virgin_project? && (!@protocol.changed.include?('selected_for_epic') || @protocol.changed_attributes()['selected_for_epic'])
       .form-group.row.selected_for_epic_dependent#readonly{ display_if(protocol.selected_for_epic) }
         = form.label :study_type_questions, "", class: 'col-lg-2 form-control-label'
         .col-lg-10

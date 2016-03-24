@@ -104,6 +104,7 @@ class Dashboard::ProtocolsController < Dashboard::BaseController
       add_crumbs(protocol_id: @protocol.id, edit_protocol: true)
     @protocol.valid?
     respond_to do |format|
+      @admin =  !@user.authorized_admin_organizations.empty?
       format.html
     end
   end
@@ -121,6 +122,7 @@ class Dashboard::ProtocolsController < Dashboard::BaseController
 
   def update_protocol_type
     # Using update_attribute here is intentional, type is a protected attribute
+    @admin =  !@user.authorized_admin_organizations.empty?
     @protocol.update_attribute(:type, params[:type])
     @protocol_type = params[:type]
     @protocol = Protocol.find(@protocol.id) #Protocol type has been converted, this is a reload
