@@ -104,28 +104,38 @@ class Dashboard::ProtocolsController < Dashboard::BaseController
       add_crumbs(protocol_id: @protocol.id, edit_protocol: true)
     @protocol.valid?
     respond_to do |format|
+      @admin =  !@user.authorized_admin_organizations.empty?
       format.html
     end
   end
 
   def update
     attrs = params[:protocol]
+    @admin =  !@user.authorized_admin_organizations.empty?
+    @protocol_type = @protocol.type
 
-    if @protocol.update_attributes(attrs.merge(study_type_question_group_id: StudyTypeQuestionGroup.active_id))
+    # Do not update study type question group id to active in admin
+
+    if !@admin && @protocol.update_attributes(attrs.merge(study_type_question_group_id: StudyTypeQuestionGroup.active_id))
+      flash[:success] = "#{@protocol.type} Updated!"  
+    elsif @admin && @protocol.update_attributes(attrs)
       flash[:success] = "#{@protocol.type} Updated!"
     else
       render action: 'edit'
       @errors = @protocol.errors
+      
     end
   end
 
   def update_protocol_type
     # Using update_attribute here is intentional, type is a protected attribute
-    @protocol.update_attribute(:type, params[:type])
+    @admin =  !@user.authorized_admin_organizations.empty?
     @protocol_type = params[:type]
-    @protocol = Protocol.find(@protocol.id) #Protocol type has been converted, this is a reload
+    @protocol.update_attribute(:type, @protocol_type)
+    conditionally_activate_protocol
+    @protocol = Protocol.find @protocol.id #Protocol type has been converted, this is a reload
     @protocol.populate_for_edit
-    flash[:success] = 'Protocol Type Updated!'
+    flash[:success] = "Protocol Type Updated!"
   end
 
   def archive
@@ -166,5 +176,19 @@ class Dashboard::ProtocolsController < Dashboard::BaseController
 
   def find_protocol
     @protocol = Protocol.find(params[:id])
+  end
+
+  def admin?
+    !@user.authorized_admin_organizations.empty?
+  end
+
+  def conditionally_activate_protocol
+    if admin?
+      if @protocol_type == "Study" && @protocol.virgin_project?
+        @protocol.activate
+      end
+    else
+      @protocol.activate
+    end
   end
 end
