@@ -66,6 +66,7 @@ class Dashboard::ProtocolsController < Dashboard::BaseController
   end
 
   def new
+    @admin =  !@user.authorized_admin_organizations.empty?
     @protocol_type = params[:protocol_type]
     @protocol = @protocol_type.capitalize.constantize.new
     @protocol.requester_id = current_user.id 
