@@ -86,6 +86,7 @@ class Protocol < ActiveRecord::Base
   attr_accessible :study_type_question_group_id
   attr_accessible :study_types_attributes
   attr_accessible :title
+  attr_accessible :type
   attr_accessible :udak_project_number
   attr_accessible :vertebrate_animals_info_attributes
 
@@ -110,10 +111,7 @@ class Protocol < ActiveRecord::Base
     validates :title, :presence => true
     validates :funding_status, :presence => true
     validate  :validate_funding_source
-    validates :sponsor_name, :presence => true, :if => :is_study?
     validates_associated :human_subjects_info, :message => "must contain 8 numerical digits", :if => :validate_nct
-    validates :selected_for_epic, inclusion: [true, false], :if => :is_study?
-    validate  :validate_study_type_answers, if: [:is_study?, :selected_for_epic?, "StudyTypeQuestionGroup.active.pluck(:id).first == study_type_question_group_id"]
   end
 
   validation_group :user_details do
@@ -253,7 +251,6 @@ class Protocol < ActiveRecord::Base
     rescue => e
       has_errors = true
     end
-
     if has_errors
       errors.add(:study_type_questions, "must be selected")
     end

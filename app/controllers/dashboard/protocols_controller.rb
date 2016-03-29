@@ -98,6 +98,7 @@ class Dashboard::ProtocolsController < Dashboard::BaseController
 
   def edit
     @protocol_type = @protocol.type
+    @errors = @protocol.errors
     @protocol.populate_for_edit
     session[:breadcrumbs].
       clear.
@@ -111,8 +112,10 @@ class Dashboard::ProtocolsController < Dashboard::BaseController
 
   def update
     attrs = params[:protocol]
+
     @admin =  !@user.authorized_admin_organizations.empty?
     @protocol_type = @protocol.type
+
 
     # Do not update study type question group id to active in admin
 
@@ -121,9 +124,7 @@ class Dashboard::ProtocolsController < Dashboard::BaseController
     elsif @admin && @protocol.update_attributes(attrs)
       flash[:success] = "#{@protocol.type} Updated!"
     else
-      render action: 'edit'
-      @errors = @protocol.errors
-      
+      @errors = @protocol.errors 
     end
   end
 

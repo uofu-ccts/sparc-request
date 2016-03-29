@@ -22,7 +22,6 @@
   = form_for ([:dashboard, protocol]), as: :protocol, remote: true, html: { class: 'form-horizontal' } do |form|
     = form.hidden_field :requester_id
     = form.hidden_field :type
-    = form.error_messages
 
     - if @protocol_type.capitalize == "Study"
       .edit-study-view.container-fluid
@@ -45,3 +44,4 @@
           = link_to t(:protocol_shared)[:cancel], dashboard_protocol_path(protocol), class: 'btn btn-lg btn-danger'
         - else # New Protocol
           = link_to t(:protocol_shared)[:cancel], dashboard_protocols_path, class: 'btn btn-lg btn-danger'
+
