@@ -23,8 +23,6 @@ class ApplicationController < ActionController::Base
   helper :all
   helper_method :current_user
 
-  before_filter :setup_navigation
-
   def current_user
     current_identity
   end
@@ -276,26 +274,6 @@ class ApplicationController < ActionController::Base
     else
       authorization_error "The service request you are trying to access is not editable.",
                           "SSR#{session[:sub_service_request_id]}"
-    end
-  end
-
-  def setup_navigation
-    #TODO - this could definitely be done a better way
-    @page = if params[:action] == 'navigate'
-        params[:action] = params[:current_location] || request.referrer.split('/').last.split('?').first
-      else
-        params[:action]
-      end
-
-
-    c = YAML.load_file(Rails.root.join('config', 'navigation.yml'))[@page]
-    unless c.nil?
-      @step_text = c['step_text']
-      @css_class = c['css_class']
-      @back = c['back']
-      @catalog = c['catalog']
-      @forward = c['forward']
-      @validation_groups = c['validation_groups']
     end
   end
 end

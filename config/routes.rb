@@ -92,6 +92,23 @@ SparcRails::Application.routes.draw do
     end
   end
 
+  resources :request_wizard, only: [] do
+    member do
+      get :catalog
+      get :protocol
+      get :service_details
+      get :service_calendar
+      get :service_subsidy
+      get :documents_and_notes
+      get :review
+      get :confirmation
+      get :obtain_research_pricing
+      get :go_back
+      get :save_as_draft
+      post :save_and_continue
+    end
+  end
+
   resources :protocols, except: [:index, :show, :destroy] do
     member do
       get :approve_epic_rights

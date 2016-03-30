@@ -87,7 +87,7 @@ service_subsidy:
     document_management:
       - service_subsidy
 
-document_management:
+documents_and_notes:
   step_text: 'STEP 3: Shared Documents & Notes'
   css_class: orange-provider
   back: service_subsidy

@@ -76,6 +76,10 @@ class ServiceRequest < ActiveRecord::Base
     #insert group specific validation
   end
 
+  validation_group :documents_and_notes do
+    #insert group specific validation
+  end
+
   validation_group :review do
     #insert group specific validation
   end

@@ -1,0 +1,70 @@
+-# Copyright © 2011 MUSC Foundation for Research Development
+-# All rights reserved.
+
+-# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+
+-# 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+
+-# 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
+-# disclaimer in the documentation and/or other materials provided with the distribution.
+
+-# 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products
+-# derived from this software without specific prior written permission.
+
+-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,
+-# BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
+-# SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
+-# TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+-if review # <- The Problem
+  %div.review-bottom-navigation
+    .return-to-step-3.red-provider
+      .return-to-previous
+        %a.navigation_link#go_back_link
+          %span= image_tag('GoBack.png')
+          %span= t(:bottom_navigation)[:go_back]
+    .save-as-draft.red-provider
+      %a.btn.btn-success.btn-lg#save-as-draft{href: 'javascript:void(0)'}
+        = t(:bottom_navigation)[:save_as_draft]
+    .obtain-research-pricing.red-provider
+      = link_to t(:bottom_navigation)[:get_cost_estimate], obtain_research_pricing_request_wizard_path, :class => "btn btn-success btn-lg", :id => 'get_a_cost_estimate'
+    .submit-request.red-provider
+      = link_to t(:bottom_navigation)[:submit_to_start], confirmation_request_wizard_path, :class => "save-and-continue btn btn-success btn-lg", :id => 'submit_services1'
+      = link_to image_tag("SaveContinue.png"), confirmation_request_wizard_path, :class => "save-and-continue", :id => 'submit_services2'
+
+-else
+  .grid_12
+    %div{class: navigation_bar_class}
+      - # GO BACK LINK
+      .nav-backward
+        .return-to-previous
+          %a.navigation_link#go_back_link
+            %span= image_tag('GoBack.png')
+            %span= t(:bottom_navigation)[:go_back]
+
+      - # SAVE AS DRAFT LINK
+      - if service_request.submitted_at.blank?
+        .exit
+          %a.navigation_link#save_as_draft_link
+            %span= t(:bottom_navigation)[:save_and_exit]
+      - else
+        .exit
+
+      - if review # <- The Goal
+        - # GET A QUOTE LINK
+        .obtain-research-pricing
+          = link_to t(:bottom_navigation)[:get_cost_estimate], obtain_research_pricing_service_request_path, :class => "btn btn-success btn-lg", :id => 'get_a_cost_estimate'
+        - # SUBMIT TO START SERVICES LINK
+        .submit-request
+          = link_to t(:bottom_navigation)[:submit_to_start], confirmation_service_request_path, :class => "save-and-continue btn btn-success btn-lg", :id => 'submit_services1'
+          = link_to image_tag("SaveContinue.png"), confirmation_service_request_path, :class => "save-and-continue", :id => 'submit_services2'
+      -else
+        - # SAVE & CONTINUE LINK
+        .nav-forward
+          .save-and-continue
+            %a.navigation_link#save_and_continue_link
+              %span= t(:bottom_navigation)[:save_and_continue]
+              %span= image_tag('SaveContinue.png')
+
