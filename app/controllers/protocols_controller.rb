@@ -46,6 +46,7 @@ class ProtocolsController < ApplicationController
 
     @protocol.validate_nct = true
 
+    
     if @current_step == 'cancel'
       @current_step = 'return_to_service_request'
     elsif @current_step == 'go_back'
@@ -110,13 +111,11 @@ class ProtocolsController < ApplicationController
     @protocol.assign_attributes(attrs.merge(study_type_question_group_id: StudyTypeQuestionGroup.active.pluck(:id).first))
 
     if @current_step == 'cancel'
-      @current_step = 'return_to_service_request'
+      set_to_service_request
     elsif @current_step == 'go_back'
-      @current_step = 'protocol'
-      @protocol.populate_for_edit
+      set_to_protocol
     elsif @current_step == 'protocol' and @protocol.group_valid? :protocol
-      @current_step = 'user_details'
-      @protocol.populate_for_edit
+      set_to_user_details
     elsif @current_step == 'user_details' and @protocol.valid?
       @protocol.save
       @current_step = 'return_to_service_request'
@@ -240,4 +239,19 @@ class ProtocolsController < ApplicationController
     end
     # end
   end
+
+  def set_to_service_request
+    @current_step = 'return_to_service_request'
+  end
+
+  def set_to_protocol
+    @current_step = 'protocol'
+    @protocol.populate_for_edit
+  end
+
+  def set_to_user_details
+    @current_step = 'user_details'
+    @protocol.populate_for_edit
+  end
+
 end
