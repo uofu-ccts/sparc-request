@@ -54,7 +54,7 @@ class ProtocolsController < ApplicationController
     elsif @current_step == 'protocol' and @protocol.group_valid? :protocol
       set_to_user_details
     elsif @current_step == 'user_details' and @protocol.valid?
-      save_protocol
+      save_new_protocol
     else
       @protocol.populate_for_edit
     end
