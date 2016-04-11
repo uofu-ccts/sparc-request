@@ -48,28 +48,13 @@ class ProtocolsController < ApplicationController
 
     
     if @current_step == 'cancel'
-      @current_step = 'return_to_service_request'
+      set_to_service_request
     elsif @current_step == 'go_back'
-      @current_step = 'protocol'
-      @protocol.populate_for_edit
+      set_to_protocol
     elsif @current_step == 'protocol' and @protocol.group_valid? :protocol
-      @current_step = 'user_details'
-      @protocol.populate_for_edit
+      set_to_user_details
     elsif @current_step == 'user_details' and @protocol.valid?
-      @protocol.save
-      @current_step = 'return_to_service_request'
-      flash[:notice] = "New #{@protocol.type.downcase} created"
-
-      if @service_request
-        @service_request.update_attribute(:protocol_id, @protocol.id) unless @service_request.protocol.present?
-        @service_request.update_attribute(:status, 'draft')
-        @service_request.sub_service_requests.each do |ssr|
-          ssr.update_attribute(:status, 'draft')
-        end
-      end
-
-      @current_step = 'return_to_service_request'
-      flash[:notice] = "New #{@protocol.type.downcase} created"
+      save_protocol
     else
       @protocol.populate_for_edit
     end
@@ -117,15 +102,7 @@ class ProtocolsController < ApplicationController
     elsif @current_step == 'protocol' and @protocol.group_valid? :protocol
       set_to_user_details
     elsif @current_step == 'user_details' and @protocol.valid?
-      @protocol.save
-      @current_step = 'return_to_service_request'
-      session[:saved_protocol_id] = @protocol.id
-      flash[:notice] = "#{@protocol.type.humanize} updated"
-
-      #Added as a safety net for older SRs
-      if @service_request.status == "first_draft"
-        @service_request.update_attributes(status: "draft")
-      end
+      save_updated_protocol
     else
       @protocol.populate_for_edit
     end
@@ -254,4 +231,29 @@ class ProtocolsController < ApplicationController
     @protocol.populate_for_edit
   end
 
+  def save_new_protocol
+    @protocol.save
+    @current_step = 'return_to_service_request'
+    flash[:notice] = "New #{@protocol.type.downcase} created"
+
+    if @service_request
+      @service_request.update_attribute(:protocol_id, @protocol.id) unless @service_request.protocol.present?
+      @service_request.update_attribute(:status, 'draft')
+      @service_request.sub_service_requests.each do |ssr|
+        ssr.update_attribute(:status, 'draft')
+      end
+    end
+  end
+
+  def save_updated_protocol
+    @protocol.save
+    @current_step = 'return_to_service_request'
+    session[:saved_protocol_id] = @protocol.id
+    flash[:notice] = "#{@protocol.type.humanize} updated"
+
+    #Added as a safety net for older SRs
+    if @service_request.status == "first_draft"
+      @service_request.update_attributes(status: "draft")
+    end
+  end
 end
