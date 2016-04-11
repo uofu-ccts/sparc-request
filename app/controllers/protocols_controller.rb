@@ -46,15 +46,19 @@ class ProtocolsController < ApplicationController
 
     @protocol.validate_nct = true
 
+    step_setter = StepSetter.new(@protocol, @service_request)
+    protocol_saver = ProtocolSaver.new(@protocol, @service_request)
+
     
     if @current_step == 'cancel'
-      set_to_service_request
+      step_setter.set_to_service_request
     elsif @current_step == 'go_back'
-      set_to_protocol
+      step_setter.set_to_protocol
     elsif @current_step == 'protocol' and @protocol.group_valid? :protocol
-      set_to_user_details
+      step_setter.set_to_user_details
     elsif @current_step == 'user_details' and @protocol.valid?
-      save_new_protocol
+      protocol_saver.save_new_protocol
+      step_setter.set_to_service_request
     else
       @protocol.populate_for_edit
     end
@@ -95,16 +99,20 @@ class ProtocolsController < ApplicationController
 
     @protocol.assign_attributes(attrs.merge(study_type_question_group_id: StudyTypeQuestionGroup.active.pluck(:id).first))
 
+    step_setter = StepSetter.new(@protocol, @service_request)
+    protocol_saver = ProtocolSaver.new(@protocol, @service_request)
+
     if @current_step == 'cancel'
-      set_to_service_request
+      step_setter.set_to_service_request
     elsif @current_step == 'go_back'
-      set_to_protocol
+      step_setter.set_to_protocol
     elsif @current_step == 'protocol' and @protocol.group_valid? :protocol
-      set_to_user_details
+      step_setter.set_to_user_details
     elsif @current_step == 'user_details' and @protocol.valid?
-      save_updated_protocol
+      protocol_saver.save_updated_protocol
+      step_setter.set_to_service_request
     else
-      @protocol.populate_for_edit
+      @protocol.populate_for_edit 
     end
     cookies['current_step'] = @current_step
   end
@@ -215,45 +223,5 @@ class ProtocolsController < ApplicationController
       # ActiveRecord::Base.connection.close
     end
     # end
-  end
-
-  def set_to_service_request
-    @current_step = 'return_to_service_request'
-  end
-
-  def set_to_protocol
-    @current_step = 'protocol'
-    @protocol.populate_for_edit
-  end
-
-  def set_to_user_details
-    @current_step = 'user_details'
-    @protocol.populate_for_edit
-  end
-
-  def save_new_protocol
-    @protocol.save
-    @current_step = 'return_to_service_request'
-    flash[:notice] = "New #{@protocol.type.downcase} created"
-
-    if @service_request
-      @service_request.update_attribute(:protocol_id, @protocol.id) unless @service_request.protocol.present?
-      @service_request.update_attribute(:status, 'draft')
-      @service_request.sub_service_requests.each do |ssr|
-        ssr.update_attribute(:status, 'draft')
-      end
-    end
-  end
-
-  def save_updated_protocol
-    @protocol.save
-    @current_step = 'return_to_service_request'
-    session[:saved_protocol_id] = @protocol.id
-    flash[:notice] = "#{@protocol.type.humanize} updated"
-
-    #Added as a safety net for older SRs
-    if @service_request.status == "first_draft"
-      @service_request.update_attributes(status: "draft")
-    end
   end
 end
