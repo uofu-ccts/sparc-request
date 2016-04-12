@@ -60,6 +60,7 @@ class ProtocolsController < ApplicationController
       @protocol.populate_for_edit
     elsif @current_step == 'user_details' and @protocol.valid?
       protocol_saver.save_new_protocol
+      flash[:notice] = "New #{@protocol.type.downcase} created"
       @current_step = step_setter.set_to_service_request
     else
       @protocol.populate_for_edit
@@ -113,7 +114,8 @@ class ProtocolsController < ApplicationController
       @current_step = step_setter.set_to_user_details
       @protocol.populate_for_edit
     elsif @current_step == 'user_details' and @protocol.valid?
-      protocol_saver.save_updated_protocol
+      session[:saved_protocol_id] = protocol_saver.save_updated_protocol
+      flash[:notice] = "#{@protocol.type.humanize} updated"
       @current_step = step_setter.set_to_service_request
     else
       @protocol.populate_for_edit 
