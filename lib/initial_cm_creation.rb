@@ -122,21 +122,29 @@ def create_identity
 end
 
 def create_catalog_manager identity=nil
-  while identity.nil?
-    system "clear"
-    print_breakline
+  prompt = "> "
+  puts "Please select an Identity to associate:"
+  Identity.all.each do |iden|
+    puts "#{iden.id}. #{iden.first_name} #{iden.last_name} #{iden.email}"
+  end
+  print prompt
+
+  while user_input = gets.chomp # loop while getting user input
+    identity = Identity.find(user_input)
+    if !identity.nil?
+      break
+    end
+    puts "Please nnter ldap uid: "
+    print prompt
+    identity = Identity.find_by_ldap_uid(gets.chomp)
+    if !identity.nil?
+      break
+    end
     puts "Please select an Identity to associate:"
-    print_breakline
     Identity.all.each do |iden|
       puts "#{iden.id}. #{iden.first_name} #{iden.last_name} #{iden.email}"
     end
-    # identity = Identity.find(gets.chomp)
-    # ldap_uid = ask("Enter ldap uid: ")
-    # identity = Identity.find_by_ldap_uid(ldap_uid)
-    # if not identity then
-    #   puts "Identity not found.  Press <Enter>"
-    #   gets
-    # end
+    print prompt
   end
   print_breakline
   puts "Please select an institution to attach this user to:"
@@ -145,11 +153,21 @@ def create_catalog_manager identity=nil
   end
   selected_institution = Institution.find(gets.chomp)
   if selected_institution
-    puts "Associating identity:"
-    print_breakline
-    CatalogManager.create(organization_id: selected_institution.id, identity_id: identity.id)
-    print_breakline
-    puts "Identity has been associated."
+    if CatalogManager.exists?(organization_id: selected_institution.id, identity_id: identity.id)
+      puts "Identity has already been associated"
+    else
+      puts "Associating identity:"
+      print_breakline
+      CatalogManager.create(organization_id: selected_institution.id, identity_id: identity.id)
+      print_breakline
+      puts "Identity has been associated."
+    end
+    puts "Is the user a super user? (y|N) "
+    need_create_superuser = gets.chomp.upcase == 'Y' && !SuperUser.exists?(:identity_id => identity.id, :organization_id => selected_institution.id)
+    if need_create_superuser
+      SuperUser.create(:identity_id => identity.id, :organization_id => selected_institution.id)
+      puts "Super user has been created"
+    end
     gets
     system "clear"
     opening_menu()
