@@ -51,14 +51,16 @@ class ProtocolsController < ApplicationController
 
     
     if @current_step == 'cancel'
-      step_setter.set_to_service_request
+      @current_step = step_setter.set_to_service_request
     elsif @current_step == 'go_back'
-      step_setter.set_to_protocol
+      @current_step = step_setter.set_to_protocol
+      @protocol.populate_for_edit
     elsif @current_step == 'protocol' and @protocol.group_valid? :protocol
-      step_setter.set_to_user_details
+      @current_step = step_setter.set_to_user_details
+      @protocol.populate_for_edit
     elsif @current_step == 'user_details' and @protocol.valid?
       protocol_saver.save_new_protocol
-      step_setter.set_to_service_request
+      @current_step = step_setter.set_to_service_request
     else
       @protocol.populate_for_edit
     end
@@ -101,16 +103,18 @@ class ProtocolsController < ApplicationController
 
     step_setter = StepSetter.new(@protocol, @service_request)
     protocol_saver = ProtocolSaver.new(@protocol, @service_request)
-
+    
     if @current_step == 'cancel'
-      step_setter.set_to_service_request
+      @current_step = step_setter.set_to_service_request
     elsif @current_step == 'go_back'
-      step_setter.set_to_protocol
+      @current_step = step_setter.set_to_protocol
+      @protocol.populate_for_edit
     elsif @current_step == 'protocol' and @protocol.group_valid? :protocol
-      step_setter.set_to_user_details
+      @current_step = step_setter.set_to_user_details
+      @protocol.populate_for_edit
     elsif @current_step == 'user_details' and @protocol.valid?
       protocol_saver.save_updated_protocol
-      step_setter.set_to_service_request
+      @current_step = step_setter.set_to_service_request
     else
       @protocol.populate_for_edit 
     end

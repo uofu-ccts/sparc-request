@@ -10,14 +10,10 @@ class StepSetter
   end
 
   def set_to_protocol
-    @protocol.populate_for_edit
-
     @current_step = 'protocol'
   end
 
   def set_to_user_details
-    @protocol.populate_for_edit
-
     @current_step = 'user_details'
   end
 end

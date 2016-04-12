@@ -5,8 +5,7 @@ RSpec.describe StepSetter, type: :model do
   describe 'set to service request' do
 
     it 'should return the service request step' do
-      identity = create(:identity)
-      protocol = create(:protocol, :without_validations, identity: identity)
+      protocol = create(:protocol, :without_validations)
       service_request = create(:service_request, :without_validations, protocol: protocol)
 
       response = StepSetter.new(protocol, service_request).set_to_service_request
@@ -18,8 +17,7 @@ RSpec.describe StepSetter, type: :model do
   describe 'set to protocol' do
 
     it 'should return the protocol step' do
-      identity = create(:identity)
-      protocol = create(:protocol, :without_validations, identity: identity)
+      protocol = create(:protocol, :without_validations)
       service_request = create(:service_request, :without_validations, protocol: protocol)
 
       response = StepSetter.new(protocol, service_request).set_to_protocol
@@ -31,8 +29,7 @@ RSpec.describe StepSetter, type: :model do
   describe 'set to user details' do
 
     it 'should return the user details step' do
-      identity = create(:identity)
-      protocol = create(:protocol, :without_validations, identity: identity)
+      protocol = create(:protocol, :without_validations)
       service_request = create(:service_request, :without_validations, protocol: protocol)
 
       response = StepSetter.new(protocol, service_request).set_to_user_details
