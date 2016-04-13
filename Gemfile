@@ -52,6 +52,8 @@ gem 'surveyor', :git => 'https://github.com/caboteria/surveyor.git', branch: 'ra
 gem 'therubyracer', '0.10.2', :platforms => :ruby
 gem 'uglifier', '>= 1.0.3'
 gem 'will_paginate'
+gem 'colorize'
+
 
 group :development, :test, :profile do
   gem 'addressable', '~> 2.3.6'
@@ -87,7 +89,6 @@ group :development do
   gem 'railroady'
   gem 'seed_dump'
   gem 'seed-fu', '~> 2.3'
-  gem 'colorize'
   gem 'smarter_csv'
   gem "non-stupid-digest-assets"
 

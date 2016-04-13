@@ -8,7 +8,7 @@ set :repo_url, 'https://github.com/uofu-ccts/sparc-request.git'
 
 # Default branch is :master
 # set :branch, "development"
-set :branch, `git rev-parse --abbrev-ref HEAD`.chomp
+set :branch, ENV['branch'] || ask('Branch: ', nil)
 
 # Default deploy_to directory is /var/www/my_app_name
 set :deploy_to, '/home/vagrant/sparc-request'
