@@ -9,8 +9,6 @@ gem 'axlsx'
 gem 'axlsx_rails'
 gem 'bluecloth'
 gem 'rails-html-sanitizer'
-gem 'capistrano'
-gem 'capistrano-ext'
 gem 'coffee-rails'
 gem 'delayed_job_active_record'
 gem 'devise', '~> 3.5.1'
@@ -44,7 +42,6 @@ gem 'protected_attributes'
 gem 'rails', '4.2.4'
 gem 'redcarpet'
 gem 'rest-client'
-gem 'rvm-capistrano', require: false
 gem 'sass'
 gem 'sass-rails'
 gem 'savon', '~> 2.2.0'
@@ -80,6 +77,20 @@ group :development do
   gem 'highline'
   gem 'spring'
   gem 'spring-commands-rspec'
+  gem 'capistrano', '~> 3.1'
+  gem 'capistrano-bundler', '~> 1.1.2'
+  gem 'rvm1-capistrano3', require: false
+  gem 'capistrano-passenger'
+  gem 'capistrano-rails', '~> 1.1'
+  gem 'capistrano-linked-files'
+  gem 'capistrano-rvm'
+  gem 'railroady'
+  gem 'seed_dump'
+  gem 'seed-fu', '~> 2.3'
+  gem 'colorize'
+  gem 'smarter_csv'
+  gem "non-stupid-digest-assets"
+
 end
 
 group :test do
