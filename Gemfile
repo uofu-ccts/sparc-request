@@ -54,6 +54,11 @@ gem 'uglifier', '>= 1.0.3'
 gem 'will_paginate'
 gem 'colorize'
 
+gem 'railroady'
+gem 'seed_dump'
+gem 'seed-fu', '~> 2.3'
+gem 'smarter_csv'
+gem "non-stupid-digest-assets"
 
 group :development, :test, :profile do
   gem 'addressable', '~> 2.3.6'
@@ -86,12 +91,6 @@ group :development do
   gem 'capistrano-rails', '~> 1.1'
   gem 'capistrano-linked-files'
   gem 'capistrano-rvm'
-  gem 'railroady'
-  gem 'seed_dump'
-  gem 'seed-fu', '~> 2.3'
-  gem 'smarter_csv'
-  gem "non-stupid-digest-assets"
-
 end
 
 group :test do
