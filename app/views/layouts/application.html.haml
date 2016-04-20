@@ -24,7 +24,7 @@
     %meta{:content => "text/html; charset=UTF-8", "http-equiv" => "Content-Type"}/
     %meta{:name => "viewport", :content => "width=device-width, initial-scale=1"}/
     %title= t 'application_title'
-    = stylesheet_link_tag '960', "#{CUSTOM_ASSET_PATH}application", 'jquery-ui', :media => 'all'
+    = stylesheet_link_tag "#{CUSTOM_ASSET_PATH}application", :media => 'all'
     /[if IE]
       = stylesheet_link_tag 'ie'
     /[if gt IE 7]
