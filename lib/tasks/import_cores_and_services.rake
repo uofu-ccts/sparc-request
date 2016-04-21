@@ -8,6 +8,7 @@ class TsortableHash < Hash
  fetch(node).each(&block)
  end
 end
+
 namespace :data do
   desc "Import institutions and services from CSV"
   task :import_institution_and_service, [:dry_run] => :environment do |t, args|
@@ -26,6 +27,30 @@ namespace :data do
       'is_available' => 10,
       'show_in_cwf' => 14
     }
+
+    service_columns = {
+      'id' => 0,
+      'name' => 1,
+      'abbreviation' => 2,
+      'order' => 3,
+      'description' => 4,
+      'is_available' => 5,
+      'service_center_cost' => 6,
+      'cpt_code' => 7,
+      'charge_code' => 8,
+      'revenue_code' => 9,
+      'organization_id' => 10,
+      'send_to_epic' => 14,
+      'revenue_code_range_id' => 15,
+      'one_time_fee' => 16
+    }
+
+    def to_bool(s)
+      return true   if s == true   || s =~ (/(true|t|yes|y|1)$/i)
+      return false  if s == false  || s.blank? || s =~ (/(false|f|no|n|0)$/i)
+      raise ArgumentError.new("invalid value for Boolean: \"#{s}\"")
+    end
+
     def create_institution_from_row(row, columns)
       case row[columns['type']].downcase
       when 'institution'
@@ -89,6 +114,7 @@ namespace :data do
     institutions = Hash.new
     parents = Hash.new
     institutions_created = Hash.new
+    institutions_saved = Hash.new
     CSV.foreach(path, :headers => true) do |row|
       if row[columns['name']] && row[columns['id']] && row[columns['type']]
         puts row[columns['name']]
@@ -117,8 +143,66 @@ namespace :data do
         i.update_attributes({parent_id: sorted[i][0].id})
       end
       i.save! unless args[:dry_run] # saving the newly created institution
+      institutions_saved[i.name] = i # let us save the saved instance for future reference, such as service creation
+    end
+    puts "----------------------------------------------"
+    institutions_saved.each do |key, value|
+      puts "#{key} => #{value.id}"
+    end
+    puts "----------------------------------------------"
+    institutions.each do |key, value|
+      puts "#{key} => #{value}"
+    end
+
+    # import services after importing institutions
+    CSV.foreach(Rails.root.join('doc', 'service.csv'), :headers => true) do |row|
+      if row[service_columns['name']] && row[service_columns['organization_id']]
+        organization_name = institutions[row[service_columns['organization_id']]]
+        saved_organization = institutions_saved[organization_name]
+        if saved_organization.nil?
+          raise "organization id is not valid: #{row.inspect}"
+        end
+        puts "saving service #{row[service_columns['name']]}" unless !args[:dry_run]
+        # let us update the organization_id from the saved institution instance, and then save the service
+        service = Service.where({organization_id: saved_organization.id, name: row[service_columns['name']]}).first_or_create
+        service.update_attributes({
+          'organization_id' => saved_organization.id,
+          'name' => row[service_columns['name']],
+          'abbreviation' => row[service_columns['abbreviation']],
+          'order' => row[service_columns['order']],
+          'description' => row[service_columns['description']],
+          'is_available' => to_bool(row[service_columns['is_available']].strip),
+          'service_center_cost' => row[service_columns['service_center_cost']],
+          'cpt_code' => row[service_columns['cpt_code']],
+          'charge_code' => row[service_columns['charge_code']],
+          'revenue_code' => row[service_columns['revenue_code']],
+          'send_to_epic' => row[service_columns['send_to_epic']],
+          'revenue_code_range_id' => row[service_columns['revenue_code_range_id']],
+          'one_time_fee' => row[service_columns['one_time_fee']]
+          })
+          # set up a default pricing map
+          service.pricing_maps.build({
+            full_rate: 1,
+            federal_rate: 1,
+            corporate_rate: 1,
+            other_rate: 1,
+            member_rate: 1,
+            display_date: Date.today,
+            effective_date: Date.today - 1.days,
+            unit_factor: 1,
+            unit_type: 'Per Extraction',
+            unit_minimum: 0})
+        service.save!
+        puts "saved service #{service.name} => #{service.id}" unless args[:dry_run]
+      elsif !row[service_columns['name']] && !row[service_columns['organization_id']]
+        puts 'empty row, ignored'.blue
+      else
+        raise 'invalid row. row has to have both name, id and type'
+      end
     end
   end
+
+
   desc "Import cores and services from CSV"
   task :import_cores_and_services, [:uid_domain] => :environment do |t, args|
     if args[:uid_domain]
