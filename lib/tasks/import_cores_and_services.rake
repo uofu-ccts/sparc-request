@@ -1,9 +1,129 @@
+require 'colorize'
+require 'tsort'
+class TsortableHash < Hash
+ include TSort
+
+ alias tsort_each_node each_key
+ def tsort_each_child(node, &block)
+ fetch(node).each(&block)
+ end
+end
 namespace :data do
+  desc "Import institutions and services from CSV"
+  task :import_institution_and_service, [:dry_run] => :environment do |t, args|
+    path = Rails.root.join('doc', 'institution.csv')
+    columns = {
+      'id' => 0,
+      'type' => 1,
+      'name' => 2,
+      'order' => 3,
+      'css_class' => 4,
+      'description' => 5,
+      'parent_id' => 6,
+      'abbreviation' => 7,
+      'ack_language' => 8,
+      'process_ssrs' => 9,
+      'is_available' => 10,
+      'show_in_cwf' => 14
+    }
+    def create_institution_from_row(row, columns)
+      case row[columns['type']].downcase
+      when 'institution'
+        institution =  Institution.where({:name => row[columns['name']]}).first_or_create
+        institution.update_attributes({
+          'order' => row[columns['order']],
+          'css_class' => row[columns['css_class']],
+          'description' => row[columns['description']],
+          'parent_id' => row[columns['parent_id']],
+          'abbreviation' => row[columns['abbreviation']],
+          'ack_language' => row[columns['ack_language']],
+          'process_ssrs' => row[columns['process_ssrs']],
+          'is_available' => row[columns['is_available']],
+          'show_in_cwf' => row[columns['show_in_cwf']]
+          })
+        institution
+      when 'program'
+        program =  Program.where({:name => row[columns['name']]}).first_or_create
+        program.update_attributes({
+          'order' => row[columns['order']],
+          'css_class' => row[columns['css_class']],
+          'description' => row[columns['description']],
+          'parent_id' => row[columns['parent_id']],
+          'abbreviation' => row[columns['abbreviation']],
+          'ack_language' => row[columns['ack_language']],
+          'process_ssrs' => row[columns['process_ssrs']],
+          'is_available' => row[columns['is_available']],
+          'show_in_cwf' => row[columns['show_in_cwf']]
+          })
+        program
+      when 'provider'
+        provider =  Provider.where({:name => row[columns['name']]}).first_or_create
+        provider.update_attributes({
+          'order' => row[columns['order']],
+          'css_class' => row[columns['css_class']],
+          'description' => row[columns['description']],
+          'parent_id' => row[columns['parent_id']],
+          'abbreviation' => row[columns['abbreviation']],
+          'ack_language' => row[columns['ack_language']],
+          'process_ssrs' => row[columns['process_ssrs']],
+          'is_available' => row[columns['is_available']],
+          'show_in_cwf' => row[columns['show_in_cwf']]
+          })
+        provider
+      when 'core'
+        core =  Core.where({:name => row[columns['name']]}).first_or_create
+        core.update_attributes({
+          'order' => row[columns['order']],
+          'css_class' => row[columns['css_class']],
+          'description' => row[columns['description']],
+          'parent_id' => row[columns['parent_id']],
+          'abbreviation' => row[columns['abbreviation']],
+          'ack_language' => row[columns['ack_language']],
+          'process_ssrs' => row[columns['process_ssrs']],
+          'is_available' => row[columns['is_available']],
+          'show_in_cwf' => row[columns['show_in_cwf']]
+          })
+        core
+      end
+    end
+    institutions = Hash.new
+    parents = Hash.new
+    institutions_created = Hash.new
+    CSV.foreach(path, :headers => true) do |row|
+      if row[columns['name']] && row[columns['id']] && row[columns['type']]
+        puts row[columns['name']]
+        institutions[row[columns['id']]] = row[columns['name']]
+        parents[row[columns['name']]] = row[columns['parent_id']]
+        institutions_created[row[columns['name']]] = create_institution_from_row(row, columns)
+      elsif !row[columns['name']] && !row[columns['id']] && !row[columns['type']]
+        puts 'empty row, ignored'.blue
+      else
+        raise 'invalid row. row has to have both name, id and type'
+      end
+    end
+    sorted = TsortableHash.new {|hsh, key| hsh[key] = [] }
+    institutions_created.each do |key, item|
+      parent_id = parents[key]
+      if parent_id
+        parent = institutions_created[institutions[parent_id]]
+        sorted[item] << parent
+      end
+      names = sorted[item].map { |i| i.name}.join(' ')
+      puts "#{item.name} => [ #{names} ]" unless !args[:dry_run]
+    end
+    sorted.tsort.each do |i|
+      puts "saving #{i.name}".green unless !args[:dry_run]
+      if !sorted[i].empty?
+        i.update_attributes({parent_id: sorted[i][0].id})
+      end
+      i.save! unless args[:dry_run] # saving the newly created institution
+    end
+  end
   desc "Import cores and services from CSV"
   task :import_cores_and_services, [:uid_domain] => :environment do |t, args|
     if args[:uid_domain]
       CSV.foreach("services.csv", :headers => true) do |row|
-        # Institution	Provider	Program	Administration	Service	Service Description (1 sentence to a few paragraphs)	Order (order of service display)	Hide from users? (Y/N)	Clinical Work Fullfillment (Y/N)	Nexus (Y/N)	Display Date Pricing	Effective Date Pricing 	Rate (full)	PP or OT? PP= Per Patient, OT=One Time	PP Quantity Type	PP Units Factor	PP Quant Min	OT Quantity Type	OT Quant Min	OT Unit Type	OT Unit Factor	OT Unit Max	Related Service?	Dependancy (Name of service exactly)	Super User (please provide hawkid(s))	Service Provider(s)	Catalog Manager(s) Rights (please provide hawkid)	Submission Email (please provide email address(s))  
+        # Institution	Provider	Program	Administration	Service	Service Description (1 sentence to a few paragraphs)	Order (order of service display)	Hide from users? (Y/N)	Clinical Work Fullfillment (Y/N)	Nexus (Y/N)	Display Date Pricing	Effective Date Pricing 	Rate (full)	PP or OT? PP= Per Patient, OT=One Time	PP Quantity Type	PP Units Factor	PP Quant Min	OT Quantity Type	OT Quant Min	OT Unit Type	OT Unit Factor	OT Unit Max	Related Service?	Dependancy (Name of service exactly)	Super User (please provide hawkid(s))	Service Provider(s)	Catalog Manager(s) Rights (please provide hawkid)	Submission Email (please provide email address(s))
         if row[0] and row[1] and row[2] and row[4]
           institution = Institution.where(:name => row[0]).first
           if institution
@@ -19,7 +139,7 @@ namespace :data do
                     if core
                       service = core.services.where(:name => row[4]).first
                       if service
-                        puts "Service["+row[4]+"] already exists in Core["+row[3].to_s+"] for Institution[" + row[0].to_s + "], Provider[" + row[1].to_s + "], and Program[" + row[2].to_s + "]"         
+                        puts "Service["+row[4]+"] already exists in Core["+row[3].to_s+"] for Institution[" + row[0].to_s + "], Provider[" + row[1].to_s + "], and Program[" + row[2].to_s + "]"
                       else
                         organization_id = core.id
                         # create below...
@@ -31,77 +151,77 @@ namespace :data do
                                           :order => 1,
                                         #  :organization_id => organization_id,
                                           :is_available => (row[7] == 'N' ? true : false))
-                      core.tag_list.add("clinical work fulfillment") if row[8] == 'Y' 
-                      core.tag_list.add("ctrc") if row[9] == 'Y'                    
+                      core.tag_list.add("clinical work fulfillment") if row[8] == 'Y'
+                      core.tag_list.add("ctrc") if row[9] == 'Y'
                       core.save
-                      puts "Inserted: Core["+row[3].to_s+"] for Institution[" + row[0].to_s + "], Provider[" + row[1].to_s + "], and Program[" + row[2].to_s + "]"         
+                      puts "Inserted: Core["+row[3].to_s+"] for Institution[" + row[0].to_s + "], Provider[" + row[1].to_s + "], and Program[" + row[2].to_s + "]"
                       if row[24]
                         uids = row[24].split(',')
-                        uids.each { |uid| 
+                        uids.each { |uid|
                           full_uid = (uid << args[:uid_domain]).strip
                           super_user = core.super_users.new
                           super_user.identity = Identity.where(:ldap_uid => full_uid).first
                           raise "Error: super user ["+full_uid+"] not found in database" unless super_user.identity
                           if super_user.save
-                            puts "Inserted: Super User["+full_uid+"] for Core["+row[3].to_s+"] "      
+                            puts "Inserted: Super User["+full_uid+"] for Core["+row[3].to_s+"] "
                           else
-                            puts "NOT Inserted: Super User["+full_uid+"] for Core["+row[3].to_s+"] "      
-                          end   
-                        }   
+                            puts "NOT Inserted: Super User["+full_uid+"] for Core["+row[3].to_s+"] "
+                          end
+                        }
                       end
-                      
+
                       if row[25]
                         uids = row[25].split(',')
-                        uids.each { |uid| 
+                        uids.each { |uid|
                           full_uid = (uid << args[:uid_domain]).strip
                           service_provider = core.service_providers.new
                           service_provider.identity = Identity.where(:ldap_uid => full_uid).first
                           raise "Error: service provider ["+full_uid+"] not found in database" unless service_provider.identity
                           if service_provider.save
-                            puts "Inserted: Service Provider["+full_uid+"] for Core["+row[3].to_s+"] "    
+                            puts "Inserted: Service Provider["+full_uid+"] for Core["+row[3].to_s+"] "
                           else
-                            puts "NOT Inserted: Service Provider["+full_uid+"] for Core["+row[3].to_s+"] "    
-                          end     
-                        }   
+                            puts "NOT Inserted: Service Provider["+full_uid+"] for Core["+row[3].to_s+"] "
+                          end
+                        }
                       else
-                        puts "Warning: No Service Providers for Core["+row[3].to_s+"] " 
-                      end   
-                      
+                        puts "Warning: No Service Providers for Core["+row[3].to_s+"] "
+                      end
+
                       if row[26]
                         uids = row[26].split(',')
-                        uids.each { |uid| 
+                        uids.each { |uid|
                           full_uid = (uid << args[:uid_domain]).strip
                           catalog_manager = core.catalog_managers.new
                           catalog_manager.identity = Identity.where(:ldap_uid => full_uid).first
                           raise "Error: catalog_manager ["+full_uid+"] not found in database" unless catalog_manager.identity
                           if catalog_manager.save
-                            puts "Inserted: Catalog Manager["+full_uid+"] for Core["+row[3].to_s+"] "   
+                            puts "Inserted: Catalog Manager["+full_uid+"] for Core["+row[3].to_s+"] "
                           else
-                            puts "NOT Inserted: Catalog Manager["+full_uid+"] for Core["+row[3].to_s+"] "   
-                          end      
-                        } 
+                            puts "NOT Inserted: Catalog Manager["+full_uid+"] for Core["+row[3].to_s+"] "
+                          end
+                        }
                       else
-                        puts "Warning: No Catalog Managers for Core["+row[3].to_s+"] " 
+                        puts "Warning: No Catalog Managers for Core["+row[3].to_s+"] "
                       end
-                      
+
                       if row[27]
                         emails = row[27].split(',')
-                        emails.each { |email| 
+                        emails.each { |email|
                           submission_email = core.submission_emails.new
                           submission_email.email = email.strip
                           if submission_email.save
-                            puts "Inserted: Submission Email["+submission_email.email+"] for Core["+row[3].to_s+"] "         
+                            puts "Inserted: Submission Email["+submission_email.email+"] for Core["+row[3].to_s+"] "
                           else
-                            puts "NOT Inserted: Submission Email["+submission_email.email+"] for Core["+row[3].to_s+"] "         
+                            puts "NOT Inserted: Submission Email["+submission_email.email+"] for Core["+row[3].to_s+"] "
                           end
-                        }     
-                      end            
+                        }
+                      end
                       organization_id = core.id
                     end
                   else
                     service = program.services.where(:name => row[4]).first
                     if service
-                      puts "Service["+row[4]+"] already exists in Program[" + row[2].to_s + "] for Institution[" + row[0].to_s + "], Provider[" + row[1].to_s + "]"      
+                      puts "Service["+row[4]+"] already exists in Program[" + row[2].to_s + "] for Institution[" + row[0].to_s + "], Provider[" + row[1].to_s + "]"
                     else
                       # create below using program.id as organization_id...
                     end
@@ -115,12 +235,12 @@ namespace :data do
                                         :order => row[6],
                                         :organization_id => organization_id,
                                         :is_available => (row[7] == 'N' ? true : false),
-                                        :one_time_fee => is_one_time_fee)         
-      
+                                        :one_time_fee => is_one_time_fee)
+
                     pricing_map = service.pricing_maps.build(:display_date => Date.strptime(row[10], "%m/%d/%y"),
                                                           :effective_date => Date.strptime(row[11], "%m/%d/%y"),
                                                           :full_rate => Service.dollars_to_cents(row[12].to_s.strip.gsub("$", "").gsub(",", "")),
-                                                          :unit_factor => (is_one_time_fee ? row[20] : row[15]), 
+                                                          :unit_factor => (is_one_time_fee ? row[20] : row[15]),
                                                           # one time fee specific fields
                                                           :units_per_qty_max => (is_one_time_fee ? row[21] : nil),
                                                           :otf_unit_type => (is_one_time_fee ? row[19] : nil), # one time fee unit type
@@ -148,29 +268,29 @@ namespace :data do
                         puts "Inserted: Pricing Map for Service[" + row[4].to_s + "]"
                       else
                         puts "NOT Inserted: Pricing Map for Service[" + row[4].to_s + "]: "+ pricing_map.errors.full_messages.inspect
-                      end  
+                      end
                     else
                       puts "NOT Inserted: Service[" + row[4].to_s + "] for Institution[" + row[0].to_s + "], Provider[" + row[1].to_s + "], and Program[" + row[2].to_s + "]: "+ service.errors.full_messages.inspect + pricing_map.errors.full_messages.inspect
                     end
                   end
                 else
-                  puts "Error: Institution[" + row[0].to_s + "], Provider[" + row[1].to_s + "], and Program[" + row[2].to_s + "]  is missing an active pricing setup"         
+                  puts "Error: Institution[" + row[0].to_s + "], Provider[" + row[1].to_s + "], and Program[" + row[2].to_s + "]  is missing an active pricing setup"
                 end
               else
-                puts "Error: Institution[" + row[0].to_s + "], Provider[" + row[1].to_s + "], and Program[" + row[2].to_s + "]  NOT found"         
+                puts "Error: Institution[" + row[0].to_s + "], Provider[" + row[1].to_s + "], and Program[" + row[2].to_s + "]  NOT found"
               end
             else
-              puts "Error: Institution[" + row[0].to_s + "], Provider[" + row[1].to_s + "] NOT found, and Program[" + row[2].to_s + "]"         
+              puts "Error: Institution[" + row[0].to_s + "], Provider[" + row[1].to_s + "] NOT found, and Program[" + row[2].to_s + "]"
             end
           else
-            puts "Error: Institution[" + row[0].to_s + "] NOT found, Provider[" + row[1].to_s + "], and Program[" + row[2].to_s + "]"         
+            puts "Error: Institution[" + row[0].to_s + "] NOT found, Provider[" + row[1].to_s + "], and Program[" + row[2].to_s + "]"
           end
         else
-          puts "Error: Institution[" + row[0].to_s + "], Provider[" + row[1].to_s + "], Program[" + row[2].to_s + "], and Service[" + row[4].to_s + "] must all be specified"         
+          puts "Error: Institution[" + row[0].to_s + "], Provider[" + row[1].to_s + "], Program[" + row[2].to_s + "], and Service[" + row[4].to_s + "] must all be specified"
         end
       end
     else
       puts "Error UID domain must be passed in as an argument"
-    end    
+    end
   end
 end
