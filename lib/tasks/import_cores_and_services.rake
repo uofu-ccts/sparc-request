@@ -67,7 +67,7 @@ namespace :data do
         institution =  Institution.where({:name => row[columns['name']]}).first_or_create
         institution.update_attributes({
           'order' => row[columns['order']],
-          'css_class' => row[columns['css_class']] || 'institution',
+          'css_class' => row[columns['css_class']] || '',
           'description' => row[columns['description']],
           'parent_id' => row[columns['parent_id']],
           'abbreviation' => row[columns['abbreviation']],
@@ -81,7 +81,7 @@ namespace :data do
         program =  Program.where({:name => row[columns['name']]}).first_or_create
         program.update_attributes({
           'order' => row[columns['order']],
-          'css_class' => row[columns['css_class']] || 'program',
+          'css_class' => row[columns['css_class']] || '',
           'description' => row[columns['description']],
           'parent_id' => row[columns['parent_id']],
           'abbreviation' => row[columns['abbreviation']],
@@ -95,7 +95,7 @@ namespace :data do
         provider =  Provider.where({:name => row[columns['name']]}).first_or_create
         provider.update_attributes({
           'order' => row[columns['order']],
-          'css_class' => row[columns['css_class']] || 'provider',
+          'css_class' => row[columns['css_class']] || '',
           'description' => row[columns['description']],
           'parent_id' => row[columns['parent_id']],
           'abbreviation' => row[columns['abbreviation']],
@@ -109,7 +109,7 @@ namespace :data do
         core =  Core.where({:name => row[columns['name']]}).first_or_create
         core.update_attributes({
           'order' => row[columns['order']],
-          'css_class' => row[columns['css_class']] || 'core',
+          'css_class' => row[columns['css_class']] || '',
           'description' => row[columns['description']],
           'parent_id' => row[columns['parent_id']],
           'abbreviation' => row[columns['abbreviation']],
