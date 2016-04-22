@@ -11,7 +11,7 @@ end
 
 namespace :data do
   desc "Import institutions and services from CSV"
-  task :import_institution_and_service, [:dry_run] => :environment do |t, args|
+  task :import_institution_and_service, [:dry_run, :ldap_uid] => :environment do |t, args|
     path = Rails.root.join('doc', 'institution.csv')
     columns = {
       'id' => 0,
@@ -52,8 +52,11 @@ namespace :data do
     end
 
     def get_identity
-      STDOUT.puts 'Enter the username for the user who will manage the created catalog:'
-      username = STDIN.gets.strip
+      username = args[:ldap_uid]
+      if !username
+        STDOUT.puts 'Enter the username for the user who will manage the created catalog:'
+        username = STDIN.gets.strip
+      end
       identity = Identity.where({ldap_uid: username}).first
       if identity.nil?
         identity = get_identity

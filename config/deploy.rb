@@ -279,7 +279,11 @@ namespace :setup do
     on roles(:app) do
       within "#{current_path}" do
         with rails_env: fetch(:rails_env) do
-          execute :bundle, "exec rake data:import_institution_and_service"
+          set :catalog_manager, ask('Enter the username as the catalog manager:', nil)
+          ldap_uid = fetch(:catalog_manager).strip
+          if !ldap_uid.empty?
+            execute :bundle, "exec rake data:import_institution_and_service['#{ldap_uid}']"
+          end
         end
       end
     end
