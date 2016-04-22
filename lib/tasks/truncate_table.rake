@@ -1,6 +1,7 @@
+require 'colorize'
 namespace :db do
   desc "Truncate all existing data"
-  task :truncate => :environment do
+  task :truncate, [:table_name] => :environment do |t, args|
     def prompt(*args)
       print(*args)
       STDIN.gets.strip
@@ -16,12 +17,13 @@ namespace :db do
     ActiveRecord::Base.establish_connection
     case config["adapter"]
     when "mysql", "postgresql", 'mysql2'
-      all = prompt 'truncate all tables? (yes/no)'
-      if all.downcase == 'yes' || all.downcase == 'y'
+      if args[:table_name]
+        puts "TRUNCATE #{args[:table_name]}".red
+        ActiveRecord::Base.connection.execute("TRUNCATE #{args[:table_name]}")
+      else
+        puts "truncate all tables. All data will be lost."
         truncate_all
       end
-      table_name = prompt 'truncate one table. enter the table name:'
-      ActiveRecord::Base.connection.execute("TRUNCATE #{table_name}")
     when "sqlite", "sqlite3"
       ActiveRecord::Base.connection.tables.each do |table|
         ActiveRecord::Base.connection.execute("DELETE FROM #{table}")

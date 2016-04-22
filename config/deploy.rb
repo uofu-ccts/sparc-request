@@ -239,10 +239,30 @@ namespace :setup do
 
   desc "truncate tables."
   task :truncate do
+    require 'colorize'
     on roles(:app) do
       within "#{current_path}" do
         with rails_env: fetch(:rails_env) do
-          execute :bundle, "exec rake db:truncate"
+          set :all, ask('Truncate all? (yes/no):', 'no')
+          if fetch(:all)
+            puts "truncate all table. all data will be lost. please confirm".red
+            ask(:confirm, false)
+            if fetch(:confirm)
+              execute :bundle, "exec rake db:truncate"
+            end
+
+          else
+            set :table_name, ask('Enter the table to truncate:', nil)
+            table_name = fetch(:table_name).strip
+            if !table_name.blank?
+              puts "exec rake db:truncate['#{table_name}']. please confirm".red
+              ask(:confirm, false)
+              if fetech(:confirm)
+                execute :bundle, "exec rake db:truncate['#{table_name}']"
+              end
+
+            end
+          end
         end
       end
     end
