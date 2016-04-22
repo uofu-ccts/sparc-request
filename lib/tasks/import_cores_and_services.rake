@@ -12,6 +12,10 @@ end
 namespace :data do
   desc "Import institutions and services from CSV"
   task :import_institution_and_service, [:dry_run, :ldap_uid] => :environment do |t, args|
+    def is_dry_run
+      dry_run = args[:dry_run].strip
+      dry_run && (dry_run.downcase == 'yes' || dry_run.downcase == 'y')
+    end
     path = Rails.root.join('doc', 'institution.csv')
     columns = {
       'id' => 0,
@@ -51,8 +55,7 @@ namespace :data do
       raise ArgumentError.new("invalid value for Boolean: \"#{s}\"")
     end
 
-    def get_identity
-      username = args[:ldap_uid]
+    def get_identity(username)
       if !username
         STDOUT.puts 'Enter the username for the user who will manage the created catalog:'
         username = STDIN.gets.strip
@@ -148,19 +151,19 @@ namespace :data do
         sorted[item] << parent
       end
       names = sorted[item].map { |i| i.name}.join(' ')
-      puts "#{item.name} => [ #{names} ]" unless !args[:dry_run]
+      puts "#{item.name} => [ #{names} ]" unless !is_dry_run
     end
     sorted.tsort.each do |i|
-      puts "saving #{i.name}".green unless !args[:dry_run]
+      puts "saving #{i.name}".green unless !is_dry_run
       if !sorted[i].empty?
         i.update_attributes({parent_id: sorted[i][0].id})
       end
-      i.save! unless args[:dry_run] # saving the newly created institution
+      i.save! unless is_dry_run # saving the newly created institution
       if i.type.downcase == 'institution' # if an institution is created, ask the use to input the catalog manager
-        identity = get_identity
+        identity = get_identity(args[:ldap_uid])
         catalog_manger = CatalogManager.where({identity_id: identity.id, organization_id: i.id}).first_or_create
         catalog_manger.update_attributes({edit_historic_data: true})
-        catalog_manger.save!() unless args[:dry_run]
+        catalog_manger.save!() unless is_dry_run
       end
       institutions_saved[i.name] = i # let us save the saved instance for future reference, such as service creation
     end
@@ -181,7 +184,7 @@ namespace :data do
         if saved_organization.nil?
           raise "organization id is not valid: #{row.inspect}"
         end
-        puts "saving service #{row[service_columns['name']]}" unless !args[:dry_run]
+        puts "saving service #{row[service_columns['name']]}" unless !is_dry_run
         # let us update the organization_id from the saved institution instance, and then save the service
         service = Service.where({organization_id: saved_organization.id, name: row[service_columns['name']]}).first_or_create
         service.update_attributes({
@@ -212,7 +215,7 @@ namespace :data do
             unit_type: 'Per Extraction',
             unit_minimum: 0})
         service.save!
-        puts "saved service #{service.name} => #{service.id}" unless args[:dry_run]
+        puts "saved service #{service.name} => #{service.id}" unless is_dry_run
       elsif !row[service_columns['name']] && !row[service_columns['organization_id']]
         puts 'empty row, ignored'.blue
       else
