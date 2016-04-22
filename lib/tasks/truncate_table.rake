@@ -15,7 +15,7 @@ namespace :db do
     config = ActiveRecord::Base.configurations[::Rails.env]
     ActiveRecord::Base.establish_connection
     case config["adapter"]
-    when "mysql", "postgresql"
+    when "mysql", "postgresql", 'mysql2'
       all = prompt 'truncate all tables? (yes/no)'
       if all.downcase == 'yes' || all.downcase == 'y'
         truncate_all
