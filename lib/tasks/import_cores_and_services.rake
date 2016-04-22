@@ -62,7 +62,7 @@ namespace :data do
       end
       identity = Identity.where({ldap_uid: username}).first
       if identity.nil?
-        identity = get_identity
+        identity = get_identity nil
       end
       identity
     end
@@ -164,6 +164,30 @@ namespace :data do
         catalog_manger = CatalogManager.where({identity_id: identity.id, organization_id: i.id}).first_or_create
         catalog_manger.update_attributes({edit_historic_data: true})
         catalog_manger.save!() unless is_dry_run
+      end
+
+      if i.type.downcase == 'provider' # setup pricing setups
+        i.build_subsidy_map
+        unless PricingSetup.exists?(organization_id: i.id)
+          default = {
+            :organization_id => i.id,
+            :display_date => Date.today,
+            :effective_date => Date.today - 1.days,
+            :federal => 100,
+            :corporate => 100,
+            :other => 100,
+            :member => 100,
+            :charge_master => false,
+            :college_rate_type => 'full',
+            :federal_rate_type => 'full',
+            :industry_rate_type => 'full',
+            :investigator_rate_type => 'full',
+            :internal_rate_type => 'full',
+            :foundation_rate_type => 'full'
+          }
+          i.pricing_setups.create! default
+        end
+        i.save!
       end
       institutions_saved[i.name] = i # let us save the saved instance for future reference, such as service creation
     end
