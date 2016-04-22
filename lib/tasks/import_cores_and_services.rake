@@ -51,6 +51,16 @@ namespace :data do
       raise ArgumentError.new("invalid value for Boolean: \"#{s}\"")
     end
 
+    def get_identity
+      STDOUT.puts 'Enter the username for the user who will manage the created catalog:'
+      username = STDIN.gets.strip
+      identity = Identity.where({ldap_uid: username}).first
+      if identity.nil?
+        identity = get_identity
+      end
+      identity
+    end
+
     def create_institution_from_row(row, columns)
       case row[columns['type']].downcase
       when 'institution'
@@ -143,6 +153,12 @@ namespace :data do
         i.update_attributes({parent_id: sorted[i][0].id})
       end
       i.save! unless args[:dry_run] # saving the newly created institution
+      if i.type.downcase == 'institution' # if an institution is created, ask the use to input the catalog manager
+        identity = get_identity
+        catalog_manger = CatalogManager.where({identity_id: identity.id, organization_id: i.id}).first_or_create
+        catalog_manger.update_attributes({edit_historic_data: true})
+        catalog_manger.save!() unless args[:dry_run]
+      end
       institutions_saved[i.name] = i # let us save the saved instance for future reference, such as service creation
     end
     puts "----------------------------------------------"
