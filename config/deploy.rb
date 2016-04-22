@@ -237,6 +237,28 @@ namespace :setup do
     end
   end
 
+  desc "truncate tables."
+  task :truncate do
+    on roles(:app) do
+      within "#{current_path}" do
+        with rails_env: fetch(:rails_env) do
+          execute :bundle, "exec rake db:truncate"
+        end
+      end
+    end
+  end
+
+  desc 'import catalogs and services'
+  task :import_catalog do
+    on roles(:app) do
+      within "#{current_path}" do
+        with rails_env: fetch(:rails_env) do
+          execute :bundle, "exec rake data:import_institution_and_service"
+        end
+      end
+    end
+  end
+
   desc "Symlinks config files for Nginx and Unicorn."
   task :symlink_vhost do
     on roles(:root) do
