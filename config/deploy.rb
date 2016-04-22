@@ -260,7 +260,7 @@ namespace :setup do
           else
             set :table_name, ask('Enter the table to truncate:', nil)
             table_name = fetch(:table_name).strip
-            if !table_name.blank?
+            if !table_name.empty?
               puts "exec rake db:truncate['#{table_name}']. please confirm".red
               confirm
               if is_confirmed
