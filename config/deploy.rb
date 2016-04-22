@@ -240,14 +240,20 @@ namespace :setup do
   desc "truncate tables."
   task :truncate do
     require 'colorize'
+    def confirm
+      set :confirm, ask('Confirm? (yes/no):', 'no')
+    end
+    def is_confirmed
+      fetch(:confirm).downcase == 'yes' || fetch(:confirm).downcase == 'y'
+    end
     on roles(:app) do
       within "#{current_path}" do
         with rails_env: fetch(:rails_env) do
           set :all, ask('Truncate all? (yes/no):', 'no')
-          if fetch(:all)
+          if fetch(:all).downcase == 'yes' || fetch(:all).downcase == 'y'
             puts "truncate all table. all data will be lost. please confirm".red
-            ask(:confirm, false)
-            if fetch(:confirm)
+            confirm
+            if is_confirmed
               execute :bundle, "exec rake db:truncate"
             end
 
@@ -256,8 +262,8 @@ namespace :setup do
             table_name = fetch(:table_name).strip
             if !table_name.blank?
               puts "exec rake db:truncate['#{table_name}']. please confirm".red
-              ask(:confirm, false)
-              if fetech(:confirm)
+              confirm
+              if is_confirmed
                 execute :bundle, "exec rake db:truncate['#{table_name}']"
               end
 
