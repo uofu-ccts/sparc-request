@@ -282,7 +282,7 @@ namespace :setup do
           set :catalog_manager, ask('Enter the username as the catalog manager:', nil)
           ldap_uid = fetch(:catalog_manager).strip
           if !ldap_uid.empty?
-            execute :bundle, "exec rake data:import_institution_and_service[false, #{ldap_uid}]"
+            execute :bundle, "exec rake data:import_institution_and_service['#{ldap_uid}']"
           end
         end
       end
