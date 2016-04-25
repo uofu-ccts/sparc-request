@@ -107,3 +107,5 @@ end
 group :profile do
   gem 'ruby-prof'
 end
+
+gem 'whenever', :require => false

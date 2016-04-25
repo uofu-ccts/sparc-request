@@ -47,6 +47,9 @@ set :deploy_via, :remote_cache
 # set the locations that we will look for changed assets to determine whether to precompile
 set :assets_dependencies, %w(app/assets lib/assets vendor/assets Gemfile config/routes.rb themes/assets)
 
+# to namespace the crontab entries by application and stage
+set :whenever_identifier, ->{ "#{fetch(:application)}_#{fetch(:stage)}" }
+
 class PrecompileRequired < StandardError; end
 
 namespace :deploy do
