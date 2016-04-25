@@ -170,7 +170,7 @@ namespace :mysql do
   task :dump do
     on roles("db") do
       execute "cd #{current_path} && " +
-      "rake RAILS_ENV=#{fetch(:rails_env)} mysql:dump --trace"
+      "bundle exec rake RAILS_ENV=#{fetch(:rails_env)} mysql:dump --trace"
     end
   end
 
