@@ -204,6 +204,18 @@ end
 
 namespace :setup do
 
+  desc "backup all configuration fiels"
+  task :backup_config do
+    on roles(:app) do
+      within "#{current_path}" do
+        with rails_env: fetch(:rails_env) do
+          execute :bundle, "exec rake backup:config"
+          download! "#{current_path}/tmp/config_yml.zip", "tmp/#{rails_env}_config_yml.zip"
+        end
+      end
+    end
+  end
+
   desc "Upload database.yml file."
   task :upload_yml do
     on roles(:app) do

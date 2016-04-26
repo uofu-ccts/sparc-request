@@ -533,6 +533,7 @@ DEPENDENCIES
   rspec-activemodel-mocks
   rspec-rails (~> 3.3.3)
   ruby-prof
+  rubyzip
   rvm1-capistrano3
   sass
   sass-rails

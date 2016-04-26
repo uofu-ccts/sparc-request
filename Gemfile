@@ -54,6 +54,8 @@ gem 'uglifier', '>= 1.0.3'
 gem 'will_paginate'
 gem 'colorize'
 
+gem 'rubyzip'
+
 gem 'railroady'
 gem 'seed_dump'
 gem 'seed-fu', '~> 2.3'
