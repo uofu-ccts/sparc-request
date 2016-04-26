@@ -12,7 +12,7 @@ namespace :backup do
       Dir[Rails.root.join('config', '*.yml')].each do |f|
         #Make a one line info
         puts "#{f}: #{File.size(f)/1024}KB".green
-        zipfile.add(File.basename(f), f)
+        zipfile.add(File.basename(f), File.realpath(f))
       end
     end
 
