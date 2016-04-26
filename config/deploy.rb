@@ -210,7 +210,7 @@ namespace :setup do
       within "#{current_path}" do
         with rails_env: fetch(:rails_env) do
           execute :bundle, "exec rake backup:config"
-          download! "#{current_path}/tmp/config_yml.zip", "tmp/#{rails_env}_config_yml.zip"
+          download! "#{current_path}/tmp/config_yml.zip", "tmp/#{fetch(:rails_env)}_config_yml.zip"
         end
       end
     end
