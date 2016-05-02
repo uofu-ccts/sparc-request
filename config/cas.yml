@@ -13,7 +13,7 @@ test:
   debug: true
 
 production:
-  url: 'https://test.go.utah.edu'
+  url: 'https://go.utah.edu'
   login_url: '/cas/login'
   service_validate_url: '/cas/serviceValidate'
   callback_url: '/identities/auth/cas/callback'
