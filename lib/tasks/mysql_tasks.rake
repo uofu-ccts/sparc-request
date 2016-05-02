@@ -33,6 +33,7 @@ namespace :mysql do
   task :load_from_production_dump do
     require_environment('development')
     puts 'Loading from production dump'
+    puts "#{sh_mysql(database_config)} < tmp/production_data.sql"
     `#{sh_mysql(database_config)} < tmp/production_data.sql`
     puts 'Loaded from production dump'
   end
@@ -54,7 +55,7 @@ namespace :mysql do
   def connection_options(config)
     options = ''
     options << " -u #{config['username']}" if config['username']
-    options << " -p#{config['password']}"  if config['password']
+    options << " -p'#{config['password']}'"  if config['password']
     options << " -h #{config['host']}"     if config['host']
     options << " -P #{config['port']}"     if config['port']
     options << " #{config['database']}"    if config['database']
