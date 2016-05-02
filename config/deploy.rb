@@ -181,6 +181,19 @@ namespace :mysql do
     end
   end
 
+  desc 'Upload mysql statements and import them'
+  task :upload_and_import do
+    on roles(:app) do
+      within "#{current_path}" do
+        with rails_env: fetch(:rails_env) do
+          upload! StringIO.new(File.read("tmp/#{fetch(:rails_env)}_data.sql.gz")), "#{current_path}/tmp/production_data.sql.gz"
+          execute "gzip -d #{current_path}/tmp/production_data.sql.gz"
+          execute :bundle, "exec rake mysql:load_from_production_dump --trace"
+        end
+      end
+    end
+  end
+
   desc 'Downloads db/production_data.sql from production server to local'
   task :download_dump do
     on roles(:db) do
