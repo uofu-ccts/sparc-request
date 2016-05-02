@@ -187,7 +187,7 @@ namespace :mysql do
       within "#{current_path}" do
         with rails_env: fetch(:rails_env) do
           upload! StringIO.new(File.read("tmp/#{fetch(:rails_env)}_data.sql.gz")), "#{current_path}/tmp/production_data.sql.gz"
-          execute "gzip -d #{current_path}/tmp/production_data.sql.gz"
+          execute "gzip -d -f #{current_path}/tmp/production_data.sql.gz"
           execute :bundle, "exec rake mysql:load_from_production_dump --trace"
         end
       end
