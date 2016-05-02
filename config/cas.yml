@@ -1,0 +1,20 @@
+development:
+  url: 'https://test.go.utah.edu'
+  login_url: '/cas/login'
+  service_validate_url: '/cas/serviceValidate'
+  callback_url: '/identities/auth/cas/callback'
+  debug: true
+
+test:
+  url: 'https://test.go.utah.edu'
+  login_url: '/cas/login'
+  service_validate_url: '/cas/serviceValidate'
+  callback_url: '/identities/auth/cas/callback'
+  debug: true
+
+production:
+  url: 'https://test.go.utah.edu'
+  login_url: '/cas/login'
+  service_validate_url: '/cas/serviceValidate'
+  callback_url: '/identities/auth/cas/callback'
+  debug: true
