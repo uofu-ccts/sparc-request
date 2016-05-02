@@ -171,9 +171,13 @@ end
 namespace :mysql do
   desc 'Dump the production database to db/production_data.sql'
   task :dump do
-    on roles("db") do
-      execute "cd #{current_path} && " +
-      "bundle exec rake RAILS_ENV=#{fetch(:rails_env)} mysql:dump --trace"
+    on roles(:app) do
+      within "#{current_path}" do
+        with rails_env: fetch(:rails_env) do
+          execute :bundle, "exec rake mysql:dump --trace"
+          download! "#{current_path}/tmp/production_data.sql.gz", "tmp/#{fetch(:rails_env)}_data.sql.gz"
+        end
+      end
     end
   end
 
