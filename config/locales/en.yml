@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011 University of UTAH Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -19,7 +19,7 @@
 # TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 en:
-  about_text: "SPARC Request (Services, Pricing, & Application for Research Centers) is a web-based research management system that provides a central portal (one-stop shop) to researchers and their study teams to browse for research services and resources, as well as submit service and pricing requests with a focus on billing compliance and proposal/budget development. The free software is open to MUSC affiliates and CTSA institutions to adopt and capitalize on efficiencies."
+  about_text: "SPARC Request (Services, Pricing, & Application for Research Centers) is a web-based research management system that provides a central portal (one-stop shop) to researchers and their study teams to browse for research services and resources, as well as submit service and pricing requests with a focus on billing compliance and proposal/budget development. The free software is open to University of UTAH affiliates and CTSA institutions to adopt and capitalize on efficiencies."
   about_title: "About SPARC Request"
   activerecord:
     attributes:
@@ -35,7 +35,7 @@ en:
   feedback: "Feedback"
   issue_contact: "Please contact the SUCCESS Center at (843) 792-8300 or success@musc.edu for assistance with this process or with any questions you may have."
   portal_title: "SPARC Request Portal"
-  create_an_account: 'Non-MUSC User? Create an Account'
+  create_an_account: 'Non-University of UTAH User? Create an Account'
 
   # Admin Dashboard
   admin_dashboard:
@@ -1124,10 +1124,10 @@ en:
   login_password: "Password:"
   remember_user: "Remember me:"
   signin:
-    button1: "MUSC Users Click Here"
+    button1: "University of UTAH Users Click Here"
     button2: "Outside Users Click Here"
     button3: "Sign In"
-    message1: "MUSC Users- Sign in here"
+    message1: "University of UTAH Users- Sign in here"
     message2: ""
     message3: "Outside Users- Sign in here with your SPARC Request account"
     message4: ""
@@ -1136,7 +1136,7 @@ en:
   create_new_account_link: "Outside Users: Don't have an account? Click here."
   initial_signin_dialog: "You are not currently logged into SPARC Request. If you are affiliated with an institution and have an institutional login OR have created a SPARC Request account and have a SPARC Request login and password, please click the top button to proceed. If you are not currently affiliated with an institution OR do not have a SPARC Request login/password, please click the button on the bottom to proceed with creating a new account."
   proceed_to_database_login: "Outside Users with existing SPARC Request Accounts"
-  proceed_to_shibboleth: "MUSC Users"
+  proceed_to_shibboleth: "University of UTAH Users"
 
   # Steps navigation
   step_navigation:
@@ -1246,4 +1246,3 @@ en:
     message: "To begin to search and add authorized users to this study/project, type in the first or last name of the user.  Select as appropriate."
     search_box_header: "User Search"
     search_placeholder: "Search for user..."
-
