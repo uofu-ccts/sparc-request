@@ -169,6 +169,18 @@ namespace :deploy do
 end
 
 namespace :mysql do
+
+  desc 'truncate all tables, but doesn\'t touch migrations'
+  task :truncate do
+    on roles(:app) do
+      within "#{current_path}" do
+        with rails_env: fetch(:rails_env) do
+          execute :bundle, "exec rake mysql:truncate --trace"
+        end
+      end
+    end
+  end
+
   desc 'Dump the production database to db/production_data.sql'
   task :dump do
     on roles(:app) do

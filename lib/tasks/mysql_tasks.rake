@@ -3,6 +3,14 @@ require 'yaml'
 
 namespace :mysql do
 
+  desc "Truncate all tables, but keep migrations"
+  task :truncate => :environment do
+    conn = ActiveRecord::Base.connection
+    tables = conn.execute("show tables").map { |r| r[0] }
+    tables.delete "schema_migrations"
+    tables.each { |t| conn.execute("TRUNCATE #{t}") }
+  end
+
   desc "Launch mysql shell."
   task :console do
     puts sh_mysql(database_config)
