@@ -175,7 +175,7 @@ namespace :mysql do
       within "#{current_path}" do
         with rails_env: fetch(:rails_env) do
           execute :bundle, "exec rake mysql:dump --trace"
-          download! "#{current_path}/tmp/production_data.sql.gz", "tmp/#{fetch(:rails_env)}_data.sql.gz"
+          download! "#{current_path}/tmp/#{fetch(:rails_env)}_data.sql.gz", "tmp/#{fetch(:rails_env)}_data.sql.gz"
         end
       end
     end
