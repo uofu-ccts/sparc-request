@@ -59,6 +59,8 @@ namespace :mysql do
     options << " -P #{config['port']}"     if config['port']
     options << " #{config['database']}"    if config['database']
     options.gsub("'", %q(\\\')) # escape single quote character so it doesn't blow up bash script running
+    options.gsub(":", %q(\\\:)) # escape single quote character so it doesn't blow up bash script running
+    options.gsub("(", %q(\\\()) # escape single quote character so it doesn't blow up bash script running
   end
 
   def sh_mysql(config)
