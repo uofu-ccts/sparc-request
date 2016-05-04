@@ -26,7 +26,7 @@
       .return-to-previous
         = navigation_link t(:bottom_navigation)[:go_back], @back, "btn btn-success btn-lg button-hover"
     - if @service_request.submitted_at.blank?
-      .exit.btn.btn-lg= navigation_link t(:bottom_navigation)[:save_and_exit],  'save_and_exit', "btn btn-success btn-lg button-hover"
+      .exit= navigation_link t(:bottom_navigation)[:save_and_exit],  'save_and_exit', "btn btn-success btn-lg button-hover"
     - else
       .exit
     .nav-forward
