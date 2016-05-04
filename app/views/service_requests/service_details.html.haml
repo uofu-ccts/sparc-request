@@ -107,9 +107,9 @@
               = t(:service_request_details)[:services_required]
   - has_per_patient = @sub_service_request.nil? ? @service_request.has_per_patient_per_visit_services? : @sub_service_request.has_per_patient_per_visit_services?
   .grid_3.protocol-details-view-right.right.col-md-3{:class => (has_per_patient ? 'force_up' : '')}
+    %h3
+      = t(:service_request_details)[:services]
     #services.ui-widget.ui-widget-content.cart-view
-      %h3
-        = t(:service_request_details)[:services]
       .line-items= render :partial => 'catalogs/cart', :locals => {:service_request => @service_request}
     = navigation_link t(:right_navigation)[:catalog], @catalog, 'catalog-button btn btn-info btn-lg btn-block button-hover'
     = render :partial => 'right_navigation'
