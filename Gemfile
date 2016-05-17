@@ -111,3 +111,5 @@ group :profile do
 end
 
 gem 'whenever', :require => false
+
+gem 'faker'
