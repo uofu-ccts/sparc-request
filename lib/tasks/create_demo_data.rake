@@ -1,5 +1,6 @@
 require 'colorize'
 require 'tsortablehash'
+require 'faker'
 
 namespace :demo do
   def create_identity
@@ -19,9 +20,26 @@ namespace :demo do
 
     Identity.where({:ldap_uid => 'jug2'}).first
   end
+
+  def build_study_type_question_group(active)
+    StudyTypeQuestionGroup.seed(:id,
+      active: true
+    )
+    StudyTypeQuestionGroup.where({:active => active}).first_or_create
+  end
+  def build_study_type_questions
+  end
   desc 'create fake seed data'
   task :create_identity  => :environment do
     identity = create_identity
     puts "#{identity.first_name.green} #{identity.last_name.green}"
+  end
+
+  desc 'create study type question groups'
+  task :create_study_type_question_group => :environment do
+    group = build_study_type_question_group(true)
+    puts "#{group.id} #{group.active}"
+    group = build_study_type_question_group(false)
+    puts "#{group.id} #{group.active}"
   end
 end
