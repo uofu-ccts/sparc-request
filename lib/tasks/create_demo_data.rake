@@ -48,15 +48,18 @@ namespace :demo do
     StudyTypeQuestionGroup.where({:active => active}).first_or_create
   end
   def build_study_type_questions(range)
-    group = build_study_type_question_group(true)
-    (1..range).each do |n|
-      StudyTypeQuestion.seed(:id,
-        order: n,
-        question: Faker::Lorem.sentence,
-        friendly_id: Faker::Lorem.word,
-        study_type_question_group_id: group.id
-      )
+    ActiveRecord::Base.transaction do
+      group = build_study_type_question_group(true)
+      (1..range).each do |n|
+        StudyTypeQuestion.seed(:id,
+          order: n,
+          question: Faker::Lorem.sentence,
+          friendly_id: Faker::Lorem.word,
+          study_type_question_group_id: group.id
+        )
+      end
     end
+
 
   end
   desc 'create fake seed data'
