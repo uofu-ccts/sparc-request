@@ -23,11 +23,21 @@ namespace :demo do
 
   def build_study_type_question_group(active)
     StudyTypeQuestionGroup.seed(:id,
-      active: true
+      active: active
     )
     StudyTypeQuestionGroup.where({:active => active}).first_or_create
   end
-  def build_study_type_questions
+  def build_study_type_questions(range)
+    group = build_study_type_question_group(true)
+    (1..range).each do |n|
+      StudyTypeQuestion.seed(:id,
+        order: n,
+        question: Faker::Lorem.sentence,
+        friendly_id: Faker::Lorem.word,
+        study_type_question_group_id: group.id
+      )
+    end
+
   end
   desc 'create fake seed data'
   task :create_identity  => :environment do
@@ -41,5 +51,8 @@ namespace :demo do
     puts "#{group.id} #{group.active}"
     group = build_study_type_question_group(false)
     puts "#{group.id} #{group.active}"
+
+    build_study_type_questions 100
+
   end
 end
