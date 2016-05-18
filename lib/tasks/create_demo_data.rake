@@ -64,7 +64,29 @@ namespace :demo do
       parent_id: parent_id
     )
 
-    Provider.where({name: name, type: 'Provider' }).first
+    provider = Provider.where({name: name, type: 'Provider' }).first
+    provider.build_subsidy_map
+    unless PricingSetup.exists?(organization_id: provider.id)
+      default = {
+        :organization_id => provider.id,
+        :display_date => Date.today,
+        :effective_date => Date.today - 1.days,
+        :federal => 100,
+        :corporate => 100,
+        :other => 100,
+        :member => 100,
+        :charge_master => false,
+        :college_rate_type => 'full',
+        :federal_rate_type => 'full',
+        :industry_rate_type => 'full',
+        :investigator_rate_type => 'full',
+        :internal_rate_type => 'full',
+        :foundation_rate_type => 'full'
+      }
+      provider.pricing_setups.create! default
+    end
+    provider.save
+    provider
   end
 
   def create_program(name, parent_id)
@@ -266,7 +288,7 @@ namespace :demo do
     institution = create_institution Faker::University.name
     puts "#{institution.name}"
     provider = create_provider(Faker::Company.name, institution.id)
-    puts "#{provider.name}"
+    puts "#{provider.name}".red
     program = create_program(Faker::Company.name, provider.id)
     puts "#{program.name}"
     core = create_core(Faker::Company.name, program.id)
