@@ -293,6 +293,10 @@ namespace :demo do
     puts "#{program.name}"
     core = create_core(Faker::Company.name, program.id)
     puts "#{core.name} provides #{core.services.first.name}".green
+    service = core.services.first
+    has_current_pricing_map = service.current_pricing_map rescue false
+    puts "Serivce has pricing map => #{has_current_pricing_map}".yellow
+    puts "Service available => #{service.is_available}"
   end
 
   desc 'build service request'
