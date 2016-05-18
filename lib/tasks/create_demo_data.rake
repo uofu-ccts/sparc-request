@@ -41,6 +41,61 @@ namespace :demo do
     Identity.where({:ldap_uid => ldap_uid}).first
   end
 
+  def create_institution(name)
+    Institution.seed(:name, :type,
+      name: name,
+      type: 'Institution',
+      order: 1,
+      abbreviation: Faker::Hacker.abbreviation,
+      is_available:  true
+    )
+
+    Institution.where({name: name, type: 'Institution' }).first
+
+  end
+
+  def create_provider(name, parent_id)
+    Provider.seed(:name, :type,
+      name: name,
+      type: 'Provider',
+      order: 1,
+      abbreviation: Faker::Hacker.abbreviation,
+      is_available:  true,
+      parent_id: parent_id
+    )
+
+    Provider.where({name: name, type: 'Provider' }).first
+  end
+
+  def create_program(name, parent_id)
+    Program.seed(:name, :type,
+      name: name,
+      type: 'Program',
+      order: 1,
+      abbreviation: Faker::Hacker.abbreviation,
+      is_available:  true,
+      parent_id: parent_id
+    )
+
+    Program.where({name: name, type: 'Program' }).first
+  end
+
+  def create_core(name, parent_id)
+    Core.seed(:name, :type,
+      name: name,
+      type: 'Core',
+      order: 1,
+      abbreviation: Faker::Hacker.abbreviation,
+      is_available:  true,
+      parent_id: parent_id
+    )
+
+    Core.where({name: name, type: 'Core' }).first
+  end
+
+  def build_service_request
+  end
+
   def build_project
       active_study_type_question_group = StudyTypeQuestionGroup.where({:active => true}).first_or_create
       identity = Identity.find_by_ldap_uid('jug2')
@@ -126,5 +181,17 @@ namespace :demo do
   desc 'create project'
   task :create_project => :environment do
     batch_create_project 100
+  end
+
+  desc 'create institution'
+  task :create_institution => :environment do
+    institution = create_institution Faker::University.name
+    puts "#{institution.name}"
+    provider = create_provider(Faker::Company.name, institution.id)
+    puts "#{provider.name}"
+    program = create_program(Faker::Company.name, provider.id)
+    puts "#{program.name}"
+    core = create_core(Faker::Company.name, program.id)
+    puts "#{core.name}"
   end
 end
