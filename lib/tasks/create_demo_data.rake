@@ -95,6 +95,29 @@ namespace :demo do
     core
   end
 
+  def create_visits(service_request)
+    service_request.arms.each do |arm|
+      service_request.per_patient_per_visit_line_items.each do |line_item|
+        arm.create_line_items_visit(line_item)
+      end
+    end
+  end
+
+  def update_visits(service_request)
+    service_request.arms.each do |arm|
+      arm.visits.each do |visit|
+        visit.update_attributes(quantity: 15, research_billing_qty: 5, insurance_billing_qty: 5, effort_billing_qty: 5, billing: Faker::Lorem.word)
+      end
+    end
+  end
+
+  def update_visit_groups
+    vgs = VisitGroup.all
+    vgs.each do |vg|
+      vg.update_attributes(day: vg.position)
+    end
+  end
+
   def build_service_request(identity, program)
     service_request = ServiceRequest.create(
       status: 'draft'
@@ -112,6 +135,9 @@ namespace :demo do
       status: "draft"
     )
     service_request.reload
+    create_visits(service_request)
+    update_visits(service_request)
+    update_visit_groups
     service_request
   end
 
