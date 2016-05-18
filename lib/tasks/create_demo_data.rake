@@ -90,10 +90,29 @@ namespace :demo do
       parent_id: parent_id
     )
 
-    Core.where({name: name, type: 'Core' }).first
+    core = Core.where({name: name, type: 'Core' }).first
+    build_service(core)
+    core
   end
 
-  def build_service_request
+  def build_service_request(identity, program)
+    service_request = ServiceRequest.create(
+      status: 'draft'
+    )
+
+    service_request.save validate: false
+    project = build_project
+    service_request.update_attribute(:protocol_id, project.id)
+    service_request.update_attribute(:service_requester_id, identity.id)
+    service_request.save
+    SubServiceRequest.create(
+      ssr_id: "0001",
+      service_request_id: service_request.id,
+      organization_id: program.id,
+      status: "draft"
+    )
+    service_request.reload
+    service_request
   end
 
   def build_project
@@ -125,10 +144,43 @@ namespace :demo do
       )
 
       role.save
-
+      build_arms(project)
       project.reload
       project
 
+  end
+
+  def build_service(core)
+    service = Service.create(
+      name: Faker::Name.name,
+      abbreviation: Faker::Hacker.abbreviation,
+      order: 1,
+      cpt_code: '',
+      organization_id: core.id
+    )
+    service.save validate: false
+    pricing_map = PricingMap.create(
+      service_id: service.id,
+      unit_type: 'Per Query',
+      unit_factor: 1,
+      full_rate: 0,
+      exclude_from_indirect_cost: 0,
+      unit_minimum: 1
+    )
+    pricing_map.save
+
+  end
+
+  def build_arms(project)
+    arm = Arm.create(
+      name: Faker::Name.name,
+      protocol_id: project.id,
+      visit_count: 10,
+      subject_count: 2
+    )
+    arm.save
+    visit_group = VisitGroup.create(arm_id: arm.id, position: 1, day: 1)
+    visit_group.save
   end
 
   def batch_create_project(range)
@@ -192,6 +244,15 @@ namespace :demo do
     program = create_program(Faker::Company.name, provider.id)
     puts "#{program.name}"
     core = create_core(Faker::Company.name, program.id)
-    puts "#{core.name}"
+    puts "#{core.name} provides #{core.services.first.name}".green
+  end
+
+  desc 'build service request'
+  task :build_service_request => :environment do
+    institution = create_institution Faker::University.name
+    provider = create_provider(Faker::Company.name, institution.id)
+    program = create_program(Faker::Company.name, provider.id)
+    service_request = build_service_request(Identity.find_by_ldap_uid("jug2"), program)
+    puts "#{service_request.service_requester.display_name} created #{service_request.protocol.title}. #{service_request.sub_service_requests.first.organization.name}"
   end
 end
