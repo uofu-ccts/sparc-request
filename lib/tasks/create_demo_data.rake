@@ -42,9 +42,11 @@ namespace :demo do
   end
 
   def build_project
+      active_study_type_question_group = StudyTypeQuestionGroup.where({:active => true}).first_or_create
+      identity = Identity.find_by_ldap_uid('jug2')
       short_title = Faker::Lorem.word
       title = Faker::Lorem.sentence
-      Project.create(
+      project = Project.create(
         type: 'Project',
         short_title: short_title,
         title: title,
@@ -53,8 +55,24 @@ namespace :demo do
         start_date: DateTime.now,
         end_date: DateTime.now + 365,
         funding_source: Faker::University.name,
-        funding_status: 'funded'
+        funding_status: 'funded',
+        indirect_cost_rate: 50,
+        study_type_question_group_id: active_study_type_question_group.id
       )
+
+      project.save validate: false
+
+      role = ProjectRole.create(
+        protocol_id:     project.id,
+        identity_id:     identity.id,
+        project_rights:  "approve",
+        role:            "primary-pi"
+      )
+
+      role.save
+
+      project.reload
+      project
 
   end
 
@@ -62,7 +80,7 @@ namespace :demo do
     ActiveRecord::Base.transaction do
       (1..range).each do |n|
         project = build_project
-        puts "#{project.title} funded by #{project.funding_source}".green
+        puts "#{project.title} funded by #{project.funding_source}. Primary PI is #{project.primary_pi_project_role.identity.display_name}".green
       end
     end
   end
