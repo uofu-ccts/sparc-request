@@ -41,6 +41,32 @@ namespace :demo do
     Identity.where({:ldap_uid => ldap_uid}).first
   end
 
+  def build_project
+      short_title = Faker::Lorem.word
+      title = Faker::Lorem.sentence
+      Project.create(
+        type: 'Project',
+        short_title: short_title,
+        title: title,
+        sponsor_name: Faker::Name.name,
+        brief_description: Faker::Lorem.paragraph,
+        start_date: DateTime.now,
+        end_date: DateTime.now + 365,
+        funding_source: Faker::University.name,
+        funding_status: 'funded'
+      )
+
+  end
+
+  def batch_create_project(range)
+    ActiveRecord::Base.transaction do
+      (1..range).each do |n|
+        project = build_project
+        puts "#{project.title} funded by #{project.funding_source}".green
+      end
+    end
+  end
+
   def build_study_type_question_group(active)
     StudyTypeQuestionGroup.seed(:id,
       active: active
@@ -77,5 +103,10 @@ namespace :demo do
 
     build_study_type_questions 100
 
+  end
+
+  desc 'create project'
+  task :create_project => :environment do
+    batch_create_project 100
   end
 end
