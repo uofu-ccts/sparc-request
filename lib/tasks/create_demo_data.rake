@@ -47,7 +47,8 @@ namespace :demo do
       type: 'Institution',
       order: 1,
       abbreviation: Faker::Hacker.abbreviation,
-      is_available:  true
+      is_available:  true,
+      description: Faker::Lorem.paragraph
     )
 
     Institution.where({name: name, type: 'Institution' }).first
@@ -61,7 +62,8 @@ namespace :demo do
       order: 1,
       abbreviation: Faker::Hacker.abbreviation,
       is_available:  true,
-      parent_id: parent_id
+      parent_id: parent_id,
+      description: Faker::Lorem.paragraph
     )
 
     provider = Provider.where({name: name, type: 'Provider' }).first
@@ -96,7 +98,8 @@ namespace :demo do
       order: 1,
       abbreviation: Faker::Hacker.abbreviation,
       is_available:  true,
-      parent_id: parent_id
+      parent_id: parent_id,
+      description: Faker::Lorem.paragraph
     )
 
     Program.where({name: name, type: 'Program' }).first
@@ -109,7 +112,8 @@ namespace :demo do
       order: 1,
       abbreviation: Faker::Hacker.abbreviation,
       is_available:  true,
-      parent_id: parent_id
+      parent_id: parent_id,
+      description: Faker::Lorem.paragraph
     )
 
     core = Core.where({name: name, type: 'Core' }).first
@@ -351,6 +355,60 @@ namespace :demo do
     program = create_program(Faker::Company.name, provider.id)
     service_request = build_service_request(Identity.find_by_ldap_uid("jug2"), program)
     puts "#{service_request.service_requester.display_name} created #{service_request.protocol.title}. #{service_request.sub_service_requests.first.organization.name}"
+  end
+
+  desc 'setup default description'
+  task :create_description => :environment do
+    Program.all.each do |program|
+      if program.description.blank?
+        puts "build default description for program #{program.name}".yellow
+        program.description = Faker::Lorem.paragraph
+        program.save!
+      end
+    end
+
+    Core.all.each do |program|
+      if program.description.blank?
+        puts "build default description for program #{program.name}".yellow
+        program.description = Faker::Lorem.paragraph
+        program.save!
+      end
+    end
+
+    Provider.all.each do |program|
+      if program.description.blank?
+        puts "build default description for program #{program.name}".yellow
+        program.description = Faker::Lorem.paragraph
+        program.save!
+      end
+    end
+
+    Institution.all.each do |program|
+      if program.description.blank?
+        puts "build default description for program #{program.name}".yellow
+        program.description = Faker::Lorem.paragraph
+        program.save!
+      end
+    end
+
+
+  end
+
+  desc 'create default service'
+  task :setup_default_service => :environment do
+    Program.all.each do |program|
+      if program.services.size == 0 && program.cores.size == 0
+        puts "build default service for program #{program.name}"
+        build_service(program)
+      end
+    end
+
+    Core.all.each do |core|
+      if core.services.size == 0
+        puts "build default service for core #{core.name}"
+        build_service(core)
+      end
+    end
   end
 
   desc 'create default pricing setup for all programs and default pricing map for all services'
