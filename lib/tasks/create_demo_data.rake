@@ -205,6 +205,32 @@ namespace :demo do
       unit_minimum: 0})
 
     service.save!
+    service
+  end
+
+  def batch_create_service(core_name)
+    core = Core.where({name: core_name}).first
+    if !core.nil?
+      times = ask_times.to_i
+      ActiveRecord::Base.transaction do
+        (1..times).each do |n|
+          service = build_service(core)
+          puts "service #{service.name} created".yellow
+        end
+      end
+    else
+      puts "No core with name #{core_name} found.".red
+      if ask_confirmation("create the core now")
+        core = build_core_hierachy
+        times = ask_times.to_i
+        ActiveRecord::Base.transaction do
+          (1..times).each do |n|
+            service = build_service(core)
+            puts "service #{service.name} created".yellow
+          end
+        end
+      end
+    end
 
   end
 
@@ -226,6 +252,15 @@ namespace :demo do
       (1..range).each do |n|
         project = build_project(ldap_uid)
         puts "#{project.title} funded by #{project.funding_source}. Primary PI is #{project.primary_pi_project_role.identity.display_name}".green
+      end
+    end
+  end
+
+  def batch_create_identity(times)
+    ActiveRecord::Base.transaction do
+      (1..times).each do |n|
+        identity = create_fake_identity
+        puts "#{identity.first_name.green} #{identity.last_name.green}"
       end
     end
   end
@@ -297,6 +332,22 @@ namespace :demo do
     STDIN.gets.chomp
   end
 
+  def ask_name(type)
+    STDOUT.puts "What is the name of #{type}?"
+    STDIN.gets.chomp
+  end
+
+  def ask_times
+    STDOUT.puts "How many to create?"
+    STDIN.gets.chomp
+  end
+
+  def ask_confirmation(message)
+    STDOUT.puts "Do you want to #{message}?(y/N)"
+    answer = STDIN.gets.chomp
+    answer.downcase == 'y' || answer.downcase == 'yes'
+  end
+
   def build_core_hierachy
     institution = create_institution Faker::University.name
     puts "#{institution.name}"
@@ -320,6 +371,12 @@ namespace :demo do
     puts "#{identity.first_name.green} #{identity.last_name.green}"
   end
 
+  desc 'batch create fake seed data'
+  task :batch_create_identity  => :environment do
+    times = ask_times
+    batch_create_identity(times.to_i)
+  end
+
   desc 'create study type question groups'
   task :create_study_type_question_group => :environment do
     group = build_study_type_question_group(true)
@@ -332,9 +389,15 @@ namespace :demo do
   end
 
   desc 'create project'
-  task :create_project => :environment do
+  task :batch_create_project => :environment do
     ldap_uid = ask_ldap_uid
-    batch_create_project(100,ldap_uid)
+    batch_create_project(ask_times.to_i,ldap_uid)
+  end
+
+  desc 'batch create serivce'
+  task :batch_create_service => :environment do
+    core_name = ask_name("Core")
+    batch_create_service(core_name)
   end
 
   desc 'create institution'
