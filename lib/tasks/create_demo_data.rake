@@ -206,16 +206,21 @@ namespace :demo do
       cpt_code: '',
       organization_id: core.id
     )
-    service.save validate: false
-    pricing_map = PricingMap.create(
-      service_id: service.id,
-      unit_type: 'Per Query',
+
+    # set up a default pricing map
+    service.pricing_maps.build({
+      full_rate: 1,
+      federal_rate: 1,
+      corporate_rate: 1,
+      other_rate: 1,
+      member_rate: 1,
+      display_date: Date.today,
+      effective_date: Date.today - 1.days,
       unit_factor: 1,
-      full_rate: 0,
-      exclude_from_indirect_cost: 0,
-      unit_minimum: 1
-    )
-    pricing_map.save
+      unit_type: 'Per Extraction',
+      unit_minimum: 0})
+
+    service.save!
 
   end
 
@@ -258,7 +263,47 @@ namespace :demo do
         )
       end
     end
+  end
 
+  def setup_default_pricing(i)
+    i.build_subsidy_map
+    unless PricingSetup.exists?(organization_id: i.id)
+      default = {
+        :organization_id => i.id,
+        :display_date => Date.today,
+        :effective_date => Date.today - 1.days,
+        :federal => 100,
+        :corporate => 100,
+        :other => 100,
+        :member => 100,
+        :charge_master => false,
+        :college_rate_type => 'full',
+        :federal_rate_type => 'full',
+        :industry_rate_type => 'full',
+        :investigator_rate_type => 'full',
+        :internal_rate_type => 'full',
+        :foundation_rate_type => 'full'
+      }
+      i.pricing_setups.create! default
+    end
+    i.save!
+  end
+
+  def setup_default_pricing_map(service)
+    # set up a default pricing map
+    puts "#{service.name} has no default pricing map. set up a default pricing map".yellow
+    service.pricing_maps.build({
+      full_rate: 1,
+      federal_rate: 1,
+      corporate_rate: 1,
+      other_rate: 1,
+      member_rate: 1,
+      display_date: Date.today,
+      effective_date: Date.today - 1.days,
+      unit_factor: 1,
+      unit_type: 'Per Extraction',
+      unit_minimum: 0})
+    service.save!
 
   end
   desc 'create fake seed data'
@@ -306,5 +351,28 @@ namespace :demo do
     program = create_program(Faker::Company.name, provider.id)
     service_request = build_service_request(Identity.find_by_ldap_uid("jug2"), program)
     puts "#{service_request.service_requester.display_name} created #{service_request.protocol.title}. #{service_request.sub_service_requests.first.organization.name}"
+  end
+
+  desc 'create default pricing setup'
+  task :setup_default_pricing => :environment do
+    Program.all.each do |program|
+      if !program.has_active_pricing_setup
+        puts "#{program.name} has no pricing setup. Set up pricing now".yellow
+        setup_default_pricing(program)
+      end
+    end
+  end
+
+
+  desc 'create default pricing map for all services'
+  task :create_pricing_map => :environment do
+    Service.all.each do |service|
+      has_current_pricing_map = service.current_pricing_map rescue false
+      if !has_current_pricing_map
+        setup_default_pricing_map(service)
+      end
+
+    end
+
   end
 end
