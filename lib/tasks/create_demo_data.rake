@@ -149,7 +149,7 @@ namespace :demo do
 
   def build_project(ldap_uid)
       active_study_type_question_group = StudyTypeQuestionGroup.where({:active => true}).first_or_create
-      identity = Identity.find_by_ldap_uid('jug2')
+      identity = Identity.find_by_ldap_uid(ldap_uid)
       short_title = Faker::Lorem.word
       title = Faker::Lorem.sentence
       project = Project.create(
