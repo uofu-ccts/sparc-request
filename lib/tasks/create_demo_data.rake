@@ -67,27 +67,7 @@ namespace :demo do
     )
 
     provider = Provider.where({name: name, type: 'Provider' }).first
-    provider.build_subsidy_map
-    unless PricingSetup.exists?(organization_id: provider.id)
-      default = {
-        :organization_id => provider.id,
-        :display_date => Date.today,
-        :effective_date => Date.today - 1.days,
-        :federal => 100,
-        :corporate => 100,
-        :other => 100,
-        :member => 100,
-        :charge_master => false,
-        :college_rate_type => 'full',
-        :federal_rate_type => 'full',
-        :industry_rate_type => 'full',
-        :investigator_rate_type => 'full',
-        :internal_rate_type => 'full',
-        :foundation_rate_type => 'full'
-      }
-      provider.pricing_setups.create! default
-    end
-    provider.save
+    setup_default_pricing(provider)
     provider
   end
 
@@ -310,6 +290,8 @@ namespace :demo do
     service.save!
 
   end
+
+
   desc 'create fake seed data'
   task :create_identity  => :environment do
     identity = create_fake_identity
