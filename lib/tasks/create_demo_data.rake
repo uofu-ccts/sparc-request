@@ -124,9 +124,6 @@ namespace :demo do
     end
   end
 
-  def assign_protocol_to_service_request(service_request, project)
-  end
-
   def build_service_request(identity, program)
     service_request = ServiceRequest.create(
       status: 'draft'
@@ -211,6 +208,7 @@ namespace :demo do
 
   end
 
+  # build arms for project
   def build_arms(project)
     arm = Arm.create(
       name: Faker::Name.name,
@@ -299,6 +297,22 @@ namespace :demo do
     STDIN.gets.chomp
   end
 
+  def build_core_hierachy
+    institution = create_institution Faker::University.name
+    puts "#{institution.name}"
+    provider = create_provider(Faker::Company.name, institution.id)
+    puts "#{provider.name}".red
+    program = create_program(Faker::Company.name, provider.id)
+    puts "#{program.name}"
+    core = create_core(Faker::Company.name, program.id)
+    puts "#{core.name} provides #{core.services.first.name}".green
+    service = core.services.first
+    has_current_pricing_map = service.current_pricing_map rescue false
+    puts "Serivce has pricing map => #{has_current_pricing_map}".yellow
+    puts "Service available => #{service.is_available}"
+    core
+  end
+
 
   desc 'create fake seed data'
   task :create_identity  => :environment do
@@ -325,27 +339,15 @@ namespace :demo do
 
   desc 'create institution'
   task :create_institution => :environment do
-    institution = create_institution Faker::University.name
-    puts "#{institution.name}"
-    provider = create_provider(Faker::Company.name, institution.id)
-    puts "#{provider.name}".red
-    program = create_program(Faker::Company.name, provider.id)
-    puts "#{program.name}"
-    core = create_core(Faker::Company.name, program.id)
-    puts "#{core.name} provides #{core.services.first.name}".green
-    service = core.services.first
-    has_current_pricing_map = service.current_pricing_map rescue false
-    puts "Serivce has pricing map => #{has_current_pricing_map}".yellow
-    puts "Service available => #{service.is_available}"
+    build_core_hierachy
   end
 
   desc 'build service request'
   task :build_service_request => :environment do
-    institution = create_institution Faker::University.name
-    provider = create_provider(Faker::Company.name, institution.id)
-    program = create_program(Faker::Company.name, provider.id)
-    service_request = build_service_request(Identity.find_by_ldap_uid("jug2"), program)
-    puts "#{service_request.service_requester.display_name} created #{service_request.protocol.title}. #{service_request.sub_service_requests.first.organization.name}"
+    core = build_core_hierachy
+    ldap_uid = ask_ldap_uid
+    service_request = build_service_request(Identity.find_by_ldap_uid(ldap_uid), core)
+    puts "#{service_request.service_requester.display_name} created #{service_request.protocol.title.green}. #{service_request.sub_service_requests.first.organization.name}"
   end
 
   desc 'setup default description'
