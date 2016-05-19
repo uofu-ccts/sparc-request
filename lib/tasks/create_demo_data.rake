@@ -353,7 +353,7 @@ namespace :demo do
     puts "#{service_request.service_requester.display_name} created #{service_request.protocol.title}. #{service_request.sub_service_requests.first.organization.name}"
   end
 
-  desc 'create default pricing setup'
+  desc 'create default pricing setup for all programs and default pricing map for all services'
   task :setup_default_pricing => :environment do
     Program.all.each do |program|
       if !program.has_active_pricing_setup
@@ -361,6 +361,14 @@ namespace :demo do
         setup_default_pricing(program)
       end
     end
+
+    Service.all.each do |service|
+      has_current_pricing_map = service.current_pricing_map rescue false
+      if !has_current_pricing_map
+        setup_default_pricing_map(service)
+      end
+    end
+
   end
 
 
@@ -371,7 +379,6 @@ namespace :demo do
       if !has_current_pricing_map
         setup_default_pricing_map(service)
       end
-
     end
 
   end
