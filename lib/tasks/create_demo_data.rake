@@ -124,13 +124,16 @@ namespace :demo do
     end
   end
 
+  def assign_protocol_to_service_request(service_request, project)
+  end
+
   def build_service_request(identity, program)
     service_request = ServiceRequest.create(
       status: 'draft'
     )
 
     service_request.save validate: false
-    project = build_project
+    project = build_project(identity.ldap_uid)
     service_request.update_attribute(:protocol_id, project.id)
     service_request.update_attribute(:service_requester_id, identity.id)
     service_request.save
@@ -147,7 +150,7 @@ namespace :demo do
     service_request
   end
 
-  def build_project
+  def build_project(ldap_uid)
       active_study_type_question_group = StudyTypeQuestionGroup.where({:active => true}).first_or_create
       identity = Identity.find_by_ldap_uid('jug2')
       short_title = Faker::Lorem.word
@@ -220,10 +223,10 @@ namespace :demo do
     visit_group.save
   end
 
-  def batch_create_project(range)
+  def batch_create_project(range, ldap_uid)
     ActiveRecord::Base.transaction do
       (1..range).each do |n|
-        project = build_project
+        project = build_project(ldap_uid)
         puts "#{project.title} funded by #{project.funding_source}. Primary PI is #{project.primary_pi_project_role.identity.display_name}".green
       end
     end
@@ -291,6 +294,11 @@ namespace :demo do
 
   end
 
+  def ask_ldap_uid
+    STDOUT.puts "What is the ldap_uid?"
+    STDIN.gets.chomp
+  end
+
 
   desc 'create fake seed data'
   task :create_identity  => :environment do
@@ -311,7 +319,8 @@ namespace :demo do
 
   desc 'create project'
   task :create_project => :environment do
-    batch_create_project 100
+    ldap_uid = ask_ldap_uid
+    batch_create_project(100,ldap_uid)
   end
 
   desc 'create institution'
