@@ -3,6 +3,8 @@ require 'tsortablehash'
 require 'faker'
 
 namespace :demo do
+  funding_source = %w(college federal foundation industry investigator internal unfunded)
+
   def create_identity
     Identity.seed(:ldap_uid,
     last_name:             'Glenn',
@@ -160,7 +162,7 @@ namespace :demo do
         brief_description: Faker::Lorem.paragraph,
         start_date: DateTime.now,
         end_date: DateTime.now + 365,
-        funding_source: Faker::University.name,
+        funding_source: funding_source.sample,
         funding_status: 'funded',
         indirect_cost_rate: 50,
         study_type_question_group_id: active_study_type_question_group.id
@@ -481,6 +483,15 @@ namespace :demo do
       if !has_current_pricing_map
         setup_default_pricing_map(service)
       end
+    end
+
+  end
+
+  desc 'fixing project funding source'
+  task :fix_funding_source => :environment do
+    Project.all.each do |project|
+      project.update_attribute(:funding_source, funding_source.sample)
+      project.save
     end
 
   end
