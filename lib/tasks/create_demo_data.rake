@@ -153,6 +153,7 @@ namespace :demo do
       status: "draft"
     )
     update_visit_service_request(service_request)
+    update_visit_groups
     service_request
   end
 
