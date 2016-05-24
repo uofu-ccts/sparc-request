@@ -155,7 +155,7 @@ namespace :demo do
     service_request
   end
 
-  def add_service(service_request)
+  def add_service(service_request, program)
 
   end
 
@@ -343,8 +343,12 @@ namespace :demo do
     if !program_has_service(program)
       program = chooseRandomProgram
     end
-    puts program.name
-    program
+    if program.services.size > 0
+      return program
+    end
+    program.cores.select do |core|
+      core.services.size > 0
+    end.first
   end
 
   def setup_default_pricing_map(service)
@@ -534,7 +538,10 @@ namespace :demo do
 
   desc 'choose random program that has service'
   task :choose_random_proram => :environment do
-    chooseRandomProgram
+    program = chooseRandomProgram
+    program.services.each do |service|
+      puts "#{program.name} => #{service.name}".green
+    end
   end
 
 
