@@ -127,11 +127,7 @@ namespace :demo do
   end
 
   def build_service_request(identity, program)
-    service_request = ServiceRequest.create(
-      status: 'draft'
-    )
-
-    service_request.save validate: false
+    service_request = create_service_request
     project = build_project(identity.ldap_uid)
     service_request.update_attribute(:protocol_id, project.id)
     service_request.update_attribute(:service_requester_id, identity.id)
@@ -147,6 +143,20 @@ namespace :demo do
     update_visits(service_request)
     update_visit_groups
     service_request
+  end
+
+  def create_service_request
+    service_request = ServiceRequest.create(
+      status: 'draft'
+    )
+
+    service_request.save validate: false
+
+    service_request
+  end
+
+  def add_service(service_request)
+
   end
 
   def build_project(ldap_uid)
@@ -309,6 +319,32 @@ namespace :demo do
       i.pricing_setups.create! default
     end
     i.save!
+  end
+
+  def core_has_service(core)
+    core.services.size > 0
+  end
+
+  def program_has_service(program)
+    if program.services.size > 0
+      return true
+    end
+    program.cores.each do |core|
+      if core_has_service(core)
+        return true
+      end
+    end
+    return false
+  end
+
+  def chooseRandomProgram
+    index = rand(Program.all.size)
+    program = Program.all[index]
+    if !program_has_service(program)
+      program = chooseRandomProgram
+    end
+    puts program.name
+    program
   end
 
   def setup_default_pricing_map(service)
@@ -494,6 +530,11 @@ namespace :demo do
       project.save
     end
 
+  end
+
+  desc 'choose random program that has service'
+  task :choose_random_proram => :environment do
+    chooseRandomProgram
   end
 
 
