@@ -2,7 +2,15 @@ require 'colorize'
 require 'tsortablehash'
 require 'faker'
 
+module Portal
+end
+
+require "#{Rails.root}/app/helpers/portal/projects_helper"
+include Portal::ProjectsHelper
+
 namespace :demo do
+
+
   funding_source = %w(college federal foundation industry investigator internal unfunded)
 
   def create_identity
@@ -126,6 +134,12 @@ namespace :demo do
     end
   end
 
+  def update_visit_service_request(service_request)
+    service_request.reload
+    create_visits(service_request)
+    update_visits(service_request)
+  end
+
   def build_service_request(identity, program)
     service_request = create_service_request
     project = build_project(identity.ldap_uid)
@@ -138,10 +152,7 @@ namespace :demo do
       organization_id: program.id,
       status: "draft"
     )
-    service_request.reload
-    create_visits(service_request)
-    update_visits(service_request)
-    update_visit_groups
+    update_visit_service_request(service_request)
     service_request
   end
 
@@ -156,7 +167,7 @@ namespace :demo do
   end
 
   def find_protocol(identity)
-    Protocol.where(archived: true).
+    Protocol.where(archived: [true,false]).
                               joins(:project_roles).
                                 where('project_roles.identity_id = ?', identity.id).
                                 where('project_roles.project_rights != ?', 'none').
@@ -166,37 +177,52 @@ namespace :demo do
   end
 
   def add_service_to_project(identity)
+    projects = find_protocol(identity)
+    projects.first(10).each do |project|
+      puts "-------------------#{project.id}--------------------------"
+      service_request = create_service_request
+      service_request.update_attribute(:protocol_id, project.id)
+      service_request.update_attribute(:service_requester_id, identity.id)
+      service_request.save
+      update_visit_service_request(service_request)
+      program = chooseRandomProgram
+      add_service(service_request, program)
+    end
+    update_visit_groups
+  end
 
+  def update_sub_service_request(service_request)
+    service_request.reload
+    service_request.service_list.each do |org_id, values|
+      line_items = values[:line_items]
+      ssr = service_request.sub_service_requests.where(organization_id: org_id.to_i).first_or_create
+      unless service_request.status.nil? and !ssr.status.nil?
+        ssr.update_attribute(:status, service_request.status) if ['first_draft', 'draft', nil].include?(ssr.status)
+        service_request.ensure_ssr_ids unless ['first_draft', 'draft'].include?(service_request.status)
+      end
 
+      line_items.each do |li|
+        li.update_attribute(:sub_service_request_id, ssr.id)
+      end
+    end
   end
 
   def add_service(service_request, program)
-    program.services.each do |service|
+    program.services.first(10).each do |service|
+      puts "service #{service.name}".green
       existing_service_ids = service_request.line_items.map(&:service_id)
       if existing_service_ids.include? service.id
-        continue
-      end
-
-      service_request.create_line_items_for_service(
-          service: service,
-          optional: true,
-          existing_service_ids: existing_service_ids,
-          recursive_call: false)
-      service_request.reload
-
-      service_request.service_list.each do |org_id, values|
-        line_items = values[:line_items]
-        ssr = service_request.sub_service_requests.where(organization_id: org_id.to_i).first_or_create
-        unless service_request.status.nil? and !ssr.status.nil?
-          ssr.update_attribute(:status, service_request.status) if ['first_draft', 'draft', nil].include?(ssr.status)
-          service_request.ensure_ssr_ids unless ['first_draft', 'draft'].include?(service_request.status)
-        end
-
-        line_items.each do |li|
-          li.update_attribute(:sub_service_request_id, ssr.id)
-        end
+        puts "existing services #{service.name}".red
+      else
+        service_request.create_line_items_for_service(
+            service: service,
+            optional: true,
+            existing_service_ids: existing_service_ids,
+            recursive_call: false)
+        update_sub_service_request(service_request)
       end
     end
+
   end
 
   def build_project(ldap_uid)
@@ -492,8 +518,20 @@ namespace :demo do
     ldap_uid = ask_ldap_uid
     identity = Identity.where(ldap_uid: ldap_uid).first
     find_protocol(identity).each do |protocol|
-      puts "#{protocol.title} #{protocol.short_title}".green
+      puts "#{protocol.id} #{protocol.title.green} #{protocol.short_title.red}"
+      protocol.service_requests.each do |sr|
+        sr.sub_service_requests.each do |ssr|
+          puts "#{ssr.organization.name.yellow} #{pretty_program_core(ssr).light_blue}"
+        end
+      end
     end
+  end
+
+  desc 'add service'
+  task :add_service => :environment do
+    ldap_uid = ask_ldap_uid
+    identity = Identity.where(ldap_uid: ldap_uid).first
+    add_service_to_project(identity)
   end
 
   desc 'build service request'
