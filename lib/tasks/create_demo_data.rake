@@ -2,7 +2,17 @@ require 'colorize'
 require 'tsortablehash'
 require 'faker'
 
+module Portal
+end
+
+require "#{Rails.root}/app/helpers/portal/projects_helper"
+include Portal::ProjectsHelper
+
 namespace :demo do
+
+
+  funding_source = %w(college federal foundation industry investigator internal unfunded)
+
   def create_identity
     Identity.seed(:ldap_uid,
     last_name:             'Glenn',
@@ -124,12 +134,14 @@ namespace :demo do
     end
   end
 
-  def build_service_request(identity, program)
-    service_request = ServiceRequest.create(
-      status: 'draft'
-    )
+  def update_visit_service_request(service_request)
+    service_request.reload
+    create_visits(service_request)
+    update_visits(service_request)
+  end
 
-    service_request.save validate: false
+  def build_service_request(identity, program)
+    service_request = create_service_request
     project = build_project(identity.ldap_uid)
     service_request.update_attribute(:protocol_id, project.id)
     service_request.update_attribute(:service_requester_id, identity.id)
@@ -140,11 +152,78 @@ namespace :demo do
       organization_id: program.id,
       status: "draft"
     )
-    service_request.reload
-    create_visits(service_request)
-    update_visits(service_request)
+    update_visit_service_request(service_request)
     update_visit_groups
     service_request
+  end
+
+  def create_service_request
+    service_request = ServiceRequest.create(
+      status: 'draft'
+    )
+
+    service_request.save validate: false
+
+    service_request
+  end
+
+  def find_protocol(identity)
+    Protocol.where(archived: [true,false]).
+                              joins(:project_roles).
+                                where('project_roles.identity_id = ?', identity.id).
+                                where('project_roles.project_rights != ?', 'none').
+                              uniq.
+                              sort_by { |protocol| (protocol.id || '0000') + protocol.id }.
+                              reverse
+  end
+
+  def add_service_to_project(identity)
+    projects = find_protocol(identity)
+    projects.first(10).each do |project|
+      puts "-------------------#{project.id}--------------------------"
+      service_request = create_service_request
+      service_request.update_attribute(:protocol_id, project.id)
+      service_request.update_attribute(:service_requester_id, identity.id)
+      service_request.save
+      update_visit_service_request(service_request)
+      program = chooseRandomProgram
+      add_service(service_request, program)
+    end
+    update_visit_groups
+  end
+
+  def update_sub_service_request(service_request)
+    service_request.reload
+    service_request.service_list.each do |org_id, values|
+      line_items = values[:line_items]
+      ssr = service_request.sub_service_requests.where(organization_id: org_id.to_i).first_or_create
+      unless service_request.status.nil? and !ssr.status.nil?
+        ssr.update_attribute(:status, service_request.status) if ['first_draft', 'draft', nil].include?(ssr.status)
+        service_request.ensure_ssr_ids unless ['first_draft', 'draft'].include?(service_request.status)
+      end
+
+      line_items.each do |li|
+        li.update_attribute(:sub_service_request_id, ssr.id)
+      end
+    end
+  end
+
+  def add_service(service_request, program)
+    program.services.first(10).each do |service|
+      puts "service #{service.name}".green
+      existing_service_ids = service_request.line_items.map(&:service_id)
+      if existing_service_ids.include? service.id
+        puts "existing services #{service.name}".red
+      else
+        service_request.create_line_items_for_service(
+            service: service,
+            optional: true,
+            existing_service_ids: existing_service_ids,
+            recursive_call: false)
+        update_sub_service_request(service_request)
+      end
+    end
+
   end
 
   def build_project(ldap_uid)
@@ -160,7 +239,7 @@ namespace :demo do
         brief_description: Faker::Lorem.paragraph,
         start_date: DateTime.now,
         end_date: DateTime.now + 365,
-        funding_source: Faker::University.name,
+        funding_source: funding_source.sample,
         funding_status: 'funded',
         indirect_cost_rate: 50,
         study_type_question_group_id: active_study_type_question_group.id
@@ -309,6 +388,36 @@ namespace :demo do
     i.save!
   end
 
+  def core_has_service(core)
+    core.services.size > 0
+  end
+
+  def program_has_service(program)
+    if program.services.size > 0
+      return true
+    end
+    program.cores.each do |core|
+      if core_has_service(core)
+        return true
+      end
+    end
+    return false
+  end
+
+  def chooseRandomProgram
+    index = rand(Program.all.size)
+    program = Program.all[index]
+    if !program_has_service(program)
+      program = chooseRandomProgram
+    end
+    if program.services.size > 0
+      return program
+    end
+    program.cores.select do |core|
+      core.services.size > 0
+    end.first
+  end
+
   def setup_default_pricing_map(service)
     # set up a default pricing map
     puts "#{service.name} has no default pricing map. set up a default pricing map".yellow
@@ -405,6 +514,27 @@ namespace :demo do
     build_core_hierachy
   end
 
+  desc 'find protocol'
+  task :find_protocol => :environment do
+    ldap_uid = ask_ldap_uid
+    identity = Identity.where(ldap_uid: ldap_uid).first
+    find_protocol(identity).each do |protocol|
+      puts "#{protocol.id} #{protocol.title.green} #{protocol.short_title.red}"
+      protocol.service_requests.each do |sr|
+        sr.sub_service_requests.each do |ssr|
+          puts "#{ssr.organization.name.yellow} #{pretty_program_core(ssr).light_blue}"
+        end
+      end
+    end
+  end
+
+  desc 'add service'
+  task :add_service => :environment do
+    ldap_uid = ask_ldap_uid
+    identity = Identity.where(ldap_uid: ldap_uid).first
+    add_service_to_project(identity)
+  end
+
   desc 'build service request'
   task :build_service_request => :environment do
     core = build_core_hierachy
@@ -483,6 +613,23 @@ namespace :demo do
       end
     end
 
+  end
+
+  desc 'fixing project funding source'
+  task :fix_funding_source => :environment do
+    Project.all.each do |project|
+      project.update_attribute(:funding_source, funding_source.sample)
+      project.save
+    end
+
+  end
+
+  desc 'choose random program that has service'
+  task :choose_random_proram => :environment do
+    program = chooseRandomProgram
+    program.services.each do |service|
+      puts "#{program.name} => #{service.name}".green
+    end
   end
 
 
