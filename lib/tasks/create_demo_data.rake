@@ -155,8 +155,48 @@ namespace :demo do
     service_request
   end
 
-  def add_service(service_request, program)
+  def find_protocol(identity)
+    Protocol.where(archived: true).
+                              joins(:project_roles).
+                                where('project_roles.identity_id = ?', identity.id).
+                                where('project_roles.project_rights != ?', 'none').
+                              uniq.
+                              sort_by { |protocol| (protocol.id || '0000') + protocol.id }.
+                              reverse
+  end
 
+  def add_service_to_project(identity)
+
+
+  end
+
+  def add_service(service_request, program)
+    program.services.each do |service|
+      existing_service_ids = service_request.line_items.map(&:service_id)
+      if existing_service_ids.include? service.id
+        continue
+      end
+
+      service_request.create_line_items_for_service(
+          service: service,
+          optional: true,
+          existing_service_ids: existing_service_ids,
+          recursive_call: false)
+      service_request.reload
+
+      service_request.service_list.each do |org_id, values|
+        line_items = values[:line_items]
+        ssr = service_request.sub_service_requests.where(organization_id: org_id.to_i).first_or_create
+        unless service_request.status.nil? and !ssr.status.nil?
+          ssr.update_attribute(:status, service_request.status) if ['first_draft', 'draft', nil].include?(ssr.status)
+          service_request.ensure_ssr_ids unless ['first_draft', 'draft'].include?(service_request.status)
+        end
+
+        line_items.each do |li|
+          li.update_attribute(:sub_service_request_id, ssr.id)
+        end
+      end
+    end
   end
 
   def build_project(ldap_uid)
@@ -445,6 +485,15 @@ namespace :demo do
   desc 'create institution'
   task :create_institution => :environment do
     build_core_hierachy
+  end
+
+  desc 'find protocol'
+  task :find_protocol => :environment do
+    ldap_uid = ask_ldap_uid
+    identity = Identity.where(ldap_uid: ldap_uid).first
+    find_protocol(identity).each do |protocol|
+      puts "#{protocol.title} #{protocol.short_title}".green
+    end
   end
 
   desc 'build service request'
