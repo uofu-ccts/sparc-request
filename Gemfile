@@ -113,3 +113,5 @@ end
 gem 'whenever', :require => false
 
 gem 'faker'
+gem 'bootstrap-sass', '~> 3.3.6'
+gem 'bourbon'
