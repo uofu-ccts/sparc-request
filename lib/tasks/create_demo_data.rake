@@ -8,10 +8,9 @@ end
 require "#{Rails.root}/app/helpers/portal/projects_helper"
 include Portal::ProjectsHelper
 
+$funding_source = %w(college federal foundation industry investigator internal unfunded)
+
 namespace :demo do
-
-
-  funding_source = %w(college federal foundation industry investigator internal unfunded)
 
   def create_identity
     Identity.seed(:ldap_uid,
@@ -239,7 +238,7 @@ namespace :demo do
         brief_description: Faker::Lorem.paragraph,
         start_date: DateTime.now,
         end_date: DateTime.now + 365,
-        funding_source: funding_source.sample,
+        funding_source: $funding_source.sample,
         funding_status: 'funded',
         indirect_cost_rate: 50,
         study_type_question_group_id: active_study_type_question_group.id
@@ -618,7 +617,7 @@ namespace :demo do
   desc 'fixing project funding source'
   task :fix_funding_source => :environment do
     Project.all.each do |project|
-      project.update_attribute(:funding_source, funding_source.sample)
+      project.update_attribute(:funding_source, $funding_source.sample)
       project.save
     end
 
