@@ -181,14 +181,17 @@ class Directory
       identities[identity.ldap_uid] = identity
     end
     ldap_results = Directory.search_ldap(term)
-    ldap_results.each do |ldap_result|
-      uid = "#{ldap_result[LDAP_UID_FIELD].try(:first).try(:downcase)}@#{DOMAIN}"
-      if identities[uid]
-        results << identities[uid]
-      else
-        email = ldap_result[LDAP_EMAIL].try(:first)
-        if email && email.strip.length > 0 # all SPARC users must have an email, this filters out some of the inactive LDAP users.
-          results << Identity.new(ldap_uid: uid, first_name: ldap_result[LDAP_FIRST_NAME].try(:first), last_name: ldap_result[LDAP_LAST_NAME].try(:first), email: email)
+
+    if !ldap_results.nil?
+      ldap_results.each do |ldap_result|
+        uid = "#{ldap_result[LDAP_UID].try(:first).try(:downcase)}@#{DOMAIN}"
+        if identities[uid]
+          results << identities[uid]
+        else
+          email = ldap_result[LDAP_EMAIL].try(:first)
+          if email && email.strip.length > 0 # all SPARC users must have an email, this filters out some of the inactive LDAP users.
+            results << Identity.new(ldap_uid: uid, first_name: ldap_result[LDAP_FIRST_NAME].try(:first), last_name: ldap_result[LDAP_LAST_NAME].try(:first), email: email)
+          end
         end
       end
     end
