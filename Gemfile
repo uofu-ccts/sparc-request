@@ -52,6 +52,7 @@ gem 'surveyor', :git => 'https://github.com/caboteria/surveyor.git', branch: 'ra
 gem 'therubyracer', '0.10.2', :platforms => :ruby
 gem 'uglifier', '>= 1.0.3'
 gem 'will_paginate'
+<<<<<<< HEAD
 gem 'colorize'
 
 gem 'rubyzip'
@@ -61,6 +62,10 @@ gem 'seed_dump'
 gem 'seed-fu', '~> 2.3'
 gem 'smarter_csv'
 gem "non-stupid-digest-assets"
+=======
+gem 'omniauth-cas'
+
+>>>>>>> feature/cas
 
 group :development, :test, :profile do
   gem 'addressable', '~> 2.3.6'
