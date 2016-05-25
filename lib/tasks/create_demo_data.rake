@@ -176,17 +176,21 @@ namespace :demo do
                               reverse
   end
 
-  def add_service_to_project(identity)
+  def add_service_to_project(project, identity)
+    puts "-------------------#{project.id}--------------------------"
+    service_request = create_service_request
+    service_request.update_attribute(:protocol_id, project.id)
+    service_request.update_attribute(:service_requester_id, identity.id)
+    service_request.save
+    update_visit_service_request(service_request)
+    program = chooseRandomProgram
+    add_service(service_request, program)
+  end
+
+  def add_services(identity)
     projects = find_protocol(identity)
     projects.first(10).each do |project|
-      puts "-------------------#{project.id}--------------------------"
-      service_request = create_service_request
-      service_request.update_attribute(:protocol_id, project.id)
-      service_request.update_attribute(:service_requester_id, identity.id)
-      service_request.save
-      update_visit_service_request(service_request)
-      program = chooseRandomProgram
-      add_service(service_request, program)
+      add_service_to_project(project, identity)
     end
     update_visit_groups
   end
@@ -256,6 +260,7 @@ namespace :demo do
       role.save
       build_arms(project)
       project.reload
+      add_service_to_project(project, identity)
       project
 
   end
@@ -531,7 +536,7 @@ namespace :demo do
   task :add_service => :environment do
     ldap_uid = ask_ldap_uid
     identity = Identity.where(ldap_uid: ldap_uid).first
-    add_service_to_project(identity)
+    add_services(identity)
   end
 
   desc 'build service request'
