@@ -62,11 +62,13 @@ def is_confirmed
 end
 
 def ask_times
-  ask('How many times? (a number):', nil)
+  set :times, ask('How many times? (a number):', nil)
+  fetch(:times)
 end
 
 def ask_name(type)
-  ask("What is the name of #{type}? (a string):", nil)
+  set :name, ask("What is the name of #{type}? (a string):", nil)
+  fetch(:name)
 end
 
 namespace :deploy do
