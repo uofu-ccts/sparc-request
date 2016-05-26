@@ -54,20 +54,6 @@ class PrecompileRequired < StandardError; end
 
 require 'colorize'
 
-def confirm
-  set :confirm, ask('Confirm? (yes/no):', 'no')
-end
-def is_confirmed
-  fetch(:confirm).downcase == 'yes' || fetch(:confirm).downcase == 'y'
-end
-
-def ask_times
-  ask('How many times? (a number):', nil)
-end
-
-def ask_name(type)
-  ask("What is the name of #{type}? (a string):", nil)
-end
 
 namespace :deploy do
 
@@ -250,6 +236,14 @@ end
 
 namespace :setup do
 
+  def ask_times
+    ask('How many times? (a number):', nil)
+  end
+
+  def ask_name(type)
+    ask("What is the name of #{type}? (a string):", nil)
+  end
+
   desc "backup all configuration fiels"
   task :backup_config do
     on roles(:app) do
@@ -339,6 +333,12 @@ namespace :setup do
 
   desc "truncate tables."
   task :truncate do
+    def confirm
+      set :confirm, ask('Confirm? (yes/no):', 'no')
+    end
+    def is_confirmed
+      fetch(:confirm).downcase == 'yes' || fetch(:confirm).downcase == 'y'
+    end
 
     on roles(:app) do
       within "#{current_path}" do
