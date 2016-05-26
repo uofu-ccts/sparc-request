@@ -52,6 +52,23 @@ set :whenever_identifier, ->{ "#{fetch(:application)}_#{fetch(:stage)}" }
 
 class PrecompileRequired < StandardError; end
 
+require 'colorize'
+
+def confirm
+  set :confirm, ask('Confirm? (yes/no):', 'no')
+end
+def is_confirmed
+  fetch(:confirm).downcase == 'yes' || fetch(:confirm).downcase == 'y'
+end
+
+def ask_times
+  ask('How many times? (a number):', nil)
+end
+
+def ask_name(type)
+  ask("What is the name of #{type}? (a string):", nil)
+end
+
 namespace :deploy do
 
   after :restart, :clear_cache do
@@ -281,15 +298,47 @@ namespace :setup do
     end
   end
 
+  desc "batch create identity"
+  task :batch_create_identity do
+    on roles(:app) do
+      within "#{current_path}" do
+        with rails_env: fetch(:rails_env) do
+          times = ask_times
+          execute :bundle, "exec rake demo:batch_create_identity[#{times}]" # times is a number and contains no empty space, no need to add single quote around it
+        end
+      end
+    end
+  end
+
+  desc "batch create service"
+  task :batch_create_service do
+    on roles(:app) do
+      within "#{current_path}" do
+        with rails_env: fetch(:rails_env) do
+          name = ask_name('Core')
+          times = ask_times
+          execute :bundle, "exec rake demo:batch_create_service['#{name}',#{times}]" # name is a string which could contain empty spaces, use single quote to wrap it
+        end
+      end
+    end
+  end
+
+  desc "batch create project"
+  task :batch_create_project do
+    on roles(:app) do
+      within "#{current_path}" do
+        with rails_env: fetch(:rails_env) do
+          ldap_uid = ask_name('ldap_uid')
+          times = ask_times
+          execute :bundle, "exec rake demo:batch_create_project[#{ldap_uid},#{times}]" # ldap_uid has no empty spaces, so no need to wrap it with single quote
+        end
+      end
+    end
+  end
+
   desc "truncate tables."
   task :truncate do
-    require 'colorize'
-    def confirm
-      set :confirm, ask('Confirm? (yes/no):', 'no')
-    end
-    def is_confirmed
-      fetch(:confirm).downcase == 'yes' || fetch(:confirm).downcase == 'y'
-    end
+
     on roles(:app) do
       within "#{current_path}" do
         with rails_env: fetch(:rails_env) do
