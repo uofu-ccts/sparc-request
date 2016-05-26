@@ -291,10 +291,9 @@ namespace :demo do
     service
   end
 
-  def batch_create_service(core_name)
+  def batch_create_service(core_name, times)
     core = Core.where({name: core_name}).first
     if !core.nil?
-      times = ask_times.to_i
       ActiveRecord::Base.transaction do
         (1..times).each do |n|
           service = build_service(core)
@@ -302,15 +301,12 @@ namespace :demo do
         end
       end
     else
-      puts "No core with name #{core_name} found.".red
-      if ask_confirmation("create the core now")
-        core = build_core_hierachy
-        times = ask_times.to_i
-        ActiveRecord::Base.transaction do
-          (1..times).each do |n|
-            service = build_service(core)
-            puts "service #{service.name} created".yellow
-          end
+      puts "No core with name #{core_name} found. Creating now....".red
+      core = build_core_hierachy
+      ActiveRecord::Base.transaction do
+        (1..times).each do |n|
+          service = build_service(core)
+          puts "service #{service.name} created".yellow
         end
       end
     end
@@ -485,8 +481,12 @@ namespace :demo do
   end
 
   desc 'batch create fake seed data'
-  task :batch_create_identity  => :environment do
-    times = ask_times
+  task :batch_create_identity, [:times]  => :environment do |t, args|
+    if args[:times]
+      times = args[:times]
+    else
+      times = ask_times
+    end
     batch_create_identity(times.to_i)
   end
 
@@ -502,15 +502,35 @@ namespace :demo do
   end
 
   desc 'create project'
-  task :batch_create_project => :environment do
-    ldap_uid = ask_ldap_uid
-    batch_create_project(ask_times.to_i,ldap_uid)
+  task :batch_create_project, [:ldap_uid ,:times] => :environment do |t, args|
+    if args[:ldap_uid]
+      ldap_uid = args[:ldap_uid]
+    else
+      ldap_uid = ask_ldap_uid
+    end
+    if args[:times]
+      times = args[:times].to_i
+    else
+      times = ask_times.to_i
+    end
+    puts "ldap_uid = #{ldap_uid}".green
+    puts "Times = #{times}".red
+    batch_create_project(times,ldap_uid)
   end
 
   desc 'batch create serivce'
-  task :batch_create_service => :environment do
-    core_name = ask_name("Core")
-    batch_create_service(core_name)
+  task :batch_create_service, [:name, :times] => :environment do |t, args|
+    if args[:name]
+      core_name = args[:name]
+    else
+      core_name = ask_name("Core")
+    end
+    if args[:times]
+      times = args[:times].to_i
+    else
+      times = ask_times.to_i
+    end
+    batch_create_service(core_name, times)
   end
 
   desc 'create institution'
