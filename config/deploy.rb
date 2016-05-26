@@ -270,6 +270,7 @@ namespace :setup do
       upload! StringIO.new(File.read("config/database.yml")), "#{shared_path}/config/database.yml"
       upload! StringIO.new(File.read("config/database.yml")), "#{shared_path}/config/epic.yml"
       upload! StringIO.new(File.read("config/database.yml")), "#{shared_path}/config/ldap.yml"
+      upload! StringIO.new(File.read("config/database.yml")), "#{shared_path}/config/cas.yml"
     end
   end
 
