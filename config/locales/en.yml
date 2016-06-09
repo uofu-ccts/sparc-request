@@ -531,7 +531,7 @@ en:
     protocol: "Queued Protocol"
     status: "Last Queue Status"
   footer:
-    mail_to: "hundc@musc.edu"
+    mail_to: "​sparc-admin@lists.utah.edu"
     mail_link: "Sign Up For the SPARC Request Listserv"
     mail_subject: "SPARC Request Listserv"
     link_one_text: "SPARC Request Blog"
@@ -1246,4 +1246,3 @@ en:
     message: "To begin to search and add authorized users to this study/project, type in the first or last name of the user.  Select as appropriate."
     search_box_header: "User Search"
     search_placeholder: "Search for user..."
-
