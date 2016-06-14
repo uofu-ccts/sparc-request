@@ -220,6 +220,7 @@ GEM
     hashery (2.1.1)
     hashie (3.4.2)
     highline (1.6.21)
+    hodel_3000_compliant_logger (0.1.1)
     htmlentities (4.3.4)
     http-cookie (1.0.2)
       domain_name (~> 0.5)
@@ -266,6 +267,9 @@ GEM
       sprockets (>= 2.0)
     nori (2.1.0)
     obis-net-ldap (0.4.0)
+    oink (0.10.1)
+      activerecord
+      hodel_3000_compliant_logger
     omniauth (1.2.2)
       hashie (>= 1.2, < 4)
       rack (~> 1.0)
@@ -530,6 +534,7 @@ DEPENDENCIES
   non-stupid-digest-assets
   nori
   obis-net-ldap
+  oink
   omniauth
   omniauth-cas
   omniauth-shibboleth
