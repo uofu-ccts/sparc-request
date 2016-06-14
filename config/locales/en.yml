@@ -536,10 +536,10 @@ en:
     mail_subject: "SPARC Request Listserv"
     link_one_text: "SPARC Request Blog"
     link_one_url: "https://sparcrequestblog.com/"
-    link_two_text: "SCTR"
-    link_two_url: "http://sctr.musc.edu"
+    link_two_text: "CCTS"
+    link_two_url: "http://med.utah.edu/ccts"
     link_three_text: "SPARC Request Home"
-    link_three_url: "http://academicdepartments.musc.edu/sctr/sparc_request"
+    link_three_url: "/"
   identity:
     approved: "Account approved"
     disapproved: "Account disapproved"
