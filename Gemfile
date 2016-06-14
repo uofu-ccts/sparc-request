@@ -55,13 +55,12 @@ gem 'will_paginate'
 gem 'colorize'
 gem 'omniauth-cas'
 gem 'rubyzip'
-
 gem 'railroady'
 gem 'seed_dump'
 gem 'seed-fu', '~> 2.3'
 gem 'smarter_csv'
 gem "non-stupid-digest-assets"
-
+gem 'oink'
 
 
 group :development, :test, :profile do
