@@ -25,7 +25,6 @@ namespace :mysql do
 
   desc "Refreshes your local development environment to the current production database"
   task :refresh_from_production do
-    require_environment('development')
     `cap mysql:db_runner`
     Rake::Task['mysql:unzip_production_dump'].invoke
     Rake::Task['mysql:load_from_production_dump'].invoke
@@ -39,7 +38,6 @@ namespace :mysql do
 
   desc "Loads the production data downloaded into tmp/production_data.sql into your local development database"
   task :load_from_production_dump do
-    require_environment('development')
     puts 'Loading from production dump'
     puts "#{sh_mysql(database_config)} < tmp/production_data.sql"
     `#{sh_mysql(database_config)} < tmp/production_data.sql`
