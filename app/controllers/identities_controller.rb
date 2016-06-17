@@ -30,6 +30,7 @@ class IdentitiesController < ApplicationController
 
       if id.blank?
         @project_role = ProjectRole.new project_role_params
+        @project_role.project_rights = project_role_params[:project_rights]
       else
         @project_role = ProjectRole.find id
         @project_role.project_rights = project_role_params[:project_rights]
