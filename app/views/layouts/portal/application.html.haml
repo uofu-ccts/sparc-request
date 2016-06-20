@@ -57,8 +57,10 @@
       #header
         = render partial: 'shared/header_logos'
         %input#current_user_id{type: 'hidden', value: @user.try(:id)}
-      #welcome_msg{style: 'float:right;'}
-        = show_welcome_message(@user)
+      %div
+        %a{href: root_path} Sparc Request
+        #welcome_msg{style: 'float:right;'}
+          = show_welcome_message(@user)
       #main
         #title
           %h1
