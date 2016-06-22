@@ -1243,15 +1243,15 @@ en:
     protocol: "Queued Protocol"
     status: "Last Queue Status"
   footer:
-    mail_to: "hundc@musc.edu"
+    mail_to: "​sparc-admin@lists.utah.edu"
     mail_link: "Sign Up For the SPARC Request Listserv"
     mail_subject: "SPARC Request Listserv"
     link_one_text: "SPARC Request Blog"
     link_one_url: "https://sparcrequestblog.com/"
-    link_two_text: "SCTR"
-    link_two_url: "http://sctr.musc.edu"
+    link_two_text: "CCTS"
+    link_two_url: "http://medicine.utah.edu/ccts/"
     link_three_text: "SPARC Request Home"
-    link_three_url: "http://academicdepartments.musc.edu/sctr/sparc_request"
+    link_three_url: "/"
   identity:
     approved: "Account approved"
     disapproved: "Account disapproved"
@@ -2068,4 +2068,3 @@ en:
     message: "To begin to search and add authorized users to this study/project, type in the first or last name of the user.  Select as appropriate."
     search_box_header: "User Search"
     search_placeholder: "Search for user..."
-
