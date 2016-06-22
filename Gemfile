@@ -11,9 +11,6 @@ gem 'bluecloth'
 gem 'bootstrap-sass'
 gem 'bootstrap-select-rails'
 gem 'bootstrap3-datetimepicker-rails'
-gem 'capistrano'
-gem 'capistrano-ext'
-gem 'rails-html-sanitizer'
 gem 'coffee-rails'
 gem 'delayed_job_active_record'
 gem 'devise', '~> 3.5.1'
@@ -127,8 +124,6 @@ group :profile do
   gem 'ruby-prof'
 end
 
-gem 'bootstrap-sass', '~> 3.3.6'
-gem 'bourbon'
 gem 'whenever', :require => false
 
 gem 'faker'
