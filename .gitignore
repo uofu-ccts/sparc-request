@@ -46,6 +46,7 @@ config/database.yml
 config/ldap.yml
 config/application.yml
 config/ldap.yml
+config/cas.yml
 config/epic.yml
 config/initializers/abstract_mysql_adapter.rb
 public/portal

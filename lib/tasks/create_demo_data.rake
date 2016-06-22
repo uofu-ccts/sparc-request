@@ -5,8 +5,6 @@ require 'faker'
 module Portal
 end
 
-require "#{Rails.root}/app/helpers/portal/projects_helper"
-include Portal::ProjectsHelper
 
 $funding_source = %w(college federal foundation industry investigator internal unfunded)
 
