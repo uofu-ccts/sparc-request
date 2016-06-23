@@ -656,6 +656,13 @@ namespace :demo do
     end
   end
 
+  desc 'fix processing ssr'
+  task :fix_processing_ssrs => :environment do
+    Institution.all.each do |i|
+      i.update_attribute(:process_ssrs, true)
+      i.save
+    end
+  end
 
   desc 'create default pricing map for all services'
   task :create_pricing_map => :environment do
