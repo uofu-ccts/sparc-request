@@ -313,6 +313,17 @@ namespace :setup do
     end
   end
 
+  desc "fix processing ssrs"
+  task :fix_processing_ssrs do
+    on roles(:app) do
+      within "#{current_path}" do
+        with rails_env: fetch(:rails_env) do
+          execute :bundle, "exec rake demo:fix_processing_ssrs"
+        end
+      end
+    end
+  end
+
   desc "batch create service"
   task :batch_create_service do
     on roles(:app) do
@@ -334,17 +345,6 @@ namespace :setup do
           ldap_uid = ask_name('ldap_uid')
           times = ask_times
           execute :bundle, "exec rake demo:batch_create_project[#{ldap_uid},#{times}]" # ldap_uid has no empty spaces, so no need to wrap it with single quote
-        end
-      end
-    end
-  end
-
-  desc "fix processing ssrs"
-  task :fix_processing_ssrs do
-    on roles(:app) do
-      within "#{current_path}" do
-        with rails_env: fetch(:rails_env) do
-          execute :bundle, "exec rake demo:fix_processing_ssrs"
         end
       end
     end
