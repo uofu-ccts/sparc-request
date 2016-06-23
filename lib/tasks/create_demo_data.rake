@@ -673,13 +673,13 @@ namespace :demo do
       i.update_attribute(:css_class, '')
       i.save
     end
-
     Provider.all.each do |i|
       puts "#{i.name.red} missing css class" unless i.css_class
       i.update_attribute(:css_class, '')
       i.save
     end
   end
+
 
   desc 'create default pricing map for all services'
   task :create_pricing_map => :environment do
