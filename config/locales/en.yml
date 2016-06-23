@@ -33,11 +33,11 @@ en:
   application_title: "SPARC Request"
   bug_enhancement_link: "Report a bug or request an enhancement"
   catalog_manager_title: "SPARC Request Catalog Manager"
-  error_contact: "(843) 792-8300 or success@musc.edu"
+  error_contact: "sparc@chpc.utah.edu"
   feedback: "Feedback"
-  issue_contact: "Please contact the SUCCESS Center at (843) 792-8300 or success@musc.edu for assistance with this process or with any questions you may have."
+  issue_contact: "Please contact the BMIC at sparc@chpc.utah.edu for assistance with this process or with any questions you may have."
   portal_title: "SPARC Request Portal"
-  create_an_account: 'Non-MUSC User? Create an Account'
+  create_an_account: 'Non-U of U User? Create an Account'
 
 
 
@@ -1830,7 +1830,7 @@ en:
     dashboard: "Dashboard"
     faq: "Help/FAQs"
     feedback: "Feedback"
-    redcap_survey: 'https://redcap.musc.edu/surveys/?s=A37TNJWJPL'
+    redcap_survey:
 
   # Service Request approve epic rights
   approve_epic_rights:
@@ -1847,7 +1847,7 @@ en:
       provider: "Provider:"
       short_title: "Short Title: "
     download_button: "Download my Service Request"
-    instructions: "Thank you for submitting your service request(s) through SPARC Request. An email has been sent to each of your service providers and they should be contacting you soon. If you have any questions or concerns, please don't hesitate to contact the SUCCESS Center at 792-8300 or success@musc.edu."
+    instructions: "Thank you for submitting your service request(s) through SPARC Request. An email has been sent to each of your service providers and they should be contacting you soon. If you have any questions or concerns, please don't hesitate to contact the SPARC Helpdesk at sparc@chpc.utah.edu"
     portal_button: "Go to Dashboard"
     research_pricing_instructions : "You have successfully submitted a request to get a cost estimate. An email(s) has been submitted on your behalf, and we will respond to your request for a cost estimate shortly. Should you have any questions regarding your request(s), please contact the service provider contact(s) listed below."
 
@@ -1933,10 +1933,10 @@ en:
   login_password: "Password:"
   remember_user: "Remember me:"
   signin:
-    button1: "MUSC Users Click Here"
+    button1: "U of U Users Click Here"
     button2: "Outside Users Click Here"
     button3: "Sign In"
-    message1: "MUSC Users- Sign in here"
+    message1: "U of U Users- Sign in here"
     message2: ""
     message3: "Outside Users- Sign in here with your SPARC Request account"
     message4: ""
@@ -1945,7 +1945,7 @@ en:
   create_new_account_link: "Outside Users: Don't have an account? Click here."
   initial_signin_dialog: "You are not currently logged into SPARC Request. If you are affiliated with an institution and have an institutional login OR have created a SPARC Request account and have a SPARC Request login and password, please click the top button to proceed. If you are not currently affiliated with an institution OR do not have a SPARC Request login/password, please click the button on the bottom to proceed with creating a new account."
   proceed_to_database_login: "Outside Users with existing SPARC Request Accounts"
-  proceed_to_shibboleth: "MUSC Users"
+  proceed_to_shibboleth: "U of U Users"
 
   # Steps navigation
   step_navigation:
@@ -2023,7 +2023,7 @@ en:
       question_text5: "How is SPARC Request calculating my indirect costs?"
       answer_text5: "The original requester for your study/project defined both the funding source of the study/project and the indirect cost rate. SPARC Request uses this data to calculate your total overall indirect costs."
       question_text6: "I\'m stuck! Who can I contact for assistance with SPARC Request?"
-      answer_text6: "The SUCCESS Center is happy to assist you! Please contact us at success@musc.edu or (843) 792-3357."
+      answer_text6: "The SPARC Helpdesk is happy to assist you! Please contact us at sparc@chpc.utah.edu."
 
   # User details partial
   user_details:
