@@ -55,7 +55,8 @@ namespace :demo do
       abbreviation: Faker::Hacker.abbreviation,
       process_ssrs: true,
       is_available:  true,
-      description: Faker::Lorem.paragraph
+      description: Faker::Lorem.paragraph,
+      css_class: ''
     )
 
     Institution.where({name: name, type: 'Institution' }).first
@@ -70,7 +71,8 @@ namespace :demo do
       abbreviation: Faker::Hacker.abbreviation,
       is_available:  true,
       parent_id: parent_id,
-      description: Faker::Lorem.paragraph
+      description: Faker::Lorem.paragraph,
+      css_class: ''
     )
 
     provider = Provider.where({name: name, type: 'Provider' }).first
@@ -86,7 +88,8 @@ namespace :demo do
       abbreviation: Faker::Hacker.abbreviation,
       is_available:  true,
       parent_id: parent_id,
-      description: Faker::Lorem.paragraph
+      description: Faker::Lorem.paragraph,
+      css_class: ''
     )
 
     Program.where({name: name, type: 'Program' }).first
@@ -100,7 +103,8 @@ namespace :demo do
       abbreviation: Faker::Hacker.abbreviation,
       is_available:  true,
       parent_id: parent_id,
-      description: Faker::Lorem.paragraph
+      description: Faker::Lorem.paragraph,
+      css_class: ''
     )
 
     core = Core.where({name: name, type: 'Core' }).first
@@ -658,6 +662,15 @@ namespace :demo do
   task :fix_processing_ssrs => :environment do
     Institution.all.each do |i|
       i.update_attribute(:process_ssrs, true)
+      i.save
+    end
+  end
+
+  desc 'fix institution css class'
+  task :fix_css_class => :environment do
+    Institution.all.each do |i|
+      puts "#{i.name.red} missing css class" unless i.css_class
+      i.update_attribute(:css_class, '')
       i.save
     end
   end
