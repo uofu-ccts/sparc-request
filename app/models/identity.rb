@@ -159,7 +159,7 @@ class Identity < ActiveRecord::Base
     orgs =[]
     orgs << ssr.organization << ssr.organization.parents
     orgs.flatten!
-    
+
     orgs.each do |org|
       provider_ids = org.service_providers_lookup.map{|x| x.identity_id}
       if provider_ids.include?(self.id)
@@ -199,6 +199,9 @@ class Identity < ActiveRecord::Base
 
     unless identity
       identity = Identity.create :ldap_uid => auth.uid, :first_name => auth.info.first_name, :last_name => auth.info.last_name, :email => auth.info.email, :password => Devise.friendly_token[0,20], :approved => true
+    end
+    if !identity.persisted?
+      identity.save
     end
     identity
   end
@@ -353,7 +356,7 @@ class Identity < ActiveRecord::Base
     orgs = Organization.all
     organizations = []
     arr = organizations_for_users(orgs, su_only)
-    
+
     arr.each do |org|
       organizations << org.all_children(orgs)
     end
