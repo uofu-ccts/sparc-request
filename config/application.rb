@@ -103,6 +103,8 @@ module SparcRails
       margin_bottom: '1in',
       print_media_type: true
 
+    config.middleware.use Oink::Middleware
+    
     config.to_prepare do
       Devise::SessionsController.layout "custom_devise"
       Devise::RegistrationsController.layout "custom_devise"

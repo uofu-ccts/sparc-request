@@ -62,9 +62,8 @@ gem 'will_paginate'
 gem 'will_paginate-bootstrap'
 gem 'x-editable-rails'
 gem 'omniauth-cas'
-
 gem 'colorize'
-
+gem 'oink'
 gem 'rubyzip'
 
 gem 'railroady'
