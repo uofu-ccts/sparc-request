@@ -53,6 +53,7 @@ namespace :demo do
       type: 'Institution',
       order: 1,
       abbreviation: Faker::Hacker.abbreviation,
+      process_ssrs: true,
       is_available:  true,
       description: Faker::Lorem.paragraph
     )
