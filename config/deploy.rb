@@ -339,6 +339,17 @@ namespace :setup do
     end
   end
 
+  desc "fix processing ssrs"
+  task :fix_processing_ssrs do
+    on roles(:app) do
+      within "#{current_path}" do
+        with rails_env: fetch(:rails_env) do
+          execute :bundle, "exec rake demo:fix_processing_ssrs"
+        end
+      end
+    end
+  end
+
   desc "truncate tables."
   task :truncate do
 
