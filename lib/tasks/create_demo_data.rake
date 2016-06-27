@@ -557,7 +557,7 @@ namespace :demo do
   end
 
   desc 'batch create serivce'
-  task :batch_create_service, [:name, :times] => :environment do |t, args|
+  task :batch_create_service, [:ldap_uid, :name, :times] => :environment do |t, args|
     if args[:name]
       core_name = args[:name]
     else
