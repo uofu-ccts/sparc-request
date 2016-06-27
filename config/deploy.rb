@@ -330,8 +330,9 @@ namespace :setup do
       within "#{current_path}" do
         with rails_env: fetch(:rails_env) do
           name = ask_name('Core')
+          ldap_uid = ask_name('ldap_uid')
           times = ask_times
-          execute :bundle, "exec rake demo:batch_create_service['#{name}',#{times}]" # name is a string which could contain empty spaces, use single quote to wrap it
+          execute :bundle, "exec rake demo:batch_create_service[#{ldap_uid},'#{name}',#{times}]" # name is a string which could contain empty spaces, use single quote to wrap it
         end
       end
     end

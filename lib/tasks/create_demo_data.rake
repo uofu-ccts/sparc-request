@@ -197,6 +197,16 @@ namespace :demo do
     update_visit_groups
   end
 
+  def fix_service_provider
+    Provider.all.each do |p|
+      puts "checking service provider: #{p.name.green}"
+      if p.service_providers.empty?
+        associate_service_provider(p, choose_a_service_provider)
+        puts "#{p.name.green} => #{service_provider.identity.ldap_uid.red}"
+      end
+    end
+  end
+
   def update_sub_service_request(service_request)
     service_request.reload
     service_request.service_list.each do |org_id, values|
@@ -293,7 +303,7 @@ namespace :demo do
     service
   end
 
-  def batch_create_service(core_name, times)
+  def batch_create_service(catalog_manager, core_name, times)
     core = Core.where({name: core_name}).first
     if !core.nil?
       ActiveRecord::Base.transaction do
@@ -304,7 +314,7 @@ namespace :demo do
       end
     else
       puts "No core with name #{core_name} found. Creating now....".red
-      core = build_core_hierachy
+      core = build_core_hierachy(catalog_manager)
       ActiveRecord::Base.transaction do
         (1..times).each do |n|
           service = build_service(core)
@@ -406,6 +416,12 @@ namespace :demo do
     return false
   end
 
+  def choose_a_service_provider
+    identities = Identity.limit(100)
+    index = rand(identities.size)
+    identities[index]
+  end
+
   def chooseRandomProgram
     index = rand(Program.all.size)
     program = Program.all[index]
@@ -459,10 +475,25 @@ namespace :demo do
     answer.downcase == 'y' || answer.downcase == 'yes'
   end
 
-  def build_core_hierachy
+  def associate_service_provider(provider, identity)
+    service_provider = provider.service_providers.new
+    service_provider.identity = identity
+    service_provider.save
+  end
+
+  def associate_catalog_manager(institution, identity)
+    catalog_manager = institution.catalog_managers.new
+    catalog_manager.identity = identity
+    catalog_manager.save
+  end
+
+  def build_core_hierachy(identity)
     institution = create_institution Faker::University.name
+    associate_catalog_manager(institution, identity)
     puts "#{institution.name}"
     provider = create_provider(Faker::Company.name, institution.id)
+    associate_service_provider(provider, identity)
+    associate_service_provider(provider, choose_a_service_provider)
     puts "#{provider.name}".red
     program = create_program(Faker::Company.name, provider.id)
     puts "#{program.name}"
@@ -503,6 +534,11 @@ namespace :demo do
 
   end
 
+  desc 'fix service provider'
+  task :fix_service_provider => :environment do
+    fix_service_provider
+  end
+
   desc 'create project'
   task :batch_create_project, [:ldap_uid ,:times] => :environment do |t, args|
     if args[:ldap_uid]
@@ -532,12 +568,20 @@ namespace :demo do
     else
       times = ask_times.to_i
     end
-    batch_create_service(core_name, times)
+    if args[:ldap_uid]
+      ldap_uid = args[:ldap_uid]
+    else
+      ldap_uid = ask_ldap_uid
+    end
+    catalog_manager = Identity.where(ldap_uid: ldap_uid).first
+    batch_create_service(catalog_manager, core_name, times)
   end
 
   desc 'create institution'
-  task :create_institution => :environment do
-    build_core_hierachy
+  task :build_core_hierachy => :environment do
+    ldap_uid = ask_ldap_uid
+    identity = Identity.where(ldap_uid: ldap_uid).first
+    build_core_hierachy(identity)
   end
 
   desc 'find protocol'
@@ -563,9 +607,10 @@ namespace :demo do
 
   desc 'build service request'
   task :build_service_request => :environment do
-    core = build_core_hierachy
     ldap_uid = ask_ldap_uid
-    service_request = build_service_request(Identity.find_by_ldap_uid(ldap_uid), core)
+    identity = Identity.where(ldap_uid: ldap_uid).first
+    core = build_core_hierachy(identity)
+    service_request = build_service_request(identity, core)
     puts "#{service_request.service_requester.display_name} created #{service_request.protocol.title.green}. #{service_request.sub_service_requests.first.organization.name}"
   end
 
