@@ -203,7 +203,7 @@ namespace :demo do
       if p.service_providers.empty?
         service_provider = choose_a_service_provider
         associate_service_provider(p, service_provider)
-        puts "#{p.name.green} => #{service_provider.identity.ldap_uid.red}"
+        puts "#{p.name.green} => #{service_provider.ldap_uid.red}"
       end
     end
   end
