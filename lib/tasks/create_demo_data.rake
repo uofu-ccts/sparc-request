@@ -201,7 +201,8 @@ namespace :demo do
     Provider.all.each do |p|
       puts "checking service provider: #{p.name.green}"
       if p.service_providers.empty?
-        associate_service_provider(p, choose_a_service_provider)
+        service_provider = choose_a_service_provider
+        associate_service_provider(p, service_provider)
         puts "#{p.name.green} => #{service_provider.identity.ldap_uid.red}"
       end
     end
