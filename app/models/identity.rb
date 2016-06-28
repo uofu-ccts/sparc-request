@@ -198,8 +198,10 @@ class Identity < ActiveRecord::Base
     identity = Identity.where(:ldap_uid => auth.uid).first
 
     unless identity
-      uid = "#{auth.uid}@#{DOMAIN}"
       identity = Directory.search_and_merge_ldap_and_database_results(uid).first
+      if !identity.persisted?
+        identity.save!
+      end
     end
     identity
   end
