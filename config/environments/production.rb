@@ -95,9 +95,9 @@ SparcRails::Application.configure do
 
   config.middleware.use ExceptionNotification::Rack,
     email: {
-      ignore_if: ->(env, exception) { ['128.23.150.107'].include?(env['REMOTE_ADDR']) },
-      sender_address: 'donotreply@musc.edu',
-      exception_recipients: ['catesa@musc.edu', 'johstu@musc.edu', 'leonarjp@musc.edu', 'wiel@musc.edu', 'lohrp@musc.edu', 'holtw@musc.edu']
+      ignore_if: ->(env, exception) { ['155.101.208'].include?(env['REMOTE_ADDR']) },
+      sender_address: 'no-reply@utah.edu',
+      exception_recipients: ['sparc-techical@lists.utah.edu']
     }
 
 end
