@@ -36,7 +36,7 @@ class Identity < ActiveRecord::Base
   # :token_authenticatable, :confirmable,
   # :lockable, :timeoutable and :omniauthable
   devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :trackable, :omniauthable
+         :recoverable, :rememberable, :trackable, :omniauthable, omniauth_providers: [:cas]
 
   email_regexp = /\A[^@\s]+@([^@\s]+\.)+[^@\s]+\z/
   password_length = 6..128
@@ -159,7 +159,7 @@ class Identity < ActiveRecord::Base
     orgs =[]
     orgs << ssr.organization << ssr.organization.parents
     orgs.flatten!
-    
+
     orgs.each do |org|
       provider_ids = org.service_providers_lookup.map{|x| x.identity_id}
       if provider_ids.include?(self.id)
@@ -191,6 +191,17 @@ class Identity < ActiveRecord::Base
       identity = Identity.create ldap_uid: auth.uid, first_name: auth.info.first_name, last_name: auth.info.last_name, email: auth.info.email, password: Devise.friendly_token[0,20], approved: true
     end
     identity
+  end
+
+  # search the database for the identity with the given ldap_uid, if not found, create a new one
+  def self.find_for_cas_oauth(auth, _signed_in_resource = nil)
+    term = auth.uid
+    ldap_results = Directory.search_ldap(term)
+    db_results = Directory.search_database(term)
+    # If there are any entries returned from ldap that were not in the
+    # database, then create them
+    Directory.create_or_update_database_from_ldap(ldap_results, db_results)
+    Directory.search_database(term).first
   end
 
   def active_for_authentication?
@@ -343,7 +354,7 @@ class Identity < ActiveRecord::Base
     orgs = Organization.all
     organizations = []
     arr = organizations_for_users(orgs, su_only)
-    
+
     arr.each do |org|
       organizations << org.all_children(orgs)
     end

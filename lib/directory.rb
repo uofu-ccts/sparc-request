@@ -21,27 +21,6 @@
 require 'net/ldap'
 
 class Directory
-  # Only initialize LDAP if it is enabled
-  if USE_LDAP
-    # Load the YAML file for ldap configuration and set constants
-    begin
-      ldap_config   ||= YAML.load_file(Rails.root.join('config', 'ldap.yml'))[Rails.env]
-      LDAP_HOST       = ldap_config['ldap_host']
-      LDAP_PORT       = ldap_config['ldap_port']
-      LDAP_BASE       = ldap_config['ldap_base']
-      LDAP_ENCRYPTION = ldap_config['ldap_encryption'].to_sym
-      DOMAIN          = ldap_config['ldap_domain']
-      LDAP_UID        = ldap_config['ldap_uid']
-      LDAP_LAST_NAME  = ldap_config['ldap_last_name']
-      LDAP_FIRST_NAME = ldap_config['ldap_first_name']
-      LDAP_EMAIL      = ldap_config['ldap_email']
-      LDAP_AUTH_USERNAME      = ldap_config['ldap_auth_username']
-      LDAP_AUTH_PASSWORD      = ldap_config['ldap_auth_password']
-      LDAP_FILTER      = ldap_config['ldap_filter']
-    rescue
-      raise "ldap.yml not found, see config/ldap.yml.example"
-    end
-  end
 
   # Searches LDAP and the database for a given search string (can be
   # ldap_uid, last_name, first_name, email).  If an identity is found in
@@ -89,7 +68,6 @@ class Directory
       # use LDAP_FILTER to override default filter with custom string
       filter = (LDAP_FILTER && LDAP_FILTER.gsub('#{term}', term)) || fields.map { |f| Net::LDAP::Filter.contains(f, term) }.inject(:|)
       res = ldap.search(:attributes => fields, :filter => filter)
-      Rails.logger.info ldap.get_operation_result unless res
     rescue => e
       Rails.logger.info '#'*100
       Rails.logger.info "#{e.message} (#{e.class})"
@@ -185,7 +163,7 @@ class Directory
       end
     end
   end
-  
+
   # search and merge results but don't change the database
   # this assumes USE_LDAP = true, otherwise you wouldn't use this function
   def self.search_and_merge_ldap_and_database_results(term)
@@ -197,15 +175,17 @@ class Directory
       identities[identity.ldap_uid] = identity
     end
     ldap_results = Directory.search_ldap(term)
-    ldap_results.each do |ldap_result|
-      uid = "#{ldap_result[LDAP_UID].try(:first).try(:downcase)}@#{DOMAIN}"
-      if identities[uid]
-        results << identities[uid]
-      else 
-        email = ldap_result[LDAP_EMAIL].try(:first)
-        if email && email.strip.length > 0 # all SPARC users must have an email, this filters out some of the inactive LDAP users.
-          results << Identity.new(ldap_uid: uid, first_name: ldap_result[LDAP_FIRST_NAME].try(:first), last_name: ldap_result[LDAP_LAST_NAME].try(:first), email: email)
-        end  
+    if !ldap_results.nil?
+      ldap_results.each do |ldap_result|
+        uid = "#{ldap_result[LDAP_UID].try(:first).try(:downcase)}@#{DOMAIN}"
+        if identities[uid]
+          results << identities[uid]
+        else
+          email = ldap_result[LDAP_EMAIL].try(:first)
+          if email && email.strip.length > 0 # all SPARC users must have an email, this filters out some of the inactive LDAP users.
+            results << Identity.new(ldap_uid: uid, first_name: ldap_result[LDAP_FIRST_NAME].try(:first), last_name: ldap_result[LDAP_LAST_NAME].try(:first), email: email)
+          end
+        end
       end
     end
     results
