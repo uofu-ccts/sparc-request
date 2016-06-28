@@ -476,6 +476,16 @@ namespace :demo do
     answer.downcase == 'y' || answer.downcase == 'yes'
   end
 
+  def associate_super_users(organization, identity)
+    if not organization.super_users or (organization.super_users and not organization.super_users.map(&:id).include? identity.id)
+      # we have a new relationship to create
+      #identity.create_relationship_to oe.id, 'super_user_organizational_unit'
+      super_user = organization.super_users.new
+      super_user.identity = identity
+      super_user.save
+    end
+  end
+
   def associate_service_provider(provider, identity)
     service_provider = provider.service_providers.new
     service_provider.identity = identity
@@ -604,6 +614,25 @@ namespace :demo do
     ldap_uid = ask_ldap_uid
     identity = Identity.where(ldap_uid: ldap_uid).first
     add_services(identity)
+  end
+
+  desc 'create super users'
+  task :associate_super_users => :environment do
+    ldap_uid = ask_ldap_uid
+    identity = Identity.where(ldap_uid: ldap_uid).first
+    institution_name = ask_name("Institution")
+    institution = Institution.where({name: institution_name}).first
+    if identity && institution
+      associate_super_users(institution, identity)
+    else
+      puts "You entered #{ldap_uid.green} and #{institution_name.green}"
+      if !institution
+        puts "but not institution with name #{institution_name.red} exists"
+      end
+      if !identity
+        puts "but not identity with ldap_uid #{ldap_uid.red} exists"
+      end
+    end
   end
 
   desc 'build service request'
