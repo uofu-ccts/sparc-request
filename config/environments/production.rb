@@ -97,7 +97,7 @@ SparcRails::Application.configure do
     email: {
       ignore_if: ->(env, exception) { ['155.101.208'].include?(env['REMOTE_ADDR']) },
       sender_address: 'no-reply@utah.edu',
-      exception_recipients: ['sparc-dev@lists.utah.edu']
+      exception_recipients: ['sparc-techical@lists.utah.edu']
     }
 
 end
