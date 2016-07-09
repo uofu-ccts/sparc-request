@@ -62,13 +62,10 @@ namespace :mysql do
     options = ''
     options << " -u #{config['username']}" if config['username']
     # escape single quote character so it doesn't blow up bash script running
-    options << " -p'#{config['password'].gsub("'", %q(\\\'))}'"  if config['password']
+    options << " -p#{config['password'].gsub("'", %q(\\\'))}"  if config['password']
     options << " -h #{config['host']}"     if config['host']
     options << " -P #{config['port']}"     if config['port']
     options << " #{config['database']}"    if config['database']
-    # options.gsub("'", %q(\\\')) # escape single quote character so it doesn't blow up bash script running
-    # options.gsub(":", %q(\\\:)) # escape single quote character so it doesn't blow up bash script running
-    # options.gsub("(", %q(\\\()) # escape single quote character so it doesn't blow up bash script running
   end
 
   def sh_mysql(config)
