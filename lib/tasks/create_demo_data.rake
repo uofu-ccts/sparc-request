@@ -377,6 +377,23 @@ namespace :demo do
     end
   end
 
+  def fix_rate_type
+    PricingSetup.all.each do |p|
+      %w(college_rate_type federal_rate_type industry_rate_type investigator_rate_type internal_rate_type foundation_rate_type unfunded_rate_type).each do |r|
+        if !p[r]
+          puts "PricingSetup #{r} is not defined"
+          p.update_attribute(r, 'full')
+          p.save!
+        end
+      end
+    end
+  end
+
+  desc 'fix rate type'
+  task :fix_rate_type  => :environment do
+    fix_rate_type
+  end
+
   def setup_default_pricing(i)
     i.build_subsidy_map
     unless PricingSetup.exists?(organization_id: i.id)
@@ -394,7 +411,8 @@ namespace :demo do
         :industry_rate_type => 'full',
         :investigator_rate_type => 'full',
         :internal_rate_type => 'full',
-        :foundation_rate_type => 'full'
+        :foundation_rate_type => 'full',
+        :unfunded_rate_type => 'full'
       }
       i.pricing_setups.create! default
     end
