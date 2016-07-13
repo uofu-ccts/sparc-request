@@ -99,6 +99,10 @@ class Directory
     return query_select + ' ' + query_where
   end
 
+  def self.get_cn_from_dn(dn)
+    dn.split(',')[0].split('=')[1]
+  end
+
   # Create or update the database based on what was returned from ldap.
   # ldap_results should be an array as would be returned from
   # search_ldap.  db_results should be an array as would be returned
@@ -115,7 +119,7 @@ class Directory
 
     ldap_results.each do |r|
       begin
-        uid         = "#{r[LDAP_UID].try(:first).try(:downcase)}@#{DOMAIN}"
+        uid         = "#{Directory.get_cn_from_dn(r.dn)}@#{DOMAIN}"
         email       = r[LDAP_EMAIL].try(:first)
         first_name  = r[LDAP_FIRST_NAME].try(:first)
         last_name   = r[LDAP_LAST_NAME].try(:first)
