@@ -69,6 +69,7 @@ begin
   ABOUT_SPARC_URL                           = application_config['about_sparc_url'] || nil
   USE_FEEDBACK_LINK                         = application_config['use_feedback_link'] || false
   NAVBAR_LINKS                              = application_config['navbar_links'] || {}
+  CONTACT_US_EMAIL                          = application_config['contact_us_email']
 
   if LOCALE_OVERRIDE
     I18n.available_locales = [:en, LOCALE_OVERRIDE]
