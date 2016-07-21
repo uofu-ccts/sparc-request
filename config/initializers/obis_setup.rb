@@ -74,7 +74,7 @@ begin
   USE_SHIBOLETH                             = application_config['use_shiboleth'] || false
   USE_SHIBOLETH_ONLY                        = application_config['use_shibboleth_only'] || false
   USER_PORTAL_LINK                          = application_config['user_portal_link']
-
+  CONTACT_US_EMAIL                          = application_config['contact_us_email']
 
   # Only initialize LDAP if it is enabled
   if USE_LDAP
