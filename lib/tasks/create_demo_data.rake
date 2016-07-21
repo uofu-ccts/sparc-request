@@ -63,6 +63,11 @@ namespace :demo do
 
   end
 
+  def build_subsidy_map(organization)
+    organization.build_subsidy_map()
+    organization.save
+  end
+
   def create_provider(name, parent_id)
     Provider.seed(:name, :type,
       name: name,
@@ -206,6 +211,33 @@ namespace :demo do
         puts "#{p.name.green} => #{service_provider.ldap_uid.red}"
       end
     end
+  end
+
+  def fix_subsidy
+    Provider.all.each do  |p|
+      if p.subsidy_map.nil?
+        p.build_subsidy_map()
+        puts "#{p.name.green} missing subsidy map"
+        p.save
+      end
+    end
+
+    Program.all.each do  |p|
+      if p.subsidy_map.nil?
+        p.build_subsidy_map()
+        puts "#{p.name.green} missing subsidy map"
+        p.save
+      end
+    end
+
+    Core.all.each do  |p|
+      if p.subsidy_map.nil?
+        p.build_subsidy_map()
+        puts "#{p.name.green} missing subsidy map"
+        p.save
+      end
+    end
+
   end
 
   def update_sub_service_request(service_request)
@@ -566,6 +598,11 @@ namespace :demo do
   desc 'fix service provider'
   task :fix_service_provider => :environment do
     fix_service_provider
+  end
+
+  desc 'fix subsidy'
+  task :fix_subsidy => :environment do
+    fix_subsidy
   end
 
   desc 'create project'
