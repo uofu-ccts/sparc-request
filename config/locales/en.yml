@@ -1793,6 +1793,8 @@ en:
     tooltips:
       research_study_tooltip: 'Research Study: An individual research study with defined aims and outcomes'
       research_project_tooltip: "Use 'Project' for non-study specific service requests, or anything that is not a study"
+      edit_study_tooltip: "Click this button and go back to edit study information"
+      edit_project_tooltip: "Click this button and go back to edit project information"
 
   # Rails Root Page Messages
   rails_root:
@@ -2068,4 +2070,3 @@ en:
     message: "To begin to search and add authorized users to this study/project, type in the first or last name of the user.  Select as appropriate."
     search_box_header: "User Search"
     search_placeholder: "Search for user..."
-
