@@ -85,6 +85,10 @@ RSpec.describe 'Directory' do
           "givenname" => [ 'Foo' ],
           "sn" =>        [ 'Bar' ]}
 
+      def r.dn
+        'cn=foo'
+      end
+
       orig_count = Identity.count
       Directory.create_or_update_database_from_ldap([r], Identity.all)
       expect(Identity.count).to eq orig_count + 1
@@ -103,6 +107,10 @@ RSpec.describe 'Directory' do
           "mail" =>      [ 'bobama@whitehouse.gov' ],
           "givenname" => [ 'Bo' ],
           "sn" =>        [ 'Bama' ]}
+
+     def r.dn
+       'cn=mobama'
+     end
 
       orig_count = Identity.count
       Directory.create_or_update_database_from_ldap([r], Identity.all)
