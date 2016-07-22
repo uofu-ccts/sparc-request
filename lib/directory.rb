@@ -65,6 +65,13 @@ class Directory
 
   end
 
+  def self.get_ldap_filter_for_full_name(term)
+    search_terms = term.strip.split
+    givenName = search_terms[0]
+    sn = search_terms[1]
+    "(& (sn=#{sn}*) (givenName=#{givenName}*))"
+  end
+
   # Searches LDAP only for the given search string.  Returns an array of
   # Net::LDAP::Entry.
   def self.search_ldap(term)
@@ -81,6 +88,10 @@ class Directory
       ldap.auth LDAP_AUTH_USERNAME, LDAP_AUTH_PASSWORD unless !LDAP_AUTH_USERNAME || !LDAP_AUTH_PASSWORD
       # use LDAP_FILTER to override default filter with custom string
       filter = (LDAP_FILTER && LDAP_FILTER.gsub('#{term}', term)) || fields.map { |f| Net::LDAP::Filter.contains(f, term) }.inject(:|)
+      search_terms = term.strip.split
+      if search_terms.length == 2 
+        filter = self.get_ldap_filter_for_full_name(term)
+      end
       res = ldap.search(:attributes => fields, :filter => filter)
     rescue => e
       Rails.logger.info '#'*100
