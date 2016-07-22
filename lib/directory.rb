@@ -51,6 +51,20 @@ class Directory
     return identities
   end
 
+  def self.search_database_by_full_name(term)
+    search_terms = term.strip.split
+    if search_terms.length == 2 # if the terms has two term, assuming searching by both full_name and last_name
+      first_name = search_terms[0]
+      last_name = search_terms[1]
+      search_query = "select distinct identities.* from identities where identities.first_name like \"%#{first_name}%\" and identities.last_name like \"%#{last_name}%\""
+      puts search_query
+      return Identity.find_by_sql(search_query)
+    else # otherwise, use or to combine all the terms
+      return self.search_database(term)
+    end
+
+  end
+
   # Searches LDAP only for the given search string.  Returns an array of
   # Net::LDAP::Entry.
   def self.search_ldap(term)

@@ -30,6 +30,11 @@ RSpec.describe 'Directory' do
   let!(:id3) { create(:identity, ldap_uid: 'omally@musc.edu', email: 'omally@musc.edu', last_name: "O'Mally", first_name: 'Shameless') }
 
   describe 'search_database' do
+    it 'should search database by full name' do
+      expect(Directory.search_database_by_full_name('Mo Obama')).to eq [ id1 ]
+      expect(Directory.search_database_by_full_name('Isaplanettoo Pluto')).to eq [ id2 ]
+      expect(Directory.search_database_by_full_name('Shameless O\'Mally')).to eq [ id3 ]
+    end
     it 'should search the ldap uid field' do
       expect(Directory.search_database('mobama')).to eq [ id1 ]
     end
