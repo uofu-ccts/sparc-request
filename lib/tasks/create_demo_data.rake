@@ -9,6 +9,27 @@ $funding_source = %w(college federal foundation industry investigator internal u
 
 namespace :demo do
 
+  def clear_dup_from_identity
+    Identity.select(:email).map(&:email).uniq.each do |email|
+      Identity.where(email: email).each do |identity|
+        ldap_results = Directory.search_ldap(email)
+        if !ldap_results.blank?
+          r = ldap_results.first
+          ldap_uid = "#{r[LDAP_UID].try(:first).try(:downcase)}@#{DOMAIN}"
+          if ldap_uid != identity.ldap_uid
+            puts "#{identity.email.green} #{identity.ldap_uid} is not consistent"
+            identity.destroy
+          end
+        end
+      end
+    end
+  end
+
+  desc 'clear dup identit'
+  task :clear_dup_from_identity => :environment do
+    clear_dup_from_identity
+  end
+
   def create_identity
     Identity.seed(:ldap_uid,
     last_name:             'Glenn',
