@@ -195,13 +195,7 @@ class Identity < ActiveRecord::Base
 
   # search the database for the identity with the given ldap_uid, if not found, create a new one
   def self.find_for_cas_oauth(auth, _signed_in_resource = nil)
-    term = auth.uid
-    ldap_results = Directory.search_ldap(term)
-    db_results = Directory.search_database(term)
-    # If there are any entries returned from ldap that were not in the
-    # database, then create them
-    Directory.create_or_update_database_from_ldap(ldap_results, db_results)
-    Directory.search_database(term).first
+    Directory.find_for_cas_oauth(auth.uid)
   end
 
   def active_for_authentication?
