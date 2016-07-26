@@ -9,6 +9,34 @@ $funding_source = %w(college federal foundation industry investigator internal u
 
 namespace :demo do
 
+  def batch_create_super_users
+    super_users = YAML.load_file(Rails.root.join('config', 'application.yml'))[Rails.env]['super_users']
+    super_users.each do |u|
+      ldap_uid = "#{u['uid']}@utah.edu"
+      if Identity.find_by_ldap_uid(ldap_uid).nil?
+        first_name = u['first_name']
+        last_name = u['last_name']
+        email = u['email']
+        puts "#{ldap_uid.green} #{u['email'].yellow} #{first_name.blue} #{last_name.blue}"
+        Identity.create!(
+            first_name: first_name,
+            last_name:  last_name,
+            email:      email,
+            ldap_uid:   ldap_uid,
+            password:   Devise.friendly_token[0,20],
+            approved:   true)
+      end
+      identity = Identity.find_by_ldap_uid(ldap_uid)
+      organization = Institution.find_by_name('University of Utah')
+      associate_super_users(organization, identity)
+    end
+  end
+
+  desc 'batch create super users'
+  task :batch_create_super_users => :environment do
+    batch_create_super_users
+  end
+
   def batch_clear_identity
     Identity.where.not(ldap_uid: 'ccts.admin').delete_all
   end
