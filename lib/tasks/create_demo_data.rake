@@ -9,11 +9,20 @@ $funding_source = %w(college federal foundation industry investigator internal u
 
 namespace :demo do
 
+  def batch_clear_identity
+    Identity.where.not(ldap_uid: 'ccts.admin').delete_all
+  end
+
+  desc 'batch clear identity, except ccts.admin'
+  task :batch_clear_identity => :environment do
+    batch_clear_identity
+  end
+
   def batch_clear_dup_identity
     Identity.where('ldap_uid like "u%@utah.edu"').delete_all
   end
 
-  desc 'batch clear dup identit'
+  desc 'batch clear dup identity'
   task :batch_clear_dup_identity => :environment do
     batch_clear_dup_identity
   end
