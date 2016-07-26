@@ -129,14 +129,22 @@ class Directory
   end
 
   def self.find_for_cas_oauth(cas_uid)
-    ldap_results = Directory.search_ldap(cas_uid)
-    return Identity.new if ldap_results.blank?
-    identity = ldap_results.first
-    ldap_uid = "#{identity.uid.try(:first).try(:downcase)}@#{DOMAIN}"
+    # first check if the identity already exists, ldap_uid is cas_uid@utah.edu
+    ldap_uid = "#{cas_uid}@#{DOMAIN}"
     db_result = Identity.find_by_ldap_uid(ldap_uid)
     return db_result unless db_result.nil?
+    # if this is the first time, the user tries to login via cas, create an identity for it
+    ldap_results = Directory.search_ldap(cas_uid)
     Directory.create_or_update_database_from_ldap(ldap_results, [])
     Identity.find_by_ldap_uid(ldap_uid)
+  end
+
+  def self.verify_ldap_result(r)
+    uid         = "#{Directory.get_cn_from_dn(r.dn)}@#{DOMAIN}"
+    email       = r[LDAP_EMAIL].try(:first)
+    first_name  = r[LDAP_FIRST_NAME].try(:first)
+    last_name   = r[LDAP_LAST_NAME].try(:first)
+    return !(uid.nil? || email.nil? || first_name.nil? || last_name.nil?)
   end
 
   # Create or update the database based on what was returned from ldap.
@@ -155,7 +163,11 @@ class Directory
 
     ldap_results.each do |r|
       begin
-        uid         = "#{r[LDAP_UID].try(:first).try(:downcase)}@#{DOMAIN}"
+        if !self.verify_ldap_result(r)
+          Rails.logger.info r.inspect
+          next
+        end
+        uid         = "#{Directory.get_cn_from_dn(r.dn)}@#{DOMAIN}"
         email       = r[LDAP_EMAIL].try(:first)
         first_name  = r[LDAP_FIRST_NAME].try(:first)
         last_name   = r[LDAP_LAST_NAME].try(:first)
@@ -217,7 +229,7 @@ class Directory
     ldap_results = Directory.search_ldap(term)
     if !ldap_results.nil?
       ldap_results.each do |ldap_result|
-        uid = "#{ldap_result[LDAP_UID].try(:first).try(:downcase)}@#{DOMAIN}"
+        uid = "#{Directory.get_cn_from_dn(ldap_result.dn)}@#{DOMAIN}"
         if identities[uid]
           results << identities[uid]
         else
