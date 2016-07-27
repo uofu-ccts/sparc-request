@@ -29,6 +29,7 @@ namespace :demo do
       identity = Identity.find_by_ldap_uid(ldap_uid)
       organization = Institution.find_by_name('University of Utah')
       associate_super_users(organization, identity)
+      associate_catalog_manager(institution, identity)
     end
   end
 
