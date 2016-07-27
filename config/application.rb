@@ -108,5 +108,8 @@ module SparcRails
       Devise::RegistrationsController.layout "custom_devise"
       Devise::PasswordsController.layout "custom_devise"
     end
+
+    config.middleware.use Oink::Middleware
+    
   end
 end
