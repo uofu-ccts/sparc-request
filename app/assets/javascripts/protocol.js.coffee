@@ -25,6 +25,8 @@ $(document).ready ->
 
   $('.new-study-button').tooltip()
   $('.new-project-button').tooltip()
+  $('.edit-study-button').tooltip()
+  $('.edit-project-button').tooltip()
 
   infotip.setText('Research Study: An individual research study with defined aims and outcomes', '#infotip img')
 
@@ -62,4 +64,3 @@ $(document).ready ->
       $('.edit-project').show()
 
   $('#redirect').button()
-  
