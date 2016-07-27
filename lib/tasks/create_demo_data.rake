@@ -273,6 +273,11 @@ namespace :demo do
   def fix_service_provider
     Provider.all.each do |p|
       puts "checking service provider: #{p.name.green}"
+      p.service_providers.each do |sp|
+        if sp.identity.nil?
+          sp.destroy
+        end
+      end
       if p.service_providers.empty?
         service_provider = choose_a_service_provider
         associate_service_provider(p, service_provider)
