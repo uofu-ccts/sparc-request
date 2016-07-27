@@ -280,6 +280,10 @@ namespace :demo do
           must_reload = true
         end
       end
+      if !p.process_ssrs
+      	 p.update_attribute(:process_ssrs, true)
+	        p.save!
+      end
       if must_reload
         p.reload
       end
