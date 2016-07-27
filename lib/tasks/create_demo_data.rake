@@ -273,10 +273,15 @@ namespace :demo do
   def fix_service_provider
     Provider.all.each do |p|
       puts "checking service provider: #{p.name.green}"
+      must_reload = false
       p.service_providers.each do |sp|
         if sp.identity.nil?
           sp.destroy
+          must_reload = true
         end
+      end
+      if must_reload
+        p.reload
       end
       if p.service_providers.empty?
         service_provider = choose_a_service_provider
