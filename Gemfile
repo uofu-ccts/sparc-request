@@ -11,8 +11,6 @@ gem 'bluecloth'
 gem 'bootstrap-sass'
 gem 'bootstrap-select-rails'
 gem 'bootstrap3-datetimepicker-rails'
-gem 'capistrano'
-gem 'capistrano-ext'
 gem 'coffee-rails'
 gem 'delayed_job_active_record'
 gem 'devise', '~> 3.5.1'
@@ -51,7 +49,6 @@ gem 'rails-html-sanitizer'
 gem 'redcarpet'
 gem 'remotipart'
 gem 'rest-client'
-gem 'rvm-capistrano', require: false
 gem 'sass'
 gem 'sass-rails'
 gem 'savon', '~> 2.2.0'
@@ -64,6 +61,16 @@ gem 'uglifier', '>= 1.0.3'
 gem 'will_paginate'
 gem 'will_paginate-bootstrap'
 gem 'x-editable-rails'
+gem 'omniauth-cas'
+gem 'colorize'
+gem 'oink'
+gem 'rubyzip'
+
+gem 'railroady'
+gem 'seed_dump'
+gem 'seed-fu', '~> 2.3'
+gem 'smarter_csv'
+gem "non-stupid-digest-assets"
 
 group :development, :test, :profile do
   gem 'addressable', '~> 2.3.6'
@@ -90,6 +97,13 @@ group :development do
   gem 'sqlite3'
   gem 'traceroute'
   gem 'parallel_tests', group: :development
+  gem 'capistrano', '~> 3.1'
+  gem 'capistrano-bundler', '~> 1.1.2'
+  gem 'rvm1-capistrano3', require: false
+  gem 'capistrano-passenger'
+  gem 'capistrano-rails', '~> 1.1'
+  gem 'capistrano-linked-files'
+  gem 'capistrano-rvm'
 end
 
 group :test do
@@ -108,3 +122,5 @@ end
 group :profile do
   gem 'ruby-prof'
 end
+
+gem 'whenever', :require => false
