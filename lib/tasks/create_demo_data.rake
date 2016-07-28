@@ -39,7 +39,7 @@ namespace :demo do
   end
 
   def batch_clear_identity
-    Identity.where.not(ldap_uid: 'ccts.admin').delete_all
+    Identity.where.not(ldap_uid: 'ccts.admin').destroy_all
   end
 
   desc 'batch clear identity, except ccts.admin'
@@ -48,7 +48,7 @@ namespace :demo do
   end
 
   def batch_clear_dup_identity
-    Identity.where('ldap_uid like "u%@utah.edu"').delete_all
+    Identity.where('ldap_uid like "u%@utah.edu"').destroy_all
   end
 
   desc 'batch clear dup identity'
