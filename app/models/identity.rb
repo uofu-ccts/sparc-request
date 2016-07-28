@@ -176,7 +176,7 @@ class Identity < ActiveRecord::Base
   ###############################################################################
 
   def self.search(term)
-    return Directory.search(term)
+    return Directory.search_identities(term)
   end
 
   ###############################################################################
@@ -196,6 +196,10 @@ class Identity < ActiveRecord::Base
   # search the database for the identity with the given ldap_uid, if not found, create a new one
   def self.find_for_cas_oauth(auth, _signed_in_resource = nil)
     Directory.find_for_cas_oauth(auth.uid)
+  end
+
+  def self.find_or_create(ldap_uid)
+    Directory.find_or_create(ldap_uid)
   end
 
   def active_for_authentication?

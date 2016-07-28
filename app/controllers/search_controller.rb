@@ -25,14 +25,14 @@ class SearchController < ApplicationController
     term = params[:term].strip
     results = Service.where("(name LIKE ? OR abbreviation LIKE ? OR cpt_code LIKE ?) AND is_available != ?", "%#{term}%", "%#{term}%", "%#{term}%", "0")
                      .reject{|s| (s.parents.map(&:is_available).compact.all? == false) or ((s.current_pricing_map rescue false) == false)}
-    
+
     unless @sub_service_request.nil?
       results = results.reject{|s| s.parents.exclude? @sub_service_request.organization}
     end
 
     service_request = ServiceRequest.find(session[:service_request_id])
     first_service = service_request.line_items.count == 0
-    
+
     results = results.map { |s|
       {
         :parents      => s.parents.map(&:abbreviation).join(' | '),
@@ -54,10 +54,10 @@ class SearchController < ApplicationController
 
   def identities
     term = params[:term].strip
-    results = Identity.search(term).map do |i| 
+    results = Identity.search(term).map do |i|
       {
        :label              => i.display_name,
-       :value              => i.id,
+       :value              => i.ldap_uid,
        :email              => i.email,
        :institution        => i.institution,
        :phone              => i.phone,

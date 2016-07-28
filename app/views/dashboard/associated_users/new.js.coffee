@@ -56,7 +56,7 @@ $('#authorized_user_search').typeahead(
     url: '/dashboard/associated_users/new.js'
     data:
       protocol_id: $(this).data('protocol-id')
-      identity_id: suggestion.value
+      ldap_uid: suggestion.value
 
 <% end %>
 

@@ -73,6 +73,16 @@ RSpec.describe 'Directory' do
       expect(Identity.all.count).to eq orig_count
     end
 
+    it 'should return results already in database' do
+      orig_count = Identity.count
+      id = Identity.find_or_create('mobama@musc.edu')
+      expect(Identity.count).to eq orig_count
+      expect(id.ldap_uid).to eq 'mobama@musc.edu'
+      expect(id.email).to eq 'mo_bama@whitehouse.gov'
+      expect(id.first_name).to eq 'Mo'
+      expect(id.last_name).to eq 'Obama'
+    end
+
     it 'should create identities that are not already there' do
       r = {
           "uid" =>       [ 'foo' ],

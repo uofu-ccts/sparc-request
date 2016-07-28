@@ -51,6 +51,58 @@ class Directory
     return identities
   end
 
+  def self.find_or_create(ldap_uid)
+    identity = Identity.find_by_ldap_uid(ldap_uid)
+    return identity if identity
+    # search the ldap using unid, create the record in database, and then return it
+    m = /(.*)@#{DOMAIN}/.match(ldap_uid)
+    ldap_results = search_ldap(m[1])
+    Directory.create_or_update_database_from_ldap(ldap_results, [])
+    Identity.find_by_ldap_uid(ldap_uid)
+  end
+
+  # search LDAP and database for a given search strings
+  # if a record is found in database, use it
+  # other search ldap, but does NOT persist the ldap results to database
+  def self.search_identities(term)
+    # Search ldap (if enabled) and the database
+    if USE_LDAP && !SUPPRESS_LDAP_FOR_USER_SEARCH
+      ldap_results = search_ldap(term)
+      db_results = search_database(term)
+      # This is an optimization so we only have to go to the database once
+      identities = { }
+
+      db_results.each do |identity|
+        identities[identity.ldap_uid] = identity
+      end
+
+      ldap_results.each do |r|
+        if !self.verify_ldap_result(r)
+          Rails.logger.info r.inspect
+          next
+        end
+        uid         = "#{Directory.get_cn_from_dn(r.dn)}@#{DOMAIN}"
+        email       = r[LDAP_EMAIL].try(:first)
+        first_name  = r[LDAP_FIRST_NAME].try(:first)
+        last_name   = r[LDAP_LAST_NAME].try(:first)
+        # if the corresponding records does NOT exist in database, create it, but do NOT persist it
+        if !((identity = identities[uid]) or (identity = Identity.find_by_ldap_uid uid))
+          identity = Identity.new(
+              first_name: first_name,
+              last_name:  last_name,
+              email:      email,
+              ldap_uid:   uid,
+              password:   Devise.friendly_token[0,20],
+              approved:   true)
+          db_result.push(identity)
+        end
+      end
+      return db_results
+    else # only search database once
+      return search_database(term)
+    end
+  end
+
   # Searches LDAP only for the given search string.  Returns an array of
   # Net::LDAP::Entry.
   def self.search_ldap(term)

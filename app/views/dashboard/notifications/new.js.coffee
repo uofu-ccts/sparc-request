@@ -56,7 +56,7 @@ $('#user_search').typeahead(
     type: 'get'
     url: '/dashboard/notifications/new.js'
     data:
-      identity_id: suggestion.value
+      ldap_uid: suggestion.value
 
 <% end %>
 <% end %>

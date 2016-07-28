@@ -21,6 +21,29 @@
 class IdentitiesController < ApplicationController
   before_filter(:except => [:approve_account, :disapprove_account]) {|c| params[:portal] == 'true' ? true : c.send(:initialize_service_request)}
   before_filter(:except => [:approve_account, :disapprove_account]) {|c| params[:portal] == 'true' ? true : c.send(:authorize_identity)}
+
+  def find_or_create
+    @identity = Identity.find_or_create(params[:term])
+    @can_edit = false
+    project_role_params = params[session[:protocol_type].to_sym][:project_roles_attributes][@identity.id.to_s] rescue nil
+    if project_role_params
+      project_role_params.delete '_destroy'
+      id = project_role_params.delete 'id'
+
+      if id.blank?
+        @project_role = ProjectRole.new project_role_params
+      else
+        @project_role = ProjectRole.find id
+        @project_role.project_rights = project_role_params[:project_rights]
+      end
+
+      @can_edit = true
+    else
+      @project_role = ProjectRole.new
+    end
+    render :show
+  end
+
   def show
     @identity = Identity.find params[:id]
     @can_edit = false
