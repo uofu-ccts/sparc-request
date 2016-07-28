@@ -86,7 +86,7 @@ class Directory
         first_name  = r[LDAP_FIRST_NAME].try(:first)
         last_name   = r[LDAP_LAST_NAME].try(:first)
         # if the corresponding records does NOT exist in database, create it, but do NOT persist it
-        if !((identity = identities[uid]) or (identity = Identity.find_by_ldap_uid uid))
+        if !((identity = identities[uid]))
           identity = Identity.new(
               first_name: first_name,
               last_name:  last_name,
