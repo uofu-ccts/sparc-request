@@ -30,6 +30,7 @@ class CatalogManager::IdentitiesController < CatalogManager::AppController
     #oe = ObisEntity.find org_unit_id
     oe = Organization.find org_unit_id
     identity = Identity.find_or_create ldap_uid
+    identity_id = identity.id
 
     if rel_type == 'service_provider_organizational_unit'
       if not oe.service_providers or (oe.service_providers and not oe.service_providers.map(&:id).include? identity_id)
