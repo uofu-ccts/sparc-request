@@ -77,26 +77,21 @@ class Directory
       end
 
       ldap_results.each do |r|
-        if !self.verify_ldap_result(r)
-          Rails.logger.info r.inspect
-          next
-        end
-        uid         = "#{Directory.get_cn_from_dn(r.dn)}@#{DOMAIN}"
+        ldap_uid         = "#{get_cn_from_dn(r.dn)}@#{DOMAIN}"
         email       = r[LDAP_EMAIL].try(:first)
         first_name  = r[LDAP_FIRST_NAME].try(:first)
         last_name   = r[LDAP_LAST_NAME].try(:first)
-        # if the corresponding records does NOT exist in database, create it, but do NOT persist it
-        if !((identity = identities[uid]))
-          identity = Identity.new(
-              first_name: first_name,
-              last_name:  last_name,
-              email:      email,
-              ldap_uid:   uid,
-              password:   Devise.friendly_token[0,20],
-              approved:   true)
+        if !identities.has_key? ldap_uid
+          identity = Identity.new do |i|
+            i.first_name = first_name
+            i.last_name = last_name
+            i.email = email
+            i.ldap_uid = ldap_uid
+          end
           db_results.push(identity)
         end
       end
+
       return db_results
     else # only search database once
       return search_database(term)
@@ -191,14 +186,6 @@ class Directory
     Identity.find_by_ldap_uid(ldap_uid)
   end
 
-  def self.verify_ldap_result(r)
-    uid         = "#{Directory.get_cn_from_dn(r.dn)}@#{DOMAIN}"
-    email       = r[LDAP_EMAIL].try(:first)
-    first_name  = r[LDAP_FIRST_NAME].try(:first)
-    last_name   = r[LDAP_LAST_NAME].try(:first)
-    return !(uid.nil? || email.nil? || first_name.nil? || last_name.nil?)
-  end
-
   # Create or update the database based on what was returned from ldap.
   # ldap_results should be an array as would be returned from
   # search_ldap.  db_results should be an array as would be returned
@@ -215,10 +202,6 @@ class Directory
 
     ldap_results.each do |r|
       begin
-        if !self.verify_ldap_result(r)
-          Rails.logger.info r.inspect
-          next
-        end
         uid         = "#{Directory.get_cn_from_dn(r.dn)}@#{DOMAIN}"
         email       = r[LDAP_EMAIL].try(:first)
         first_name  = r[LDAP_FIRST_NAME].try(:first)
