@@ -139,7 +139,7 @@ class Dashboard::AssociatedUsersController < Dashboard::BaseController
   def search_identities
     # Like SearchController#identities, but without ssr/sr authorization
     term    = params[:term].strip
-    results = Identity.search(term).map { |i| { label: i.display_name, value: i.id, email: i.email } }
+    results = Identity.search(term).map { |i| { label: i.display_name, value: i.ldap_uid, email: i.email } }
     results = [{ label: 'No Results' }] if results.empty?
 
     render json: results.to_json

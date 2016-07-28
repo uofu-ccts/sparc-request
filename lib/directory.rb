@@ -94,7 +94,7 @@ class Directory
               ldap_uid:   uid,
               password:   Devise.friendly_token[0,20],
               approved:   true)
-          db_result.push(identity)
+          db_results.push(identity)
         end
       end
       return db_results
