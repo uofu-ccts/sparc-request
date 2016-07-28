@@ -21,7 +21,7 @@
 class Dashboard::AssociatedUsersController < Dashboard::BaseController
   layout nil
   respond_to :html, :json, :js
-  
+
   before_filter :find_protocol_role,                              only: [:edit, :destroy]
   before_filter :find_protocol,                                   only: [:index, :new, :create, :edit, :update, :destroy]
   before_filter :find_admin_for_protocol,                         only: [:index, :new, :create, :edit, :update, :destroy]
@@ -36,7 +36,7 @@ class Dashboard::AssociatedUsersController < Dashboard::BaseController
       format.json
     end
   end
-  
+
   def edit
     @identity     = @protocol_role.identity
     @current_pi   = @protocol.primary_principal_investigator
@@ -50,8 +50,8 @@ class Dashboard::AssociatedUsersController < Dashboard::BaseController
   def new
     @header_text = t(:dashboard)[:authorized_users][:add][:header]
 
-    if params[:identity_id] # if user selected
-      @identity     = Identity.find(params[:identity_id])
+    if params[:ldap_uid] # if user selected
+      @identity     = Identity.find_or_create(params[:ldap_uid])
       @project_role = @protocol.project_roles.new(identity_id: @identity.id)
       @current_pi   = @protocol.primary_principal_investigator
 
@@ -61,7 +61,7 @@ class Dashboard::AssociatedUsersController < Dashboard::BaseController
       end
 
     end
-    
+
     respond_to do |format|
       format.js
     end
@@ -87,7 +87,7 @@ class Dashboard::AssociatedUsersController < Dashboard::BaseController
 
   def update
     updater = Dashboard::AssociatedUserUpdater.new(id: params[:id], project_role: params[:project_role])
-    
+
     if updater.successful?
       #We care about this because the new rights will determine what is rendered
       if @current_user_updated = params[:project_role][:identity_id].to_i == @user.id
@@ -113,9 +113,9 @@ class Dashboard::AssociatedUsersController < Dashboard::BaseController
     @protocol           = @protocol_role.protocol
     epic_access         = @protocol_role.epic_access
     protocol_role_clone = @protocol_role.clone
-    
+
     @protocol_role.destroy
-    
+
     if @current_user_destroyed = protocol_role_clone.identity_id == @user.id
       @protocol_type      = @protocol.type
       @permission_to_edit = false
@@ -141,7 +141,7 @@ class Dashboard::AssociatedUsersController < Dashboard::BaseController
     term    = params[:term].strip
     results = Identity.search(term).map { |i| { label: i.display_name, value: i.id, email: i.email } }
     results = [{ label: 'No Results' }] if results.empty?
-    
+
     render json: results.to_json
   end
 
