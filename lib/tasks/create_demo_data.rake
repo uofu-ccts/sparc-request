@@ -33,6 +33,26 @@ namespace :demo do
     end
   end
 
+  def clean_up_broken_identity
+    %w(CatalogManager Approval ClinicalProvider Note ProjectRole ProtocolFilter ResponseSet ServiceProvider SuperUser Token).each do |model|
+      puts "Before: #{model.yellow} has #{model.constantize.count.to_s.red} records"
+      model.constantize.all.map do |r| r.destroy if r.identity.nil? end
+      puts "After: #{model.yellow} has #{model.constantize.count.to_s.green} records"
+    end
+    Protocol.all.map do |p|
+      if p.primary_principal_investigator.nil?
+        puts "#{p.title.green} #{p.id.yellow} has no project roles."
+        p.destroy
+      end
+    end
+  end
+
+  desc 'clean up broken identity associations'
+  task :clean_up_broken_identity => :environment do
+    clean_up_broken_identity
+  end
+
+
   desc 'batch create super users'
   task :batch_create_super_users => :environment do
     batch_create_super_users
