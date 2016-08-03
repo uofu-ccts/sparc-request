@@ -41,7 +41,7 @@ namespace :demo do
     end
     Protocol.all.map do |p|
       if p.primary_principal_investigator.nil?
-        puts "#{p.title.green} #{p.id.yellow} has no project roles."
+        puts "#{p.title.green} #{p.id.to_s.yellow} has no project roles."
         p.destroy
       end
     end
