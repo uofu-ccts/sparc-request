@@ -97,11 +97,10 @@ class Dashboard::ProtocolsController < Dashboard::BaseController
     protocol_class = params[:protocol][:type].capitalize.constantize
     # fix identity_id
     params[:protocol][:project_roles_attributes].each do |project_role|
-      # if identity_id is not a number, which should be a string (ldap_uid)
-      if !project_role[1][:identity_id].is_a? Numeric
-        identity = Identity.find_or_create project_role[1][:identity_id]
-        project_role[1][:identity_id] = identity.id
-      end
+      id = project_role[1][:identity_id]
+      identity = Identity.find(id) rescue nil
+      identity = Identity.find_or_create id if identity.nil?
+      project_role[1][:identity_id] = identity.id
     end
     attrs = fix_date_params
     @protocol = protocol_class.new(attrs)
