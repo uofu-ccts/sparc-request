@@ -78,6 +78,7 @@ namespace :deploy do
       # Here we can do anything such as:
       within release_path do
         execute :rake, 'cache:clear'
+        execute :bundle, "exec script/delayed_job restart"
       end
       execute "touch #{current_path}/tmp/restart.txt"
     end
