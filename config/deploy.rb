@@ -86,7 +86,9 @@ namespace :deploy do
     on roles(:app) do
       execute "touch #{current_path}/tmp/restart.txt"
       within current_path do
-        execute :bundle, "exec script/delayed_job restart"
+        with rails_env: fetch(:rails_env) do
+          execute :bundle, "exec script/delayed_job restart"
+        end
       end
     end
   end
