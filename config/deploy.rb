@@ -72,7 +72,9 @@ def ask_name(type)
 end
 
 namespace :deploy do
-
+  # FYI: this is not run by default.
+  # Capistrano 3 no longer runs that task by default as many app servers don't require it. Add this to your config/deploy.rb:
+  # after 'deploy:publishing', 'deploy:restart'
   after :restart, :clear_cache do
     on roles(:web), in: :groups, limit: 3, wait: 10 do
       execute "touch #{current_path}/tmp/restart.txt"
