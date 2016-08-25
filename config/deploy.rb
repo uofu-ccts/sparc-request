@@ -76,8 +76,7 @@ namespace :deploy do
   after :restart, :clear_cache do
     on roles(:web), in: :groups, limit: 3, wait: 10 do
       # Here we can do anything such as:
-      within release_path do
-        execute :rake, 'cache:clear'
+      within current_path do
         execute :bundle, "exec script/delayed_job restart"
       end
       execute "touch #{current_path}/tmp/restart.txt"
