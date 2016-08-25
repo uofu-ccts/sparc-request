@@ -75,10 +75,6 @@ namespace :deploy do
 
   after :restart, :clear_cache do
     on roles(:web), in: :groups, limit: 3, wait: 10 do
-      # Here we can do anything such as:
-      within current_path do
-        execute :bundle, "exec script/delayed_job restart"
-      end
       execute "touch #{current_path}/tmp/restart.txt"
     end
   end
@@ -87,6 +83,9 @@ namespace :deploy do
   task :restart_passenger do
     on roles(:app) do
       execute "touch #{current_path}/tmp/restart.txt"
+      within current_path do
+        execute :bundle, "exec script/delayed_job restart"
+      end
     end
   end
 
