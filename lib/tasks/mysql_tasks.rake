@@ -61,8 +61,11 @@ namespace :mysql do
   def connection_options(config)
     options = ''
     options << " -u #{config['username']}" if config['username']
-    # escape single quote character so it doesn't blow up bash script running
-    options << " -p#{config['password'].gsub("'", %q(\\\')).gsub(":", %q(\\\:)).gsub("(", %q(\\\()).gsub(".", %q(\\\.)).gsub("!", %q(\\\!)).gsub("&", %q(\\\&))}"  if config['password']
+    # http://stackoverflow.com/questions/15783701/which-characters-need-to-be-escaped-in-bash-how-do-we-know-it
+    if config['password']
+      escaped = config['password'].chars.to_a.map { |c| "\\" + c } .join('')
+      options << " -p#{escaped}"
+    end
     options << " -h #{config['host']}"     if config['host']
     options << " -P #{config['port']}"     if config['port']
     options << " #{config['database']}"    if config['database']
