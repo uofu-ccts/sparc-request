@@ -2046,7 +2046,7 @@ en:
   # Subsidy Page
   subsidy_page:
     additional_confirm: "Are you sure you want to leave? Any unsaved changes to this service request will be lost."
-    eligible_html: "The services selected below may be eligible for a <b><i>funding award</i></b> or subsidy to cover some or all of the costs of the services. For example, SCTR (CTSA) provides funding awards for the Research Nexus."
+    eligible_html: "Investigator initiated studies (IIS) sponsored by the NIH, other Federal or State agencies, foundations, or supported by departmental funds, are eligible for subsidy based on a CCTS review process that takes into account the source of study funding and institutional goals of the CCTS. You may request the CCTS to subsidize the nursing rate for IIS at <b>70%</b> for VPCAT scholars and K awardees, at <b>60%</b> for all other young investigators, and <b>40%</b> for seasoned investigators."
     not_eligible: "None of the services you have selected are eligible for a subsidy."
     overridden: "This request has been previously submitted and the subsidy can now only be edited by an Admin."
     request_additional: "To request additional research funding go to"
