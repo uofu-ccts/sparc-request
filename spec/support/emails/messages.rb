@@ -7,7 +7,7 @@ module EmailHelpers
     # 'A request has been submitted to start services in
     # SPARCRequest and is awaiting your review in SPARCDashboard.'
     expect(mail).to have_xpath("//p[normalize-space(text()) = 'A request has been submitted to start services in SPARCRequest and is awaiting your review in']")
-    expect(mail).to have_xpath "//p//a[@href='/dashboard/protocols/#{service_request.protocol.id}'][text()= 'SPARCDashboard.']/@href"
+    expect(mail).to have_xpath "//p//a[@href='/dashboard/protocols/#{service_request.protocol.id}'][text()= 'Administrators/Service Providers, Click Here']/@href"
   end
 
   def submitted_general_users_message
