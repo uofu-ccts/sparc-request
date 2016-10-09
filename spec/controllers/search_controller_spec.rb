@@ -288,7 +288,7 @@ RSpec.describe SearchController do
       expect(results.length).to eq 1
 
       expect(results[0]['label']).to              eq 'Justin Frankel (burn@nullsoft.com)'
-      expect(results[0]['value']).to              eq identity.id
+      expect(results[0]['value']).to              eq identity.ldap_uid
       expect(results[0]['email']).to              eq 'burn@nullsoft.com'
       expect(results[0]['institution']).to        eq 'Nullsoft'
       expect(results[0]['phone']).to              eq '555-1212'
@@ -314,7 +314,7 @@ RSpec.describe SearchController do
       expect(results.length).to eq 2
 
       expect(results[0]['label']).to              eq 'Justin Frankel (burn@nullsoft.com)'
-      expect(results[0]['value']).to              eq identity.id
+      expect(results[0]['value']).to              eq identity.ldap_uid
       expect(results[0]['email']).to              eq 'burn@nullsoft.com'
       expect(results[0]['institution']).to        eq 'Nullsoft'
       expect(results[0]['phone']).to              eq '555-1212'
@@ -326,7 +326,7 @@ RSpec.describe SearchController do
 
       # TODO: should this be "Mcafee" or "McAfee"?
       expect(results[1]['label']).to              eq 'John Mcafee (john@mcafee.com)'
-      expect(results[1]['value']).to              eq identity2.id
+      expect(results[1]['value']).to              eq identity2.ldap_uid
       expect(results[1]['email']).to              eq 'john@mcafee.com'
       expect(results[1]['institution']).to        eq 'McAfee'
       expect(results[1]['phone']).to              eq '867-5309'
