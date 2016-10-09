@@ -125,8 +125,8 @@ RSpec.describe 'Directory' do
       expect(id).not_to eq nil
       expect(id.ldap_uid).to eq 'mobama@musc.edu'
       expect(id.email).to eq 'bobama@whitehouse.gov'
-      expect(id.first_name).to eq 'Mo'
-      expect(id.last_name).to eq 'Obama'
+      expect(id.first_name).to eq 'Bo'
+      expect(id.last_name).to eq 'Bama'
     end
   end
 end
