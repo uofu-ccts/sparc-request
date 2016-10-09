@@ -87,7 +87,7 @@ RSpec.describe 'Directory' do
       r = {
           "uid" =>       [ 'foo' ],
           "mail" =>      [ 'foo@bar.com' ],
-          "givenName" => [ 'Foo' ],
+          "givenname" => [ 'Foo' ],
           "sn" =>        [ 'Bar' ]}
 
       def r.dn
