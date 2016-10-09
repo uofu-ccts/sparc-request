@@ -124,7 +124,7 @@ RSpec.describe 'Directory' do
       id = Identity.find_by_ldap_uid('mobama@musc.edu')
       expect(id).not_to eq nil
       expect(id.ldap_uid).to eq 'mobama@musc.edu'
-      expect(id.email).to eq 'mo_bama@whitehouse.gov'
+      expect(id.email).to eq 'bobama@whitehouse.gov'
       expect(id.first_name).to eq 'Mo'
       expect(id.last_name).to eq 'Obama'
     end
