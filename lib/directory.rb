@@ -144,7 +144,7 @@ class Directory
       Rails.logger.info '#'*100
       Rails.logger.info "#{e.message} (#{e.class})"
       Rails.logger.info '#'*100
-      res = nil
+      res = []
     end
 
     return res
