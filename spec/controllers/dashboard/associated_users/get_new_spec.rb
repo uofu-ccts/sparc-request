@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe Dashboard::AssociatedUsersController do
   describe 'GET new' do
     let!(:identity) do
-      findable_stub(Identity) { build_stubbed(:identity) }
+      findable_stub(Identity) { build_stubbed(:identity, ldap_uid: 'ash151@musc.edu') }
     end
 
     let(:primary_pi) { build_stubbed(:identity) }
@@ -63,16 +63,18 @@ RSpec.describe Dashboard::AssociatedUsersController do
         allow(@project_roles_association).to receive(:new).
           and_return(@new_project_role)
 
-        xhr :get, :new, protocol_id: protocol.id, identity_id: identity.id, format: :js
+        xhr :get, :new, protocol_id: protocol.id, ldap_uid: identity.ldap_uid, format: :js
+
+        @new_identity = Identity.find_by_ldap_uid(identity.ldap_uid)
       end
 
       it "should build a ProjectRole for Protocol using params[:identity_id]" do
         expect(@project_roles_association).to have_received(:new).
-          with(identity_id: identity.id)
+          with(identity_id: @new_identity.id)
       end
 
       it 'should set @identity to the Identity from params[:identity_id]' do
-        expect(assigns(:identity)).to eq(identity)
+        expect(assigns(:identity)).to eq(@new_identity)
       end
 
       it 'should set @current_pi to the Primary PI of @protocol' do
@@ -102,7 +104,7 @@ RSpec.describe Dashboard::AssociatedUsersController do
         allow(@project_roles_association).to receive(:new).
           and_return(@new_project_role)
 
-        xhr :get, :new, protocol_id: protocol.id, identity_id: identity.id, format: :js
+        xhr :get, :new, protocol_id: protocol.id, ldap_uid: identity.ldap_uid, format: :js
       end
 
       it 'should set @errors' do
