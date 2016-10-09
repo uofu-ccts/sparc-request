@@ -21,7 +21,7 @@
 require 'rails_helper'
 
 RSpec.feature 'User wants to edit an authorized user', js: true do
-  let!(:logged_in_user) { create(:identity, last_name: "Doe", first_name: "John", ldap_uid: "johnd", email: "johnd@musc.edu", password: "p4ssword", password_confirmation: "p4ssword", college: "college_of_medicine", department: "other", credentials: "ba", institution: "medical_university_of_south_carolina", approved: true) }
+  let!(:logged_in_user) { create(:identity, last_name: "Doe", first_name: "John", ldap_uid: "johnd", email: "johnd@musc.edu", password: "p4ssword", password_confirmation: "p4ssword", college: "school_of_medicine", department: "other", credentials: "ba", institution: "intermountain_healthcare", approved: true) }
 
   let!(:other_user) { create(:identity, last_name: "Doe", first_name: "Jane", ldap_uid: "janed", email: "janed@musc.edu", password: "p4ssword", password_confirmation: "p4ssword", approved: true) }
 
@@ -127,7 +127,7 @@ RSpec.feature 'User wants to edit an authorized user', js: true do
       # navigate to page
       @page = Dashboard::Protocols::ShowPage.new
       @page.load(id: protocol.id)
-      
+
       expect(page).to have_css('#new-associated-user-button.disabled')
     end
   end
@@ -169,7 +169,7 @@ RSpec.feature 'User wants to edit an authorized user', js: true do
 
           expect(page).not_to have_css '.edit-associated-user-button.disabled'
           expect(page).to have_css '.edit-associated-user-button:not(.disabled)'
-          
+
           expect(page).not_to have_css '.delete-associated-user-button.disabled'
           expect(page).to have_css '.delete-associated-user-button:not(.disabled)'
         end
@@ -197,7 +197,7 @@ RSpec.feature 'User wants to edit an authorized user', js: true do
 
           expect(page).not_to have_css '.edit-associated-user-button:not(.disabled)'
           expect(page).to have_css '.edit-associated-user-button.disabled'
-          
+
           expect(page).not_to have_css '.delete-associated-user-button:not(.disabled)'
           expect(page).to have_css '.delete-associated-user-button.disabled'
         end
@@ -272,8 +272,8 @@ RSpec.feature 'User wants to edit an authorized user', js: true do
   def then_i_should_see_the_user_information
     expect(@page.authorized_user_modal).to have_content("John Doe (johnd@musc.edu)")
     expect(@page.authorized_user_modal).to have_credentials_dropdown(text: "BA")
-    expect(@page.authorized_user_modal).to have_institution_dropdown(text: "Medical University of South Carolina")
-    expect(@page.authorized_user_modal).to have_college_dropdown(text: "College of Medicine")
+    expect(@page.authorized_user_modal).to have_institution_dropdown(text: "Intermountain Healthcare")
+    expect(@page.authorized_user_modal).to have_college_dropdown(text: "School of Medicine")
     expect(@page.authorized_user_modal).to have_department_dropdown(text: "Other")
     expect(page).to have_content(logged_in_user.phone)
     expect(@page.authorized_user_modal).to have_role_dropdown(text: "Primary PI")
