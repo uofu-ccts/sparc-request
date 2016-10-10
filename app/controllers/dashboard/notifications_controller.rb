@@ -39,14 +39,15 @@ class Dashboard::NotificationsController < Dashboard::BaseController
   def new
     @sub_service_request_id = params[:sub_service_request_id]
 
-    if params[:ldap_uid]
-      if @sub_service_request_id.present?
-        @sub_service_request = SubServiceRequest.find(@sub_service_request_id)
-        @notification = @sub_service_request.notifications.new
-      else
-        @notification = Notification.new
-      end
-      identity = Identity.find_or_create(params[:ldap_uid])
+    if @sub_service_request_id.present?
+      @sub_service_request = SubServiceRequest.find(@sub_service_request_id)
+      @notification = @sub_service_request.notifications.new
+    else
+      @notification = Notification.new
+    end
+    identity = Identity.find_or_create(params[:ldap_uid]) if params[:ldap_uid].present?
+    identity = Identity.find(params[:identity_id]) if params[:identity_id].present?
+    if identity
       if identity.id == current_user.id
         @notification.errors.add(:notifications, "can't be sent to yourself.")
         @errors = @notification.errors
