@@ -163,6 +163,10 @@ GEM
     delayed_job_active_record (4.1.0)
       activerecord (>= 3.0, < 5)
       delayed_job (>= 3.0, < 5)
+    delayed_job_web (1.2.10)
+      activerecord (> 3.0.0)
+      delayed_job (> 2.0.3)
+      sinatra (>= 1.4.4)
     descendants_tracker (0.0.4)
       thread_safe (~> 0.3, >= 0.3.1)
     devise (3.5.2)
@@ -538,6 +542,7 @@ DEPENDENCIES
   connection_pool
   database_cleaner
   delayed_job_active_record
+  delayed_job_web
   devise (~> 3.5.1)
   dynamic_form
   email_spec
@@ -622,4 +627,4 @@ DEPENDENCIES
   x-editable-rails
 
 BUNDLED WITH
-   1.11.2
+   1.13.1

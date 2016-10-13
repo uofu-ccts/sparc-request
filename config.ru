@@ -34,4 +34,10 @@ require ::File.expand_path('../config/environment',  __FILE__)
 #  Rails.backtrace_cleaner.remove_filters!
 #end
 
+if Rails.env.production?
+  DelayedJobWeb.use Rack::Auth::Basic do |username, password|
+    username == REMOTE_SERVICE_NOTIFIER_USERNAME && password == REMOTE_SERVICE_NOTIFIER_PASSWORD
+  end
+end
+
 run SparcRails::Application
