@@ -70,6 +70,7 @@ class Dashboard::Breadcrumber
 
   def edit_protocol_label_and_url
     protocol_id = @crumbs[:edit_protocol]
+    protocol_id = Integer(protocol_id) rescue false
     protocol_id ? ["Edit", "/dashboard/protocols/#{protocol_id}/edit"] : nil
   end
 end
