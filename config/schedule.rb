@@ -27,3 +27,7 @@ set :output, '/dev/null'
 every :day, :at => '4:30 am', :roles => [:app] do
   rake "mysql:dump"
 end
+
+every :reboot, :roles => [:app] do 
+  rake "util:start_delayed_job"
+end
