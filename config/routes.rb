@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2016 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -23,7 +23,19 @@ SparcRails::Application.routes.draw do
   match '/surveys/:survey_code/:response_set_code', :to => 'surveyor#destroy', :via => :delete
   mount Surveyor::Engine => "/surveys", :as => "surveyor"
 
+
   match "/delayed_job" => DelayedJobWeb, :anchor => false, via: [:get, :post]
+
+  resources :services do
+    namespace :additional_details do
+      resources :questionnaires
+      resource :questionnaire do
+        resource :preview, only: [:create]
+      end
+      resources :submissions
+      resources :update_questionnaires, only: [:update]
+    end
+  end
 
   if USE_SHIBBOLETH_ONLY
     devise_for :identities,
