@@ -14,7 +14,7 @@ RSpec.describe UserMailer do
       @protocol_role            = create(:project_role, protocol: study, identity: @modified_identity, project_rights: 'approve', role: 'consultant')
       @mail = UserMailer.authorized_user_changed(@identity, study, @protocol_role, 'add')
     end
-  
+
     it "should display the 'added' message" do
       # An Authorized User has been added in SparcDashboard ***(link to protocol)***
       expect(@mail).to have_xpath("//p[normalize-space(text()) = 'An Authorized User has been added in']")
@@ -45,7 +45,7 @@ RSpec.describe UserMailer do
     end
 
     it "should display message conclusion" do
-      expect(@mail).to have_xpath("//p[normalize-space(text()) = 'Please contact the SUCCESS Center at (843) 792-8300 or success@musc.edu for assistance with this process or with any questions you may have.']")
+      expect(@mail).to have_xpath("//p[normalize-space(text()) = 'Please contact the BMIC at sparc@chpc.utah.edu for assistance with this process or with any questions you may have.']")
     end
 
     it "should display acknowledgments" do
@@ -93,7 +93,7 @@ RSpec.describe UserMailer do
     end
 
     it "should display message conclusion" do
-      expect(@mail).to have_xpath("//p[normalize-space(text()) = 'Please contact the SUCCESS Center at (843) 792-8300 or success@musc.edu for assistance with this process or with any questions you may have.']")
+      expect(@mail).to have_xpath("//p[normalize-space(text()) = 'Please contact the BMIC at sparc@chpc.utah.edu for assistance with this process or with any questions you may have.']")
     end
 
     it "should display acknowledgments" do
