@@ -28,7 +28,7 @@ set :pty, true
 set :linked_files, fetch(:linked_files, []).push('config/application.yml', 'config/database.yml', 'config/epic.yml', 'config/ldap.yml', 'config/cas.yml', 'config/secrets.yml', '.env')
 
 # Default value for linked_dirs is []
-set :linked_dirs, fetch(:linked_dirs, []).push('vendor')
+# set :linked_dirs, fetch(:linked_dirs, []).push('vendor')
 
 # Default value for default_env is {}
 # set :default_env, { path: "/opt/ruby/bin:$PATH" }
