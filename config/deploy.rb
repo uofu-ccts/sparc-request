@@ -192,6 +192,27 @@ end
 
 namespace :mysql do
 
+  desc "performs a backup (using mysqldump) in app shared dir"
+  task :backup do
+    if ENV['perform_db_backups']
+      on roles(:app) do
+        within current_path do
+          with rails_env: fetch(:rails_env) do
+            filename = "#{fetch(:application)}.db_backup.#{Time.now.to_f}.sql.gz"
+            filepath = "#{shared_path}/database_backups/#{filename}"
+            execute "mkdir -p #{shared_path}/database_backups"
+            execute :bundle, "exec rake mysql:dump[#{filepath}]"
+          end
+        end
+      end
+
+    else
+      puts "    *************************"
+      puts "    Skipping Database Backups"
+      puts "    *************************"
+    end
+  end
+
   desc 'truncate all tables, but doesn\'t touch migrations'
   task :truncate do
     on roles(:app) do
@@ -421,3 +442,5 @@ namespace :setup do
   end
 
 end
+
+before "deploy", 'mysql:backup'

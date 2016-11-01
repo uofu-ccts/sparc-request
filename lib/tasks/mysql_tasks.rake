@@ -18,8 +18,8 @@ namespace :mysql do
   end
 
   desc "Dump the current database to a gzipped MySQL file"
-  task :dump => :environment do
-    file_path = File.join('tmp', "#{ENV['RAILS_ENV']}_data.sql.gz")
+  task :dump, [:file_path] => :environment do |t, args|
+    file_path = args[:file_path] ? args[:file_path] : File.join('tmp', "#{ENV['RAILS_ENV']}_data.sql.gz")
     `#{sh_mysqldump(database_config)} | gzip > #{file_path}`
   end
 
