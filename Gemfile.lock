@@ -189,6 +189,9 @@ GEM
     docile (1.1.5)
     domain_name (0.5.25)
       unf (>= 0.0.5, < 1.0.0)
+    dotenv (2.0.1)
+    dotenv-rails (2.0.1)
+      dotenv (= 2.0.1)
     dynamic_form (1.1.4)
     email_spec (1.6.0)
       launchy (~> 2.1)
@@ -568,6 +571,7 @@ DEPENDENCIES
   delayed_job_active_record
   delayed_job_web
   devise (~> 3.5.1)
+  dotenv-rails
   dynamic_form
   email_spec
   equivalent-xml

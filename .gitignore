@@ -87,3 +87,5 @@ spec/examples.txt
 
 # Ignore vendor/bundle
 /vendor/bundle
+
+.env

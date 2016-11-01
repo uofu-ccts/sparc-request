@@ -77,6 +77,8 @@ gem "non-stupid-digest-assets"
 
 gem "delayed_job_web"
 
+gem 'dotenv-rails'
+
 
 group :development, :test, :profile do
   gem 'addressable', '~> 2.3.6'

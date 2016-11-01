@@ -192,6 +192,51 @@ end
 
 namespace :mysql do
 
+
+  desc "performs a backup (using mysqldump) in app shared dir"
+  task :backup do
+    if ENV['perform_db_backups']
+      filename = "#{application}.db_backup.#{Time.now.to_f}.sql.bz2"
+      filepath = "#{shared_path}/database_backups/#{filename}"
+      text = capture "cat #{shared_path}/config/database.yml"
+      yaml = YAML::load(text)
+
+      run "mkdir -p #{shared_path}/database_backups"
+
+      on_rollback { run "rm #{filepath}" }
+      run "mysqldump -u #{yaml[rails_env]['username']} -p #{yaml[rails_env]['database']} | bzip2 -c > #{filepath}" do |ch, stream, out|
+        ch.send_data "#{yaml[rails_env]['password']}\n" if out =~ /^Enter password:/
+      end
+    else
+      puts "    *************************"
+      puts "    Skipping Database Backups"
+      puts "    *************************"
+    end
+  end
+
+  desc "removes all database backups that are older than days_to_keep_backups"
+  task :cleanup_backups do
+    if ENV['perform_db_backups']
+      backup_dir = "#{shared_path}/database_backups"
+      # Gets the output of ls as a string and splits on new lines and
+      # selects the bziped files.
+      backups = capture("ls #{backup_dir}").split("\n").find_all {|file_name| file_name =~ /.*\.bz2/}
+      old_backup_date = (Time.now.to_date - days_to_keep_backups).to_time
+      backups.each do |file_name|
+        # Gets the float epoch timestamp out of the file name
+        timestamp = file_name.match(/\.((\d*)\.(\d*))/)[1]
+        backup_time = Time.at(timestamp.to_f)
+        if backup_time < old_backup_date
+          run "rm #{backup_dir}/#{file_name}"
+        end
+      end
+    else
+      puts "    *************************"
+      puts "    Skipping Database Backups"
+      puts "    *************************"
+    end
+  end
+
   desc 'truncate all tables, but doesn\'t touch migrations'
   task :truncate do
     on roles(:app) do
