@@ -199,7 +199,7 @@ namespace :mysql do
       on roles(:app) do
         within current_path do
           with rails_env: fetch(:rails_env) do
-            filename = "#{fetch(:application)}.db_backup.#{Time.now.to_f}.sql.gz"
+            filename = "#{fetch(:application)}.db_backup.#{Time.now.strftime("%Y-%m-%d-%H%M%S")}.sql.gz"
             filepath = "#{shared_path}/database_backups/#{filename}"
             execute "mkdir -p #{shared_path}/database_backups"
             execute :bundle, "exec rake mysql:dump[#{filepath}]"
@@ -445,4 +445,4 @@ namespace :setup do
 
 end
 
-before "deploy", 'mysql:backup' 
+before "deploy", 'mysql:backup'

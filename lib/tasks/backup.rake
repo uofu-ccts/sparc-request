@@ -2,6 +2,12 @@ require 'zip'
 require 'colorize'
 
 namespace :backup do
+
+  desc "run rspec"
+  task :rspec => :environment do
+    `RUBYOPT=W0 bundle exec rspec --color --format documentation --out tmp/#{Time.now.strftime("%Y-%m-%d-%H%M%S")}-test-results`
+  end
+
   desc "backup all config yml files"
   task :config => :environment do
     zipfile_path = Rails.root.join('tmp', 'config_yml.zip')
