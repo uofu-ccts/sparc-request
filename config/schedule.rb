@@ -27,3 +27,7 @@ set :output, '/dev/null'
 every :day, :at => '4:30 am', :roles => [:app] do
   rake "mysql:dump"
 end
+
+every :day, :at => '5:30 am', :roles => [:app] do
+  rake "backup:rspec", :environment => "test"
+end
