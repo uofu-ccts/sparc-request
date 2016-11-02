@@ -31,7 +31,3 @@ end
 every :reboot, :roles => [:app] do
   rake "util:start_delayed_job"
 end
-
-every :day, :at => '5:30 am', :roles => [:app] do
-  rake "backup:rspec", :environment => "test"
-end
