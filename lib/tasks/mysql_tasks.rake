@@ -6,9 +6,11 @@ namespace :mysql do
   desc "Truncate all tables, but keep migrations"
   task :truncate => :environment do
     conn = ActiveRecord::Base.connection
+    conn.execute('SET FOREIGN_KEY_CHECKS = 0')
     tables = conn.execute("show tables").map { |r| r[0] }
     tables.delete "schema_migrations"
     tables.each { |t| conn.execute("TRUNCATE #{t}") }
+    conn.execute('SET FOREIGN_KEY_CHECKS = 1')
   end
 
   desc "Launch mysql shell."
@@ -18,9 +20,22 @@ namespace :mysql do
   end
 
   desc "Dump the current database to a gzipped MySQL file"
-  task :dump, [:file_path] => :environment do |t, args|
+  task :dump, [:file_path, :tables] => :environment do |t, args|
+    tables = args[:tables] ? args[:tables] : ''
     file_path = args[:file_path] ? args[:file_path] : File.join('tmp', "#{ENV['RAILS_ENV']}_data.sql.gz")
-    `#{sh_mysqldump(database_config)} | gzip > #{file_path}`
+    file_path += '.sql.gz' unless file_path.end_with? '.sql.gz'
+    `#{sh_mysqldump(database_config)} #{tables} | gzip > #{file_path}`
+  end
+
+  desc "Loads the production data downloaded into tmp/production_data.sql into your local development database"
+  task :load, [:file_path] => :environment do |t, args|
+    file_path = args[:file_path] ? args[:file_path] : File.join('tmp', "production_data.sql")
+    if file_path.end_with? '.gz'
+      `gzip -d #{file_path}`
+      file_path = file_path[0..-4]
+    end
+    `#{sh_mysql(database_config)} < #{file_path}`
+    puts "Loaded from #{file_path}"
   end
 
   desc "Refreshes your local development environment to the current production database"
