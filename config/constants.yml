@@ -38,13 +38,7 @@ subject_ethnicities: { 'Caucasian': 'caucasian',
 subject_genders: { 'Male': 'male',
                   'Female': 'female',
                   'Other': 'other' }
-affiliations: { 'cancer_center': 'Cancer Center',
-                'lipidomics_cobre': 'Lipidomics COBRE',
-                'oral_health_cobre': 'Center for Oral Health Research',
-                'cardiovascular_cobre': 'Cardiovascular COBRE',
-                'cchp': 'CCHP',
-                'inbre': 'INBRE',
-                'reach': 'REACH' }
+affiliations: { }
 epic_rights: { 'view_rights': 'View Research Studies',
                'enter_data': 'Access to input/edit data at patient/encounter level',
                'schedule_research': 'Schedule research-related encounters - additional training required',

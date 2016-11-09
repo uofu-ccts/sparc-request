@@ -266,7 +266,7 @@
   %tr
     %td.box
       .info
-        %fieldset
+        %fieldset{ class: [Affiliation::TYPES.empty? && "hidden"] }
           %legend= t(:study_form)[:affiliations]
           %div
             = f.fields_for :affiliations, f.object.affiliations.sort_by(&:position) do |rt|
