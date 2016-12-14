@@ -33,9 +33,9 @@ en:
   application_title: "SPARC Request"
   bug_enhancement_link: "Report a bug or request an enhancement"
   catalog_manager_title: "SPARC Request Catalog Manager"
-  error_contact: "(843) 792-8300 or success@musc.edu"
+  error_contact: "(843) 792-8300 or bmic@chpc.utah.edu"
   feedback: "Feedback"
-  issue_contact: "Please contact the SUCCESS Center at (843) 792-8300 or success@musc.edu for assistance with this process or with any questions you may have."
+  issue_contact: "Please contact the SUCCESS Center at (843) 792-8300 or bmic@chpc.utah.edu for assistance with this process or with any questions you may have."
   portal_title: "SPARC Request Portal"
   create_an_account: 'Non-MUSC User? Create an Account'
 
@@ -1863,7 +1863,7 @@ en:
       provider: "Provider:"
       short_title: "Short Title: "
     download_button: "Download my Service Request"
-    instructions: "Thank you for submitting your service request(s) through SPARC Request. An email has been sent to each of your service providers and they should be contacting you soon. If you have any questions or concerns, please don't hesitate to contact the SUCCESS Center at 792-8300 or success@musc.edu."
+    instructions: "Thank you for submitting your service request(s) through SPARC Request. An email has been sent to each of your service providers and they should be contacting you soon. If you have any questions or concerns, please don't hesitate to contact the SPARC Helpdesk at bmic@chpc.utah.edu"
     portal_button: "Go to Dashboard"
     research_pricing_instructions : "You have successfully submitted a request to get a cost estimate. An email(s) has been submitted on your behalf, and we will respond to your request for a cost estimate shortly. Should you have any questions regarding your request(s), please contact the service provider contact(s) listed below."
 
