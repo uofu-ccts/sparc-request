@@ -2062,7 +2062,7 @@ en:
       question_text5: "How is SPARC Request calculating my indirect costs?"
       answer_text5: "The original requester for your study/project defined both the funding source of the study/project and the indirect cost rate. SPARC Request uses this data to calculate your total overall indirect costs."
       question_text6: "I\'m stuck! Who can I contact for assistance with SPARC Request?"
-      answer_text6: "The SPARC Helpdesk is happy to assist you! Please contact us at sparc@bmic.utah.edu."
+      answer_text6: "The SPARC Helpdesk is happy to assist you! Please contact us at bmic@chpc.utah.edu."
 
   # User details partial
   user_details:
