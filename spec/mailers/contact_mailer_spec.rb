@@ -47,10 +47,8 @@ RSpec.describe ContactMailer, type: :mailer do
 
   it 'should get mailer from config' do
     if defined? CONTACT_US_EMAIL
-      expect(CONTACT_US_EMAIL['cc']).to eq 'sparc@chpc.utah.edu'
-      expect(CONTACT_US_EMAIL['to']).to eq 'sparc-admin@lists.utah.edu'
-      expect(mail.cc).to eq ['sparc@chpc.utah.edu']
-      expect(mail.to).to eq ['sparc-admin@lists.utah.edu']
+      expect(mail.cc).to eq [CONTACT_US_EMAIL['cc']]
+      expect(mail.to).to eq [CONTACT_US_EMAIL['to']]
     else
       fail 'need define contact_us_email in application.yml'
     end

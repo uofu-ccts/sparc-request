@@ -45,7 +45,7 @@ RSpec.describe UserMailer do
     end
 
     it "should display message conclusion" do
-      expect(@mail).to have_xpath("//p[normalize-space(text()) = 'Please contact the BMIC at sparc@chpc.utah.edu for assistance with this process or with any questions you may have.']")
+      expect(@mail).to have_xpath("//p[normalize-space(text()) = 'Please contact the BMIC at #{CONTACT_US_EMAIL['cc']} for assistance with this process or with any questions you may have.']")
     end
 
     it "should display acknowledgments" do
@@ -93,7 +93,7 @@ RSpec.describe UserMailer do
     end
 
     it "should display message conclusion" do
-      expect(@mail).to have_xpath("//p[normalize-space(text()) = 'Please contact the BMIC at sparc@chpc.utah.edu for assistance with this process or with any questions you may have.']")
+      expect(@mail).to have_xpath("//p[normalize-space(text()) = 'Please contact the BMIC at #{CONTACT_US_EMAIL['cc']} for assistance with this process or with any questions you may have.']")
     end
 
     it "should display acknowledgments" do
