@@ -50,23 +50,20 @@ SparcRails::Application.routes.draw do
   elsif USE_CAS_ONLY
     devise_for :identities,
                controllers: {
-
-                 omniauth_callbacks: 'identities/omniauth_callbacks'
+                 omniauth_callbacks: 'identities/omniauth_callbacks',
+                 sessions: 'identities/sessions',
+                 registrations: 'identities/registrations'
                }, path_names: { sign_in: 'auth/cas' }
   else
     devise_for :identities,
                controllers: {
                  omniauth_callbacks: 'identities/omniauth_callbacks',
+                 sessions: 'identities/sessions',
                  registrations:      'identities/registrations'
                }
   end
 
-  resources :identities, only: [:show] do
-    collection do
-      post 'add_to_protocol'
-      post 'find_or_create'
-    end
-
+  resources :identities, only: [] do
 
     member do
       get 'approve_account'
