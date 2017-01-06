@@ -30,5 +30,6 @@ class ContactMailer < ApplicationMailer
       cc = 'sparcrequest@gmail.com'
     end
     mail(to: to, cc: cc, from: "#{contact_form.email}", subject: "#{contact_form.subject}")
+
   end
 end

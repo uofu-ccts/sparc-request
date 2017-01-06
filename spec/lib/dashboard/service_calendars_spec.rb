@@ -54,7 +54,7 @@ RSpec.describe Dashboard::ServiceCalendars do
   end
 
   describe '.pppv_line_items_visits_to_display(arm, service_request, sub_service_request, opts = {})' do
-    context 'opts[:merged] == true' do
+    context 'opts[:merged] == true && opts[:consoldated] == true' do
       it "should return PPPV LIV's of arm not associated with a (first-)draft SSR" do
         arm = create(:arm_without_validations)
         org_C = create(:organization, process_ssrs: false, abbreviation: "C")
@@ -92,8 +92,54 @@ RSpec.describe Dashboard::ServiceCalendars do
         create(:line_items_visit, arm: arm, line_item: li_pppv, sub_service_request: first_draft_ssr)
 
         arm.reload
-        expect(Dashboard::ServiceCalendars.pppv_line_items_visits_to_display(arm, nil, ssr, merged: true)).
-          to eq({ "B > A" => [liv_pppv1, liv_pppv2] })
+        livs = Dashboard::ServiceCalendars.pppv_line_items_visits_to_display(arm, nil, ssr, merged: true, consolidated: true)
+        expect(livs.keys).to eq([ssr.id])
+        expect(livs[ssr.id]).to contain_exactly(liv_pppv1, liv_pppv2)
+      end
+    end
+
+    context 'opts[:merged] == true && opts[:consoldated] == false' do
+      it "should return PPPV LIV's of arm not associated with a first-draft SSR" do
+        arm = create(:arm_without_validations)
+        org_C = create(:organization, process_ssrs: false, abbreviation: "C")
+        org_B = create(:organization, process_ssrs: true, abbreviation: "B", parent: org_C)
+        org_A = create(:organization, process_ssrs: false, abbreviation: "A", parent: org_B)
+        ssr = create(:sub_service_request, organization: org_C, status: "not_draft")
+
+        # expect this LIV to appear
+        service_pppv = create(:service, :without_validations, organization: org_A, one_time_fee: false)
+        li_pppv = create(:line_item, :without_validations, service: service_pppv, sub_service_request: ssr)
+        liv_pppv1 = create(:line_items_visit, arm: arm, line_item: li_pppv, sub_service_request: ssr)
+        liv_pppv2 = create(:line_items_visit, arm: arm, line_item: li_pppv, sub_service_request: ssr)
+
+        # this LIV should not appear (it is not PPPV)
+        service_otf = create(:service, :without_validations, organization: org_A, one_time_fee: true)
+        li_otf = create(:line_item, :without_validations, service: service_otf, sub_service_request: ssr)
+        create(:line_items_visit, arm: arm, line_item: li_otf, sub_service_request: ssr)
+
+        # this LIV should not appear (not associated with arm)
+        wrong_arm = create(:arm, :without_validations)
+        service_pppv = create(:service, :without_validations, organization: org_A, one_time_fee: false)
+        li_pppv = create(:line_item, :without_validations, service: service_pppv, sub_service_request: ssr)
+        create(:line_items_visit, arm: wrong_arm, line_item: li_pppv, sub_service_request: ssr)
+
+        # this LIV should appear (associated with draft SSR)
+        draft_ssr = create(:sub_service_request, :without_validations, organization: org_A, status: "draft")
+        service_pppv = create(:service, :without_validations, organization: org_A, one_time_fee: false)
+        li_pppv = create(:line_item, :without_validations, service: service_pppv, sub_service_request: draft_ssr)
+        liv_draft = create(:line_items_visit, arm: arm, line_item: li_pppv, sub_service_request: draft_ssr)
+
+        # this LIV should not appear (associated with first-draft SSR)
+        first_draft_ssr = create(:sub_service_request, :without_validations, organization: org_A, status: "first_draft")
+        service_pppv = create(:service, :without_validations, organization: org_A, one_time_fee: false)
+        li_pppv = create(:line_item, :without_validations, service: service_pppv, sub_service_request: first_draft_ssr)
+        create(:line_items_visit, arm: arm, line_item: li_pppv, sub_service_request: first_draft_ssr)
+
+        arm.reload
+        livs = Dashboard::ServiceCalendars.pppv_line_items_visits_to_display(arm, nil, ssr, merged: true, consolidated: false)
+        expect(livs.keys).to contain_exactly(draft_ssr.id, ssr.id)
+        expect(livs[draft_ssr.id]).to eq([liv_draft])
+        expect(livs[ssr.id]).to contain_exactly(liv_pppv1, liv_pppv2)
       end
     end
 
@@ -130,8 +176,9 @@ RSpec.describe Dashboard::ServiceCalendars do
           create(:line_items_visit, arm: wrong_arm, line_item: li_pppv, sub_service_request: ssr)
 
           arm.reload
-          expect(Dashboard::ServiceCalendars.pppv_line_items_visits_to_display(arm, nil, ssr)).
-            to eq({ "B > A" => [liv_pppv1, liv_pppv2] })
+          livs = Dashboard::ServiceCalendars.pppv_line_items_visits_to_display(arm, nil, ssr)
+          expect(livs.keys).to eq([ssr.id])
+          expect(livs[ssr.id]).to contain_exactly(liv_pppv1, liv_pppv2)
         end
       end
 
@@ -142,33 +189,37 @@ RSpec.describe Dashboard::ServiceCalendars do
           org_B = create(:organization, process_ssrs: true, abbreviation: "B", parent: org_C)
           org_A = create(:organization, process_ssrs: false, abbreviation: "A", parent: org_B)
           sr = create(:service_request_without_validations)
+          ssr = create(:sub_service_request, service_request_id: sr.id, organization_id: org_A.id)
 
-          # expect this LIV to appear
+          # expect these LIV's to appear
           service_pppv = create(:service, :without_validations, organization: org_A, one_time_fee: false)
-          li_pppv = create(:line_item, :without_validations, service: service_pppv, service_request: sr)
+          li_pppv = create(:line_item, :without_validations, service: service_pppv, service_request: sr, sub_service_request: ssr)
           liv_pppv1 = create(:line_items_visit, arm: arm, line_item: li_pppv)
           liv_pppv2 = create(:line_items_visit, arm: arm, line_item: li_pppv)
 
           # this LIV should not appear (it is not PPPV)
           service_otf = create(:service, :without_validations, organization: org_A, one_time_fee: true)
-          li_otf = create(:line_item, :without_validations, service: service_otf)
+          li_otf = create(:line_item, :without_validations, service: service_otf, service_request: sr, sub_service_request: ssr)
           create(:line_items_visit, arm: arm, line_item: li_otf)
 
           # this LIV should not appear (associated with another SR)
           another_sr = create(:service_request_without_validations)
+          another_ssr = create(:sub_service_request, service_request_id: another_sr.id, organization_id: org_A.id)
           service_pppv = create(:service, :without_validations, organization: org_A, one_time_fee: false)
-          li_pppv = create(:line_item, :without_validations, service: service_pppv, service_request: another_sr)
+          li_pppv = create(:line_item, :without_validations, service: service_pppv, service_request: another_sr, sub_service_request: another_ssr)
           create(:line_items_visit, arm: arm, line_item: li_pppv)
 
           # this LIV should not appear (associated with another Arm)
           wrong_arm = create(:arm, :without_validations)
           service_pppv = create(:service, :without_validations, organization: org_A, one_time_fee: false)
-          li_pppv = create(:line_item, :without_validations, service: service_pppv, service_request: sr)
+          li_pppv = create(:line_item, :without_validations, service: service_pppv, service_request: sr, sub_service_request: ssr)
           create(:line_items_visit, arm: wrong_arm, line_item: li_pppv)
 
           arm.reload
-          expect(Dashboard::ServiceCalendars.pppv_line_items_visits_to_display(arm, sr, nil)).
-            to eq({ "B > A" => [liv_pppv1, liv_pppv2] })
+          livs = Dashboard::ServiceCalendars.pppv_line_items_visits_to_display(arm, sr, nil)
+
+          expect(livs.keys).to eq([ssr.id])
+          expect(livs[ssr.id]).to contain_exactly(liv_pppv1, liv_pppv2)
         end
       end
     end

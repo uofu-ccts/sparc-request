@@ -172,7 +172,7 @@ RSpec.describe SearchController do
 
       results = JSON.parse(response.body)
 
-      parents = core2.parents.reverse + [ core2 ]
+      # parents = core2.parents.reverse + [ core2 ]
 
       expect(results).to eq [ { 'label' => 'No Results' } ]
     end
@@ -189,7 +189,7 @@ RSpec.describe SearchController do
 
       results = JSON.parse(response.body)
 
-      parents = core2.parents.reverse + [ core2 ]
+      # parents = core2.parents.reverse + [ core2 ]
 
       expect(results).to eq [ { 'label' => 'No Results' } ]
     end
@@ -233,10 +233,7 @@ RSpec.describe SearchController do
 
     it 'should not return services which belong to a locked organization' do
       organization = create( :organization )
-      ssr = create( :sub_service_request_without_validations,
-                    organization: organization,
-                    service_request: service_request,
-                    status: 'on_hold' )
+      
       service = create( :service,
                         organization: organization,
                         name: 'Super Specific Service Name and Number 1234567890' )
