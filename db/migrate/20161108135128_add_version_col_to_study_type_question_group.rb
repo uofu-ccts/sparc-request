@@ -1,10 +1,13 @@
 class AddVersionColToStudyTypeQuestionGroup < ActiveRecord::Migration
   def up
-    add_column :study_type_question_groups, :version, :integer, after: :id
+    add_column :study_type_question_groups, :version, :integer, after: :id rescue
     StudyTypeQuestionGroup.reset_column_information
-    StudyTypeQuestionGroup.find(1).update(version: 1)
-    StudyTypeQuestionGroup.find(2).update(version: 2)
-    StudyTypeQuestionGroup.find(3).update(version: 3)
+    begin
+      StudyTypeQuestionGroup.find(1).update(version: 1)
+      StudyTypeQuestionGroup.find(2).update(version: 2)
+      StudyTypeQuestionGroup.find(3).update(version: 3)
+    rescue
+    end
     change_column :study_type_questions, :question, :text
   end
 
