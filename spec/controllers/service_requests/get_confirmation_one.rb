@@ -53,7 +53,6 @@ RSpec.describe ServiceRequestsController, type: :controller do
 
       it 'should send request amendment email to service provider' do
         session[:identity_id]        = logged_in_user.id
-        session[:service_request_id] = @sr.id
 
         allow(Notifier).to receive(:notify_service_provider) do
           mailer = double('mail')
@@ -63,6 +62,11 @@ RSpec.describe ServiceRequestsController, type: :controller do
         xhr :get, :confirmation, {
           id: @sr.id
         }
+
+        expect(assigns(:service_request).id).to eq(@sr.id)
+        expect(assigns(:protocol).primary_principal_investigator.id).to eq(logged_in_user.id)
+        expect(assigns(:sub_service_requests)[:active].count).to eq 2
+        expect(assigns(:sub_service_request)).to be_nil
         expect(Notifier).to have_received(:notify_service_provider)
       end
 
@@ -70,7 +74,6 @@ RSpec.describe ServiceRequestsController, type: :controller do
         @org.submission_emails.create(email: 'hedwig@owlpost.com')
 
         session[:identity_id]        = logged_in_user.id
-        session[:service_request_id] = @sr.id
 
         allow(Notifier).to receive(:notify_admin) do
             mailer = double('mail')
@@ -80,13 +83,16 @@ RSpec.describe ServiceRequestsController, type: :controller do
         xhr :get, :confirmation, {
           id: @sr.id
         }
+        expect(assigns(:service_request).id).to eq(@sr.id)
+        expect(assigns(:protocol).primary_principal_investigator.id).to eq(logged_in_user.id)
+        expect(assigns(:sub_service_requests)[:active].count).to eq 2
+        expect(assigns(:sub_service_request)).to be_nil
         expect(Notifier).to have_received(:notify_admin)
       end
 
       it 'should send request amendment email to authorized users' do
 
         session[:identity_id]        = logged_in_user.id
-        session[:service_request_id] = @sr.id
 
         allow(Notifier).to receive(:notify_user) do
             mailer = double('mail')
@@ -96,6 +102,10 @@ RSpec.describe ServiceRequestsController, type: :controller do
         xhr :get, :confirmation, {
           id: @sr.id
         }
+        expect(assigns(:service_request).id).to eq(@sr.id)
+        expect(assigns(:protocol).primary_principal_investigator.id).to eq(logged_in_user.id)
+        expect(assigns(:sub_service_requests)[:active].count).to eq 2
+        expect(assigns(:sub_service_request)).to be_nil
         expect(Notifier).to have_received(:notify_user)
       end
     end
