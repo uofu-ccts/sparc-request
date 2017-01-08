@@ -23,7 +23,7 @@ module EmailHelpers
 
   #### REQUEST AMENDMENT MESSAGE ####
   def request_amendment_intro(mail_response)
-    # Expected message:  
+    # Expected message:
     # 'Services have been added or deleted in SPARCRequest and is awaiting your review in SPARCDashboard.'
     expect(mail_response).to have_xpath("//p[normalize-space(text()) = 'Services have been added or deleted in SPARCRequest and is awaiting your review in']")
     expect(mail_response).to have_xpath "//p//a[@href='/dashboard/protocols/#{service_request.protocol.id}'][text()= 'SPARCDashboard.']/@href"
@@ -94,7 +94,7 @@ module EmailHelpers
 
   def message_conclusion(mail_response)
     expect(mail_response).to have_xpath("//p[normalize-space(text()) = 'A list of requested services is attached.']")
-    expect(mail_response).to have_xpath("//p[normalize-space(text()) = '#{I18n.t('issue_contact')}']")
+    expect(mail_response).to have_xpath("//p[normalize-space(text()) = '#{I18n.t('mailer.issue_contact', :contact_us_email => CONTACT_US_EMAIL['to'])}']")
   end
 
   def does_have_acknowledgments
