@@ -27,6 +27,6 @@
   = render "user_info_table"
   %br
   %br
-  %p= t(:mailer)[:issue_contact]
+  %p= t('mailer.issue_contact', :contact_us_email => CONTACT_US_EMAIL['to'])
   %br
   = render "acknowledgments"
