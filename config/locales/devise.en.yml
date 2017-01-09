@@ -45,7 +45,7 @@ en:
       not_approved: 'Your account has not been approved by your administrator yet.'
     sessions:
       header: "Log in"
-      institution_users: "MUSC User Login"
+      institution_users: "U of U User Login"
       other_users: "Outside User Login"
       sign_up: "Don't have an account? Sign up"
       login: "Login"
