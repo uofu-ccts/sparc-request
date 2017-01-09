@@ -30,28 +30,16 @@ RSpec.describe ContactMailer, type: :mailer do
   end
 
   let(:cc) do
-    if defined? CONTACT_US_EMAIL
-      [CONTACT_US_EMAIL['cc']]
-    else
-      ['sparcrequest@gmail.com']
-    end
+    [CONTACT_US_CC]
   end
 
   let(:to) do
-    if defined? CONTACT_US_EMAIL
-      [CONTACT_US_EMAIL['to']]
-    else
-      ['success@musc.edu']
-    end
+    [CONTACT_US_MAIL_TO]
   end
 
   it 'should get mailer from config' do
-    if defined? CONTACT_US_EMAIL
-      expect(mail.cc).to eq [CONTACT_US_EMAIL['cc']]
-      expect(mail.to).to eq [CONTACT_US_EMAIL['to']]
-    else
-      fail 'need define contact_us_email in application.yml'
-    end
+    expect(mail.cc).to eq [CONTACT_US_CC]
+    expect(mail.to).to eq [CONTACT_US_MAIL_TO]
   end
 
   it 'renders subject' do
