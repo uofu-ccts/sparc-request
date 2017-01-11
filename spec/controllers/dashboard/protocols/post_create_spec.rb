@@ -27,11 +27,11 @@ RSpec.describe Dashboard::ProtocolsController do
     context 'success' do
 
       before( :each ) do
-        @logged_in_user = build_stubbed( :identity )
+        @logged_in_user = create(:identity, ldap_uid: 'mobama@musc.edu', email: 'mo_bama@whitehouse.gov', last_name: 'Obama', first_name: 'Mo')
 
         protocol = build( :study_with_blank_dates )
 
-        project_role_attributes = { "0" => { identity_id: @logged_in_user.id, role: 'primary-pi', project_rights: 'approve' } }
+        project_role_attributes = { "0" => { identity_id: @logged_in_user.ldap_uid, role: 'primary-pi', project_rights: 'approve' } }
 
         @protocol_attributes = protocol.attributes.merge( { project_roles_attributes: project_role_attributes } )
 
@@ -56,7 +56,8 @@ RSpec.describe Dashboard::ProtocolsController do
       end
 
       it 'creates an extra project role record if the current user is not assigned to the protocol' do
-        @protocol_attributes[:project_roles_attributes]["0"][:identity_id] = build_stubbed(:identity).id
+        second_user = create(:identity, ldap_uid: 'georgec@musc.edu', email: 'castanza@uranus.planet', last_name: 'Pluto', first_name: 'Isaplanettoo')
+        @protocol_attributes[:project_roles_attributes]["0"][:identity_id] = second_user.ldap_uid
         expect{ xhr :post,
                     :create,
                     protocol: @protocol_attributes }.
@@ -73,7 +74,7 @@ RSpec.describe Dashboard::ProtocolsController do
     context 'unsuccessful' do
 
       before( :each ) do
-        @logged_in_user = build_stubbed( :identity )
+        @logged_in_user = create(:identity, ldap_uid: 'mobama@musc.edu', email: 'mo_bama@whitehouse.gov', last_name: 'Obama', first_name: 'Mo')
 
         @protocol = build( :study_with_blank_dates )
 
