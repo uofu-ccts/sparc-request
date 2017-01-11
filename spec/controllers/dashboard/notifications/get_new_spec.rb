@@ -32,14 +32,16 @@ RSpec.describe Dashboard::NotificationsController do
         allow(@sub_service_request.notifications).to receive(:new).
           and_return(@new_notification)
 
-        @recipient = build_stubbed(:identity)
+        @recipient = build_stubbed(:identity, ldap_uid: 'ash151@musc.edu')
         @new_message = build_stubbed(:message)
         allow(@new_notification.messages).to receive(:new).
           and_return(@new_message)
 
         @logged_in_user = build_stubbed(:identity)
         log_in_dashboard_identity(obj: @logged_in_user)
-        xhr :get, :new, sub_service_request_id: @sub_service_request.id, identity_id: @recipient.id
+        xhr :get, :new, sub_service_request_id: @sub_service_request.id, ldap_uid: @recipient.ldap_uid
+
+        @new_identity = Identity.find_by_ldap_uid(@recipient.ldap_uid)
       end
 
       it "should set @sub_service_request_id to params[:sub_service_request_id]" do
@@ -56,7 +58,7 @@ RSpec.describe Dashboard::NotificationsController do
 
       it "should build a new Message to Identity from params[:identity_id]" do
         expect(@new_notification.messages).to have_received(:new).
-          with(to: @recipient.id.to_s)
+          with(to: @new_identity.id)
       end
 
       it "should assign new Message to @message" do
@@ -73,14 +75,16 @@ RSpec.describe Dashboard::NotificationsController do
         allow(Notification).to receive(:new).
           and_return(@new_notification)
 
-        @recipient = build_stubbed(:identity)
+        @recipient = build_stubbed(:identity, ldap_uid: 'ash151@musc.edu')
         @new_message = build_stubbed(:message)
         allow(@new_notification.messages).to receive(:new).
           and_return(@new_message)
 
         @logged_in_user = build_stubbed(:identity)
         log_in_dashboard_identity(obj: @logged_in_user)
-        xhr :get, :new, identity_id: @recipient.id
+        xhr :get, :new, ldap_uid: @recipient.ldap_uid
+
+        @new_identity = Identity.find_by_ldap_uid(@recipient.ldap_uid)
       end
 
       it "should build a new Notification" do
@@ -89,7 +93,7 @@ RSpec.describe Dashboard::NotificationsController do
 
       it "should build a new Message to Identity from params[:identity_id]" do
         expect(@new_notification.messages).to have_received(:new).
-          with(to: @recipient.id.to_s)
+          with(to: @new_identity.id)
       end
 
       it "should assign new Message to @message" do
@@ -102,7 +106,7 @@ RSpec.describe Dashboard::NotificationsController do
 
     context "params[:identity_id] == current_user.id" do
       before(:each) do
-        @logged_in_user = build_stubbed(:identity)
+        @logged_in_user = Identity.find_or_create("ash151@#{DOMAIN}")
 
         @new_notification = build_stubbed(:notification)
         allow(Notification).to receive(:new).
@@ -115,7 +119,7 @@ RSpec.describe Dashboard::NotificationsController do
           and_return(@new_message)
 
         log_in_dashboard_identity(obj: @logged_in_user)
-        xhr :get, :new, identity_id: @logged_in_user.id
+        xhr :get, :new, ldap_uid: @logged_in_user.ldap_uid
       end
 
       it "should add an error to new Notification" do

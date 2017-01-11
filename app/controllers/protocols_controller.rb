@@ -37,6 +37,11 @@ class ProtocolsController < ApplicationController
 
   def create
     protocol_class                          = params[:protocol][:type].capitalize.constantize
+    # fix identity_id
+    params[:protocol][:project_roles_attributes].each do |project_role|
+      identity = Identity.find_or_create project_role[1][:identity_id]
+      project_role[1][:identity_id] = identity.id
+    end
     attrs                                   = fix_date_params
     @protocol                               = protocol_class.new(attrs)
     @service_request                        = ServiceRequest.find(params[:srid])
@@ -93,7 +98,6 @@ class ProtocolsController < ApplicationController
     @service_request = ServiceRequest.find(params[:srid])
 
     if @protocol.update_attributes(attrs.merge(study_type_question_group_id: StudyTypeQuestionGroup.active_id))
-
       flash[:success] = I18n.t('protocols.updated', protocol_type: @protocol.type)
     else
       @errors = @protocol.errors
@@ -115,11 +119,11 @@ class ProtocolsController < ApplicationController
     @protocol_type = params[:type]
     @protocol = @protocol.becomes(@protocol_type.constantize) unless @protocol_type.nil?
     @protocol.populate_for_edit
-    
+
     flash[:success] = t(:protocols)[:change_type][:updated]
     if @protocol_type == "Study" && @protocol.sponsor_name.nil? && @protocol.selected_for_epic.nil?
       flash[:alert] = t(:protocols)[:change_type][:new_study_warning]
-    end  
+    end
   end
 
   def view_details

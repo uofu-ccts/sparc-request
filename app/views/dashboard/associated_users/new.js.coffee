@@ -58,10 +58,13 @@ $('#authorized_user_search').typeahead(
     url: '/dashboard/associated_users/new.js'
     data:
       protocol_id: $(this).data('protocol-id')
-      identity_id: suggestion.value
+
+      ldap_uid: suggestion.value
+
       service_request_id: getSRId()
     success: ->
       $("#loading_authorized_user_spinner").addClass('hidden')
+
 <% end %>
 
 $("#modal_place").modal 'show'

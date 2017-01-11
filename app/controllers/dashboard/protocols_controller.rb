@@ -98,10 +98,16 @@ class Dashboard::ProtocolsController < Dashboard::BaseController
   end
 
   def create
-    protocol_class                          = params[:protocol][:type].capitalize.constantize
-    attrs                                   = fix_date_params
-    @protocol                               = protocol_class.new(attrs)
-    @protocol.study_type_question_group_id  = StudyTypeQuestionGroup.active_id
+    protocol_class = params[:protocol][:type].capitalize.constantize
+    # fix identity_id
+    params[:protocol][:project_roles_attributes].each do |project_role|
+      identity = Identity.find_or_create project_role[1][:identity_id]
+      project_role[1][:identity_id] = identity.id
+    end
+    attrs = fix_date_params
+    @protocol = protocol_class.new(attrs)
+    @protocol.study_type_question_group_id = StudyTypeQuestionGroup.active_id
+
 
     if @protocol.valid?
       unless @protocol.project_roles.map(&:identity_id).include? current_user.id

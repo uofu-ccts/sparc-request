@@ -133,7 +133,7 @@ RSpec.describe "User submitting a ServiceRequest", js: true do
     find("a", text: "(?)").click
     expect(page).to have_css('.editable-input input')
     find('.editable-input input').set('1')
-    find('.editable-buttons .glyphicon-ok').click
+    find('.editable-buttons button:first-child').click
     find("a", text: /Save and Continue/).click
 
     # Step 3

@@ -172,7 +172,7 @@ class Identity < ActiveRecord::Base
   ###############################################################################
 
   def self.search(term)
-    return Directory.search(term)
+    return Directory.search_identities(term)
   end
 
   ###############################################################################
@@ -187,6 +187,10 @@ class Identity < ActiveRecord::Base
       identity = Identity.create ldap_uid: auth.uid, first_name: auth.info.first_name, last_name: auth.info.last_name, email: auth.info.email, password: Devise.friendly_token[0,20], approved: true
     end
     identity
+  end
+
+  def self.find_or_create(ldap_uid)
+    Directory.find_or_create(ldap_uid)
   end
 
   def active_for_authentication?

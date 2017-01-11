@@ -50,7 +50,7 @@ RSpec.describe Notifier do
         service_request.update_attribute(:submitted_at, Time.now.yesterday)
         deleted_and_created_line_item_audit_trail(service_request, service3, identity)
         ssr = service_request.sub_service_requests.first
-        @report = ssr.audit_report(identity, Time.now.yesterday - 4.hours, Time.now)
+        @report = ssr.audit_report(identity, Time.now.yesterday - 4.hours)
       end
 
       context 'service_provider' do
@@ -95,7 +95,7 @@ RSpec.describe Notifier do
         service_request.update_attribute(:submitted_at, Time.now.yesterday)
         created_line_item_audit_trail(service_request, service3, identity)
         ssr = service_request.sub_service_requests.first
-        @report = ssr.audit_report(identity, Time.now.yesterday - 4.hours, Time.now) 
+        @report = ssr.audit_report(identity, Time.now.yesterday - 4.hours)
       end
 
       context 'service_provider' do
@@ -143,7 +143,7 @@ RSpec.describe Notifier do
                           name: 'ABCD',
                           one_time_fee: true)
         created_line_item_audit_trail(service_request, service, identity)
-        @report = service_request.audit_report(identity, Time.now.yesterday - 4.hours, Time.now) 
+        @report = service_request.audit_report(identity, Time.now.yesterday - 4.hours)
       end
 
       context 'authorized users' do
@@ -189,13 +189,13 @@ RSpec.describe Notifier do
         service_request.update_attribute(:submitted_at, Time.now.yesterday)
         created_line_item_audit_trail(service_request, service3, identity)
         ssr = service_request.sub_service_requests.first
-        @report = ssr.audit_report(identity, Time.now.yesterday - 4.hours, Time.now) 
+        @report = ssr.audit_report(identity, Time.now.yesterday - 4.hours, Time.now)
       end
 
       context 'admin' do
         let(:xls)                     { ' ' }
-        let!(:submission_email)       { create(:submission_email, 
-                                                email: 'success@musc.edu', 
+        let!(:submission_email)       { create(:submission_email,
+                                                email: 'success@musc.edu',
                                                 organization_id: organization.id) }
         let(:mail)                    { Notifier.notify_admin(submission_email,
                                                 xls,
@@ -219,7 +219,7 @@ RSpec.describe Notifier do
         service_request.update_attribute(:submitted_at, Time.now.yesterday)
         deleted_line_item_audit_trail(service_request, service3, identity)
         ssr = service_request.sub_service_requests.first
-        @report = ssr.audit_report(identity, Time.now.yesterday - 4.hours, Time.now) 
+        @report = ssr.audit_report(identity, Time.now.yesterday - 4.hours)
       end
 
       context 'service_provider' do
@@ -267,7 +267,7 @@ RSpec.describe Notifier do
                           name: 'ABCD',
                           one_time_fee: true)
         deleted_line_item_audit_trail(service_request, service, identity)
-        @report = service_request.audit_report(identity, Time.now.yesterday - 4.hours, Time.now) 
+        @report = service_request.audit_report(identity, Time.now.yesterday - 4.hours, Time.now)
       end
 
       context 'authorized users' do
@@ -314,13 +314,13 @@ RSpec.describe Notifier do
         service_request.update_attribute(:submitted_at, Time.now.yesterday)
         deleted_line_item_audit_trail(service_request, service3, identity)
         ssr = service_request.sub_service_requests.first
-        @report = ssr.audit_report(identity, Time.now.yesterday - 4.hours, Time.now) 
+        @report = ssr.audit_report(identity, Time.now.yesterday - 4.hours, Time.now)
       end
 
       context 'admin' do
         let(:xls)                       { ' ' }
-        let!(:submission_email)         { create(:submission_email, 
-                                                  email: 'success@musc.edu', 
+        let!(:submission_email)         { create(:submission_email,
+                                                  email: 'success@musc.edu',
                                                   organization_id: organization.id) }
         let(:mail)                      { Notifier.notify_admin(submission_email,
                                                   xls,
@@ -344,12 +344,12 @@ RSpec.describe Notifier do
 
     before do
       create(:note_without_validations,
-            identity_id:  identity.id, 
+            identity_id:  identity.id,
             notable_id: service_request.id)
       service_request.update_attribute(:submitted_at, Time.now.yesterday)
       deleted_and_created_line_item_audit_trail(service_request, service3, identity)
       ssr = service_request.sub_service_requests.first
-      @report = ssr.audit_report(identity, Time.now.yesterday - 4.hours, Time.now)
+      @report = ssr.audit_report(identity, Time.now.yesterday - 4.hours)
     end
 
     context 'service_provider' do

@@ -28,7 +28,7 @@ RSpec.describe Dashboard::ProtocolsController do
 
       before( :each ) do
         @logged_in_user = build_stubbed( :identity )
-        
+
         protocol = build( :study_with_blank_dates )
 
         project_role_attributes = { "0" => { identity_id: @logged_in_user.id, role: 'primary-pi', project_rights: 'approve' } }
@@ -42,23 +42,23 @@ RSpec.describe Dashboard::ProtocolsController do
       end
 
       it 'creates a new protocol record' do
-        expect{ xhr :post, 
-                    :create, 
+        expect{ xhr :post,
+                    :create,
                     protocol: @protocol_attributes }.
                     to change{ Protocol.count }.by( 1 )
       end
 
       it 'creates a new project role record' do
-        expect{ xhr :post, 
-                    :create, 
+        expect{ xhr :post,
+                    :create,
                     protocol: @protocol_attributes }.
                     to change{ ProjectRole.count }.by( 1 )
       end
 
       it 'creates an extra project role record if the current user is not assigned to the protocol' do
         @protocol_attributes[:project_roles_attributes]["0"][:identity_id] = build_stubbed(:identity).id
-        expect{ xhr :post, 
-                    :create, 
+        expect{ xhr :post,
+                    :create,
                     protocol: @protocol_attributes }.
                     to change{ ProjectRole.count }.by( 2 )
       end
@@ -74,7 +74,7 @@ RSpec.describe Dashboard::ProtocolsController do
 
       before( :each ) do
         @logged_in_user = build_stubbed( :identity )
-        
+
         @protocol = build( :study_with_blank_dates )
 
         allow( StudyTypeQuestionGroup ).to receive( :active_id ).
@@ -89,15 +89,15 @@ RSpec.describe Dashboard::ProtocolsController do
       end
 
       it 'does not create a new protocol record' do
-        expect{ xhr :post, 
-                    :create, 
+        expect{ xhr :post,
+                    :create,
                     protocol: @protocol.attributes }.
                     not_to change{ Protocol.count }
       end
 
       it 'does not create a new project role record' do
-        expect{ xhr :post, 
-                    :create, 
+        expect{ xhr :post,
+                    :create,
                     protocol: @protocol.attributes }.
                     not_to change{ ProjectRole.count }
       end

@@ -72,7 +72,7 @@ RSpec.describe "Identity" do
     it "should create an identity for a non-existing ldap_uid" do
       expect(Identity.all.count).to eq(3)
       Identity.search("ash")
-      expect(Identity.all.count).to eq(4)
+      expect(Identity.all.count).to eq(3)
     end
 
     it "should return an empty array if it cannot find anything" do
@@ -84,6 +84,12 @@ RSpec.describe "Identity" do
       # These search terms will cause ldap to raise an exception, however,
       # the search results will still return the 'error' identity.
       expect(Identity.search('error')).not_to be_empty()
+    end
+
+    it "should return identities without an e-mail address" do
+      expect(Identity.all.count).to eq(3)
+      expect(Identity.search('iamabadldaprecord')).not_to be_empty()
+      expect(Identity.all.count).to eq(3)
     end
 
     it "should still search the database if the identity creation fails for some reason" do

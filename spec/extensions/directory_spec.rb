@@ -70,7 +70,17 @@ RSpec.describe 'Directory' do
     it 'should do nothing if ldap_results is an empty array' do
       orig_count = Identity.count
       Directory.create_or_update_database_from_ldap([], Identity.all)
+      expect(Identity.all.count).to eq orig_count
+    end
+
+    it 'should return results already in database' do
+      orig_count = Identity.count
+      id = Identity.find_or_create('mobama@musc.edu')
       expect(Identity.count).to eq orig_count
+      expect(id.ldap_uid).to eq 'mobama@musc.edu'
+      expect(id.email).to eq 'mo_bama@whitehouse.gov'
+      expect(id.first_name).to eq 'Mo'
+      expect(id.last_name).to eq 'Obama'
     end
 
     it 'should create identities that are not already there' do
@@ -80,13 +90,17 @@ RSpec.describe 'Directory' do
           "givenname" => [ 'Foo' ],
           "sn" =>        [ 'Bar' ]}
 
+      def r.dn
+        'cn=foo'
+      end
+
       orig_count = Identity.count
       Directory.create_or_update_database_from_ldap([r], Identity.all)
       expect(Identity.count).to eq orig_count + 1
 
-      id = Identity.find_by_ldap_uid('foo@musc.edu')
+      id = Identity.find_by_ldap_uid("foo@#{DOMAIN}")
       expect(id).not_to eq nil
-      expect(id.ldap_uid).to eq 'foo@musc.edu'
+      expect(id.ldap_uid).to eq "foo@#{DOMAIN}"
       expect(id.email).to eq 'foo@bar.com'
       expect(id.first_name).to eq 'Foo'
       expect(id.last_name).to eq 'Bar'
@@ -98,6 +112,10 @@ RSpec.describe 'Directory' do
           "mail" =>      [ 'bobama@whitehouse.gov' ],
           "givenname" => [ 'Bo' ],
           "sn" =>        [ 'Bama' ]}
+
+     def r.dn
+       'cn=mobama'
+     end
 
       orig_count = Identity.count
       Directory.create_or_update_database_from_ldap([r], Identity.all)

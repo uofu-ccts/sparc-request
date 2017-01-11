@@ -24,12 +24,13 @@ class CatalogManager::IdentitiesController < CatalogManager::AppController
 
   def associate_with_org_unit
     org_unit_id = params["org_unit"]
-    identity_id = params["identity"]
+    ldap_uid = params["identity"]
     rel_type = params["rel_type"]
 
     #oe = ObisEntity.find org_unit_id
     oe = Organization.find org_unit_id
-    identity = Identity.find identity_id
+    identity = Identity.find_or_create ldap_uid
+    identity_id = identity.id
 
     if rel_type == 'service_provider_organizational_unit'
       if not oe.service_providers or (oe.service_providers and not oe.service_providers.map(&:id).include? identity_id)
@@ -86,7 +87,7 @@ class CatalogManager::IdentitiesController < CatalogManager::AppController
     if rel_type == 'service_provider_organizational_unit'
       service_provider = ServiceProvider.find params["relationship"]
       @service_provider_error_message = nil
-      
+
       # we need to have more than just this one service provider in the tree in order to delete
       # if we have services we only need to verify that a service provider exists above us
       # otherwise we look in the entire tree for at least one service provider
@@ -94,9 +95,9 @@ class CatalogManager::IdentitiesController < CatalogManager::AppController
         service_provider.destroy
         oe.reload
       else
-        @service_provider_error_message = I18n.t("organization_form.service_provider_required_message") 
+        @service_provider_error_message = I18n.t("organization_form.service_provider_required_message")
       end
-      
+
       render :partial => 'catalog_manager/shared/service_providers', :locals => {:entity => oe}
 
     elsif rel_type == 'super_user_organizational_unit'
@@ -182,15 +183,15 @@ class CatalogManager::IdentitiesController < CatalogManager::AppController
     end
 
     manager.save
-    
+
     render :partial => 'catalog_manager/shared/catalog_managers', :locals => {:entity => oe}
   end
 
   def search
     term = params[:term].strip
-    results = Identity.search(term).map do |i| 
+    results = Identity.search(term).map do |i|
       {
-       :label => i.display_name, :value => i.id, :email => i.email, :institution => i.institution, :phone => i.phone, :era_commons_name => i.era_commons_name,
+       :label => i.display_name, :value => i.ldap_uid, :email => i.email, :institution => i.institution, :phone => i.phone, :era_commons_name => i.era_commons_name,
        :college => i.college, :department => i.department, :credentials => i.credentials, :credentials_other => i.credentials_other
       }
     end

@@ -58,12 +58,12 @@ RSpec.describe 'ServiceRequest' do
         service = create(:service,
                         organization_id: organization.id,
                         name: 'ABCD',
-                        one_time_fee: true) 
+                        one_time_fee: true)
         @identity = create(:identity)
         create(:service_provider,
                 identity: @identity,
                 organization: organization,
-                service: service) 
+                service: service)
         service_request.update_attribute(:submitted_at, Time.now.yesterday)
         ssr = service_request.sub_service_requests.first
         ssr.update_attribute(:submitted_at, Time.now.yesterday)
@@ -90,7 +90,7 @@ RSpec.describe 'ServiceRequest' do
       end
 
       it "should return a audit report" do
-        expect(service_request.audit_report(@identity, Time.now.yesterday.utc, Time.now.utc)).to eq(@report)
+        expect(service_request.audit_report(@identity, Time.now.yesterday, Time.now)).to eq(@report)
       end
     end
 
@@ -98,7 +98,7 @@ RSpec.describe 'ServiceRequest' do
       before :each do
         @identity = create(:identity)
       end
-      
+
       it "should NOT return a audit report" do
         expect(service_request.audit_report(@identity, Time.now.yesterday.utc, Time.now.utc)).to eq({:line_items=>{}})
       end
@@ -298,7 +298,7 @@ RSpec.describe 'ServiceRequest' do
     end
 
     context 'service_provider is not associated with sub_service_requests' do
-      
+
       before :each do
         identity = create(:identity)
         @service_provider2 = create(:service_provider, identity_id: identity.id)

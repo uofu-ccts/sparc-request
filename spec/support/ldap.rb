@@ -49,6 +49,12 @@ RSpec.configure do |config|
       { "givenname" => ['John'], "sn" => ['Doe'], "uid" => ['joihnd'], "mail" => ['johnd@musc.edu']}
     ]
 
+    results.each do |obj|
+      obj.define_singleton_method(:dn) do
+        "cn=#{obj['uid'].first}"
+      end
+    end
+
     attributes = ["uid", "sn", "givenname", "mail"]
 
     allow(ldap).to receive(:search).with(filter: create_ldap_filter('ash151'), attributes: attributes).and_return([results[0]])

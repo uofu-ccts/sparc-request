@@ -49,8 +49,8 @@ class Dashboard::AssociatedUsersController < Dashboard::BaseController
   def new
     @header_text = t(:authorized_users)[:add][:header]
 
-    if params[:identity_id] # if user selected
-      @identity     = Identity.find(params[:identity_id])
+    if params[:ldap_uid] # if user selected
+      @identity     = Identity.find_or_create(params[:ldap_uid])
       @project_role = @protocol.project_roles.new(identity_id: @identity.id)
       @current_pi   = @protocol.primary_principal_investigator
 
@@ -85,6 +85,7 @@ class Dashboard::AssociatedUsersController < Dashboard::BaseController
   end
 
   def update
+
     updater = AssociatedUserUpdater.new(id: params[:id], project_role: params[:project_role])
 
     if updater.successful?
@@ -149,7 +150,7 @@ class Dashboard::AssociatedUsersController < Dashboard::BaseController
   def search_identities
     # Like SearchController#identities, but without ssr/sr authorization
     term    = params[:term].strip
-    results = Identity.search(term).map { |i| { label: i.display_name, value: i.id, email: i.email } }
+    results = Identity.search(term).map { |i| { label: i.display_name, value: i.ldap_uid, email: i.email } }
     results = [{ label: 'No Results' }] if results.empty?
 
     render json: results.to_json
