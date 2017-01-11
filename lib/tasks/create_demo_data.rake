@@ -115,22 +115,30 @@ namespace :demo do
     Identity.where({:ldap_uid => 'jug2'}).first
   end
 
-  def create_fake_identity
+  def create_fake_identity(email="", use_email_as_ldap_uid=true)
 
-    ldap_uid = Faker::Internet.email
+    email = email.empty? ? Faker::Internet.email : email
+    ldap_uid = use_email_as_ldap_uid ? email : "u#{SecureRandom.hex[0..6]}@utah.edu"
+    password = SecureRandom.base64
+    institution = Institution.first
+    first_name = Faker::Name.first_name
+    last_name = Faker::Name.last_name
     Identity.seed(:ldap_uid,
-    last_name:             Faker::Name.last_name,
-    first_name:            Faker::Name.first_name,
+    last_name:             last_name,
+    first_name:            first_name,
     ldap_uid:              ldap_uid,
-    institution:           Faker::University.name,
-    college:               Faker::University.name,
-    department:            Faker::Team.name,
+    institution:           institution.name,
+    college:               'College of Medicine',
+    department:            'CCTS',
     email:                 ldap_uid,
     credentials:           'BS,    MRA',
     catalog_overlord:      true,
-    password:              'p4ssword',
-    password_confirmation: 'p4ssword',
+    password:              password,
+    password_confirmation: password,
     approved:              true)
+
+
+    # puts "EMAIL: #{email.green}, LDAP_UID: #{ldap_uid.red}, PASSWORD: #{password}, FIRST_NAME: #{first_name}, LAST_NAME: #{last_name}"
 
     Identity.where({:ldap_uid => ldap_uid}).first
   end
@@ -312,6 +320,43 @@ namespace :demo do
         associate_service_provider(p, service_provider)
         puts "#{p.name.green} => #{service_provider.ldap_uid.red}"
       end
+    end
+
+
+    Program.all.each do |p|
+      puts "checking service provider: #{p.name.green}"
+      must_reload = false
+      p.service_providers.each do |sp|
+        if sp.identity.nil?
+          sp.destroy
+          must_reload = true
+        end
+      end
+      if !p.process_ssrs
+      	 p.update_attribute(:process_ssrs, true)
+	        p.save!
+      end
+      if must_reload
+        p.reload
+      end
+      if p.service_providers.empty?
+        service_provider = choose_a_service_provider
+        associate_service_provider(p, service_provider)
+        puts "#{p.name.green} => #{service_provider.ldap_uid.red}"
+      end
+    end
+
+  end
+
+
+  def batch_create_service_provider name, email
+    puts "#{name}"
+    provider = Provider.find_by_name name
+    puts "batch creating service provider for #{provider.name.green}"
+    programs = provider.programs
+    programs.each do |program|
+      service_provider = create_fake_identity(email, false)
+      associate_service_provider(program, service_provider)
     end
   end
 
@@ -641,6 +686,8 @@ namespace :demo do
   def associate_service_provider(provider, identity)
     service_provider = provider.service_providers.new
     service_provider.identity = identity
+    service_provider.is_primary_contact = true
+    service_provider.hold_emails = true
     service_provider.save
   end
 
@@ -722,6 +769,22 @@ namespace :demo do
     puts "ldap_uid = #{ldap_uid}".green
     puts "Times = #{times}".red
     batch_create_project(times,ldap_uid)
+  end
+
+  desc 'batch create service provider'
+  task :batch_create_service_provider, [:name, :email] => :environment do |t, args|
+    if args[:name]
+      name = args[:name]
+    else
+      name = ask_name("Provider name")
+    end
+    if args[:email]
+      email = args[:email]
+    else
+      email = ask_name("Provider email")
+    end
+
+    batch_create_service_provider(name, email)
   end
 
   desc 'batch create serivce'
