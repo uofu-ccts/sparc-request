@@ -130,7 +130,7 @@ namespace :demo do
     institution:           institution.name,
     college:               'College of Medicine',
     department:            'CCTS',
-    email:                 ldap_uid,
+    email:                 email,
     credentials:           'BS,    MRA',
     catalog_overlord:      true,
     password:              password,
