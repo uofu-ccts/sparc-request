@@ -1,3 +1,5 @@
+require "capistrano/scm/git"
+
 # Load DSL and set up stages
 require 'capistrano/setup'
 
@@ -36,3 +38,6 @@ Dotenv.load
 
 # Load custom tasks from `lib/capistrano/tasks` if you have any defined
 Dir.glob('lib/capistrano/tasks/*.rake').each { |r| import r }
+
+
+install_plugin Capistrano::SCM::Git
