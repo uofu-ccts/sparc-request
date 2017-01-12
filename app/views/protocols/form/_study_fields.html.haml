@@ -22,4 +22,5 @@
 = render 'protocols/form/study_form_sections/research_involving', protocol: protocol, form: form
 = render 'protocols/form/study_form_sections/study_type', protocol: protocol, form: form
 = render 'protocols/form/study_form_sections/impact_areas', protocol: protocol, form: form
-= render 'protocols/form/study_form_sections/affiliations', protocol: protocol, form: form
+- if !AFFILIATION_TYPES.blank?
+  = render 'protocols/form/study_form_sections/affiliations', protocol: protocol, form: form
