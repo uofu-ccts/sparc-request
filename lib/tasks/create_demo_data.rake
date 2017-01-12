@@ -975,6 +975,16 @@ namespace :demo do
     end
   end
 
+  desc 'update version study type question group'
+  task :update_version_study_type_question_group => :environment do
+    begin
+      StudyTypeQuestionGroup.find(1).update(version: 1)
+      StudyTypeQuestionGroup.find(2).update(version: 2)
+      StudyTypeQuestionGroup.find(3).update(version: 3)
+    rescue
+    end
+  end
+
 
   desc 'create default pricing map for all services'
   task :create_pricing_map => :environment do
