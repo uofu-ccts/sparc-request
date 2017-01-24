@@ -57,5 +57,5 @@ SparcRails::Application.configure do
   config.action_mailer.default_url_options = { :host => 'localhost:3000' }
 
   # Paperclip
-  Paperclip::Attachment.default_options[:path] = "#{Rails.root}/spec/test_files/:class/:id_partition/:style.:extension"
+  # Paperclip::Attachment.default_options[:path] = "#{Rails.root}/spec/test_files/:class/:id_partition/:style.:extension"
 end
