@@ -275,7 +275,7 @@ class Protocol < ActiveRecord::Base
 
   def display_answers
     answers = StudyTypeQuestion.joins(:study_type_question_group).where(study_type_question_groups: { version: version_type })
-    answers.map{ |ans| ans.study_type_answers.find_by_protocol_id(id) }
+    answers.map{ |ans| ans.study_type_answers.find_by_protocol_id(id) }.reject(&:nil?)
   end
 
   def email_about_change_in_authorized_user(modified_role, action)
