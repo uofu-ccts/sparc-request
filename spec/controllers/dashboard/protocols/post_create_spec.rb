@@ -26,12 +26,14 @@ RSpec.describe Dashboard::ProtocolsController do
 
     context 'success' do
 
+      let!(:id1) { create(:identity, ldap_uid: 'mobama@musc.edu', email: 'mo_bama@whitehouse.gov', last_name: 'Obama', first_name: 'Mo') }
+
       before( :each ) do
-        @logged_in_user = build_stubbed( :identity )
-        
+        @logged_in_user = Identity.find_or_create("ash151@#{DOMAIN}")
+
         protocol = build( :study_with_blank_dates )
 
-        project_role_attributes = { "0" => { identity_id: @logged_in_user.id, role: 'primary-pi', project_rights: 'approve' } }
+        project_role_attributes = { "0" => { identity_id: @logged_in_user.ldap_uid, role: 'primary-pi', project_rights: 'approve' } }
 
         @protocol_attributes = protocol.attributes.merge( { project_roles_attributes: project_role_attributes } )
 
@@ -42,23 +44,23 @@ RSpec.describe Dashboard::ProtocolsController do
       end
 
       it 'creates a new protocol record' do
-        expect{ xhr :post, 
-                    :create, 
+        expect{ xhr :post,
+                    :create,
                     protocol: @protocol_attributes }.
                     to change{ Protocol.count }.by( 1 )
       end
 
       it 'creates a new project role record' do
-        expect{ xhr :post, 
-                    :create, 
+        expect{ xhr :post,
+                    :create,
                     protocol: @protocol_attributes }.
                     to change{ ProjectRole.count }.by( 1 )
       end
 
       it 'creates an extra project role record if the current user is not assigned to the protocol' do
-        @protocol_attributes[:project_roles_attributes]["0"][:identity_id] = build_stubbed(:identity).id
-        expect{ xhr :post, 
-                    :create, 
+        @protocol_attributes[:project_roles_attributes]["0"][:identity_id] = Identity.find_or_create("mobama@#{DOMAIN}").ldap_uid
+        expect{ xhr :post,
+                    :create,
                     protocol: @protocol_attributes }.
                     to change{ ProjectRole.count }.by( 2 )
       end
@@ -73,8 +75,8 @@ RSpec.describe Dashboard::ProtocolsController do
     context 'unsuccessful' do
 
       before( :each ) do
-        @logged_in_user = build_stubbed( :identity )
-        
+        @logged_in_user = Identity.find_or_create("ash151@#{DOMAIN}")
+
         @protocol = build( :study_with_blank_dates )
 
         allow( StudyTypeQuestionGroup ).to receive( :active_id ).
@@ -84,20 +86,21 @@ RSpec.describe Dashboard::ProtocolsController do
       end
 
       it 'gives the correct error message' do
+        expect(@protocol.project_roles).to be_empty
         xhr :post, :create, protocol: @protocol.attributes
         expect(assigns(:errors)).to eq(assigns(:protocol).errors)
       end
 
       it 'does not create a new protocol record' do
-        expect{ xhr :post, 
-                    :create, 
+        expect{ xhr :post,
+                    :create,
                     protocol: @protocol.attributes }.
                     not_to change{ Protocol.count }
       end
 
       it 'does not create a new project role record' do
-        expect{ xhr :post, 
-                    :create, 
+        expect{ xhr :post,
+                    :create,
                     protocol: @protocol.attributes }.
                     not_to change{ ProjectRole.count }
       end

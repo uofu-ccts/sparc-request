@@ -43,7 +43,7 @@ class ProtocolsController < ApplicationController
     params[:protocol][:project_roles_attributes].each do |project_role|
       identity = Identity.find_or_create project_role[1][:identity_id]
       project_role[1][:identity_id] = identity.id
-    end
+    end unless params[:protocol][:project_roles_attributes].blank?
     attrs                                   = fix_date_params
     @protocol                               = protocol_class.new(attrs)
     @service_request                        = ServiceRequest.find(params[:srid])
