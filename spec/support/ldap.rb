@@ -26,10 +26,10 @@ end
 
 def create_ldap_filter(term)
   fields = [
-    Directory::LDAP_UID,
-    Directory::LDAP_LAST_NAME,
-    Directory::LDAP_FIRST_NAME,
-    Directory::LDAP_EMAIL
+    LDAP_UID,
+    LDAP_LAST_NAME,
+    LDAP_FIRST_NAME,
+    LDAP_EMAIL
   ]
 
   return fields.map {|f| Net::LDAP::Filter.contains(f, term)}.inject(:|)

@@ -62,9 +62,12 @@ RSpec.describe 'as a user on catalog page', js: true do
 
   def when_user_checks_the_split_notify_checkbox_for_org(org, selector)
     click_link(org)
+    expect(page).to have_content "/ #{org}"
     within '#gen_info' do
+      expect(find(selector)).not_to be_checked
       find(selector).click
       wait_for_javascript_to_finish
+      expect(find(selector)).to be_checked
     end
   end
 
@@ -73,6 +76,9 @@ RSpec.describe 'as a user on catalog page', js: true do
   end
 
   def then_the_user_should_see_the_status_options_tab
-    expect(page).to have_content "Status Options (Use default statuses below or click to create custom service request statuses)"
+    expect(find('input[id$=_process_ssrs]')).to be_checked
+    expect(AVAILABLE_STATUSES).not_to be_empty
+    # expect(page).to have_selector('#available_statuses_wrapper', visible: true)
+    # expect(find('#available_statuses_fieldset')).to have_content "Status Options (Use default statuses below or click to create custom service request statuses)"
   end
 end
