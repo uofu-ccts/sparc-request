@@ -289,6 +289,7 @@ RSpec.describe 'ServiceRequest' do
     end
   end
 
+
   describe 'ssrs_associated_with_service_provider' do
     context 'service_provider is associated with sub_service_requests' do
 

@@ -21,6 +21,8 @@ set :log_level, :debug
 # Default value for :pty is false
 set :pty, true
 
+set :days_to_keep_backups, 30
+
 # Default value for :linked_files is []
 set :linked_files, fetch(:linked_files, []).push('config/application.yml', 'config/database.yml', 'config/epic.yml', 'config/ldap.yml', 'config/cas.yml', 'config/secrets.yml', '.env')
 
@@ -207,6 +209,29 @@ namespace :mysql do
     else
       puts "    *************************"
       puts "    Skipping Database Backups"
+      puts "    *************************"
+    end
+  end
+
+  desc "removes all database backups that are older than days_to_keep_backups"
+  task :cleanup_backups, :roles => :db, :only => { :primary => true } do
+    if ENV['perform_db_backups']
+      backup_dir = "#{shared_path}/database_backups"
+      # Gets the output of ls as a string and splits on new lines and
+      # selects the bziped files.
+      backups = capture("ls #{backup_dir}").split("\n").find_all {|file_name| file_name =~ /.*\.gz/}
+      old_backup_date = (Time.now.to_date - days_to_keep_backups).to_time
+      backups.each do |file_name|
+        # Gets the float epoch timestamp out of the file name
+        timestamp = file_name.match(/((\d{4})-(\d{2})-(\d{2})-(\d{6}))/)[1]
+        backup_time = Time.parse(timestamp)
+        if backup_time < old_backup_date
+          run "rm #{backup_dir}/#{file_name}"
+        end
+      end
+    else
+      puts "    *************************"
+      puts "    Skipping Database Backups Cleanup"
       puts "    *************************"
     end
   end
