@@ -42,6 +42,6 @@ RSpec.feature 'User wants to submit a questionnaire form', js: true do
     bootstrap_select('.complete-details.selectpicker', @service.name)
     wait_for_javascript_to_finish
 
-    # expect(page).to have_selector('#submissionModal', visible: true)
+    expect(page).to have_selector('#submissionModal', visible: true)
   end
 end

@@ -112,7 +112,7 @@ RSpec.describe "User views SSR table", js: true do
       page = go_to_show_protocol(protocol.id)
 
       expect(page).to have_content('Complete Form')
-      # expect(page).to have_selector('.complete-details .badge', text: /\A1\z/)
+      expect(page).to have_selector('.complete-details .badge', text: /\A1\z/)
     end
   end
 
