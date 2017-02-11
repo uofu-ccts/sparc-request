@@ -99,7 +99,7 @@ RSpec.describe 'service request list', js: true do
 
         within(@page.consolidated_request_modal) do
           expect(page).to have_content(@complete_li.service.display_service_name)
-          # expect(page).to_not have_content(@draft_li.service.display_service_name)
+          expect(page).to_not have_content(@draft_li.service.display_service_name)
           expect(page).to_not have_content(@first_draft_li.service.display_service_name)
         end
       end
