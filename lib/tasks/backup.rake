@@ -5,6 +5,7 @@ namespace :backup do
 
   desc "run rspec"
   task :rspec => :environment do
+    system('bundle exec rake assets:clobber')
     `RUBYOPT=W0 bundle exec rspec --color --format documentation --out tmp/#{Time.now.strftime("%Y-%m-%d-%H%M%S")}-test-results`
   end
 
