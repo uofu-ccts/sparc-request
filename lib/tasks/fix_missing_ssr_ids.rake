@@ -1,6 +1,6 @@
 namespace :data do
   task fix_missing_ssr_ids: :environment do
-    ssrs_with_missing_ssr_ids = SubServiceRequest.where(ssr_id: nil)
+    ssrs_with_missing_ssr_ids = SubServiceRequest.where(ssr_id: nil).where.not(protocol: nil)
 
     puts "SSRs with missing ssr_ids - #{ssrs_with_missing_ssr_ids.count}"
 
