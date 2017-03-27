@@ -26,7 +26,7 @@ usage unless ARGV[0]
 
 application_config = YAML.load_file('config/application.yml')[ARGV[0]]
 
-example_config = YAML.load_file('config/application.yml.example')['development']
+example_config = YAML.load_file('config/application.yml.example')[ARGV[0]]
 
 
 application_config_keys = application_config.keys

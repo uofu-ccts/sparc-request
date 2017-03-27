@@ -31,3 +31,7 @@ end
 every :reboot, :roles => [:app] do
   rake "util:start_delayed_job"
 end
+
+every 1.week, at: '12:00am' do
+  rake 'remove_historical_first_draft'
+end
