@@ -119,7 +119,6 @@ RSpec.describe "Identity" do
 
         it "should return false if the users rights are not 'approve' or request" do
           project_role.update_attributes(project_rights: 'none')
-          service_request.update_attributes(service_requester_id: user2.id)
           expect(user.can_edit_service_request?(service_request)).to eq(false)
         end
 
@@ -144,7 +143,6 @@ RSpec.describe "Identity" do
 
         it "should return false if the user does not have correct rights" do
           project_role.update_attributes(project_rights: 'none')
-          service_request.update_attributes(service_requester_id: user2.id)
           expect(user.can_edit_sub_service_request?(sub_service_request)).to eq(false)
         end
       end

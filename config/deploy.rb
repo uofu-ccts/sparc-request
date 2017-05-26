@@ -476,4 +476,18 @@ namespace :setup do
 
 end
 
+
+namespace :survey do
+  desc "load/update a survey"
+  task :parse do
+    if ENV['FILE']
+      transaction do
+        run "cd #{current_path} && rake surveyor FILE=#{ENV['FILE']} RAILS_ENV=#{rails_env}"
+      end
+    else
+      raise "FILE must be specified (eg. cap survey:parse FILE=surveys/your_survey.rb)"
+    end
+  end
+end
+
 before "deploy", 'mysql:backup'
