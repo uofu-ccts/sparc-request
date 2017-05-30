@@ -99,16 +99,17 @@ class Dashboard::ProtocolsController < Dashboard::BaseController
   end
 
   def fix_identity
-    # fix identity_id
-    params[:protocol][:project_roles_attributes].each do |project_role|
-      identity = Identity.find_or_create project_role[1][:identity_id]
-      project_role[1][:identity_id] = identity.id
-    end unless params[:protocol][:project_roles_attributes].blank?
+    attrs               = protocol_params
+    attrs[:project_roles_attributes].each do |index, project_role|
+      identity = Identity.find_or_create project_role[:identity_id]
+      project_role[:identity_id] = identity.id
+    end unless attrs[:project_roles_attributes].nil?
+    attrs
   end
 
   def create
     protocol_class                          = protocol_params[:type].capitalize.constantize
-    fix_identity
+    attrs                                   = fix_identity
     attrs                                   = fix_date_params
     @protocol                               = protocol_class.new(attrs)
     @protocol.study_type_question_group_id  = StudyTypeQuestionGroup.active_id
