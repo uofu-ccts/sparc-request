@@ -594,6 +594,7 @@ DEPENDENCIES
   connection_pool
   country_select
   curb (~> 0.9.3)
+  daemons
   database_cleaner
   delayed_job_active_record
   delayed_job_web

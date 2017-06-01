@@ -83,6 +83,8 @@ gem "delayed_job_web"
 
 gem 'dotenv-rails'
 
+gem "daemons"
+
 
 group :development, :test, :profile do
   gem 'addressable', '~> 2.3.6'
