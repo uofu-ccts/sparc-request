@@ -83,9 +83,6 @@ namespace :deploy do
   task :restart_passenger do
     on roles(:app) do
       within current_path do
-        with rails_env: fetch(:rails_env) do
-          execute :bundle, "exec script/delayed_job restart"
-        end
         execute :chmod, '777', 'tmp'
         execute :touch, 'tmp/restart.txt'
       end
