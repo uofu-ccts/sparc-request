@@ -47,7 +47,7 @@ RSpec.describe Notifier do
             @service_request.reload
             deleted_and_created_line_item_audit_trail(@service_request, @service, identity)
 
-            @report               = @sub_service_request.audit_report(identity, Time.now.yesterday - 4.hours, Time.now)
+            @report               = @sub_service_request.audit_report(identity, Time.now.yesterday.utc - 4.hours, Time.now.utc)
             @mail                 = Notifier.notify_service_provider(@service_provider, @service_request, @xls, identity, @sub_service_request, @report, false, true)
           end
 
@@ -109,7 +109,7 @@ RSpec.describe Notifier do
             @service_request.reload
             created_line_item_audit_trail(@service_request, @service, identity)
 
-            @report               = @sub_service_request.audit_report(identity, Time.now.yesterday - 4.hours, Time.now)
+            @report               = @sub_service_request.audit_report(identity, Time.now.yesterday.utc - 4.hours, Time.now.utc)
             @mail                 = Notifier.notify_service_provider(@service_provider, @service_request, @xls, identity, @sub_service_request, @report, false, true)
           end
 
@@ -261,7 +261,7 @@ RSpec.describe Notifier do
             @service_request.reload
             deleted_line_item_audit_trail(@service_request, @service, identity)
 
-            @report               = @sub_service_request.audit_report(identity, Time.now.yesterday - 4.hours, Time.now)
+            @report               = @sub_service_request.audit_report(identity, Time.now.yesterday.utc - 4.hours, Time.now.utc)
             @mail                 = Notifier.notify_service_provider(@service_provider, @service_request, @xls, identity, @sub_service_request, @report, false, true)
           end
 
@@ -415,7 +415,7 @@ RSpec.describe Notifier do
         @service_request.reload
         deleted_and_created_line_item_audit_trail(@service_request, @service, identity)
 
-        @report               = @sub_service_request.audit_report(identity, Time.now.yesterday - 4.hours, Time.now)
+        @report               = @sub_service_request.audit_report(identity, Time.now.yesterday.utc - 4.hours, Time.now.utc)
         @mail                 = Notifier.notify_service_provider(@service_provider, @service_request, @xls, identity, @sub_service_request, @report, false, true)
       end
 
