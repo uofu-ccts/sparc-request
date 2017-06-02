@@ -103,8 +103,8 @@ $(document).ready ->
           window.location = "/dashboard/protocols/#{protocol_id}/edit"
 
       $(document).on 'click', '.view-full-calendar-button', ->
-        protocol_id = $(this).data('protocol-id')
-        statuses_hidden = $(this).data('statuses-hidden')
+        protocol_id = $(this).data('protocolId')
+        statuses_hidden = $(this).data('statusesHidden')
         $.ajax
           method: 'get'
           url: "/service_calendars/view_full_calendar.js"
@@ -150,7 +150,7 @@ $(document).ready ->
           protocol_id         = $selected_option.data('protocol-id')
           line_item_id        = $selected_option.data('line-item-id')
           $this               = $(this)
-
+          
           $.ajax
             method: 'GET'
             url: "/services/#{service_id}/additional_details/submissions/new.js"
