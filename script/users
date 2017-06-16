@@ -13,7 +13,13 @@ def true?(obj)
   obj.to_s == "true"
 end
 
-institution = Institution.first
+if ARGV[1].nil?
+  institution = Institution.first
+else
+  institution = Institution.find_by_name ARGV[1].chomp
+end
+
+
 
 puts "Using #{institution.name.green}"
 
