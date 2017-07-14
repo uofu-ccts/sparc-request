@@ -133,7 +133,7 @@ SparcRails::Application.routes.draw do
 
   resources :arms, only: [:index, :new, :create, :edit, :update, :destroy]
 
-  resource :service_calendars, only: [:update] do
+  resource :service_calendars, only: [] do
     member do
       get 'table'
       get 'merged_calendar'
@@ -149,7 +149,8 @@ SparcRails::Application.routes.draw do
 
   resources :line_items, only: [:update]
   resources :visit_groups, only: [:edit, :update]
-
+  resources :visits, only: [:edit, :update, :destroy]
+  
   resources :documents, only: [:index, :new, :create, :edit, :update, :destroy]
 
   resources :notes, only: [:index, :new, :create]
@@ -299,7 +300,7 @@ SparcRails::Application.routes.draw do
       end
     end
 
-    resources :protocol_filters, only: [:new, :create]
+    resources :protocol_filters, only: [:new, :create, :destroy]
 
     resources :service_requests, only: [:show]
 
@@ -323,8 +324,6 @@ SparcRails::Application.routes.draw do
       end
     end
 
-    resources :visits, only: [:update, :destroy]
-
     resources :visit_groups, only: [:new, :create, :update, :destroy] do
       collection do
         get :navigate
@@ -338,12 +337,6 @@ SparcRails::Application.routes.draw do
     collection do
       get :setup
       post :generate
-    end
-
-    member do
-      get :research_project_summary
-      post :cwf_audit
-      get :cwf_subject
     end
   end
 

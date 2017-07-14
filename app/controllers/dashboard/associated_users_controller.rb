@@ -38,8 +38,8 @@ class Dashboard::AssociatedUsersController < Dashboard::BaseController
 
   def edit
     @identity     = @protocol_role.identity
-    @current_pi   = @protocol.primary_principal_investigator
     @header_text  = t(:authorized_users)[:edit][:header]
+    @dashboard    = true
 
     respond_to do |format|
       format.js
@@ -48,6 +48,7 @@ class Dashboard::AssociatedUsersController < Dashboard::BaseController
 
   def new
     @header_text = t(:authorized_users)[:add][:header]
+    @dashboard    = true
 
     if params[:ldap_uid] # if user selected
       @identity     = Identity.find_or_create(params[:ldap_uid])
@@ -58,7 +59,6 @@ class Dashboard::AssociatedUsersController < Dashboard::BaseController
         # Adds error if user already associated with protocol
         @errors = @project_role.errors
       end
-
     end
 
     respond_to do |format|

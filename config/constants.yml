@@ -480,6 +480,7 @@ federal_grant_phs_sponsors: { "AA National Institute on Alcohol Abuse and Alcoho
                               "TS Agency for Toxic Substances and Disease Registry": "TS",
                               "TW Fogarty International Center": "TW",
                               "WC Office of Workforce and Career Development, CDC": "WC" }
+
 federal_grant_non_phs_sponsors: { "ACF Administration for Children and Families": "ACF",
                                   "ADD Administration on Developmental Disabilities": "ADD",
                                   "AID Agency for International Development": "AID",
@@ -514,6 +515,164 @@ federal_grant_non_phs_sponsors: { "ACF Administration for Children and Families"
                                   "USIP U.S. Institute of Peace": "USIP",
                                   "USOC U.S. Olympic Committee": "USOC",
                                   "VA Veterans Administration": "VA" }
+
+
+funding_sources: { 'College Department': 'college',
+                   'Federal': 'federal',
+                   'Foundation/Organization': 'foundation',
+                   'Industry-Initiated/Industry-Sponsored': 'industry',
+                   'Investigator-Initiated/Industry-Sponsored': 'investigator',
+                   'Internal Funded Pilot Project': 'internal',
+                   'Student Funded Research': 'unfunded' }
+
+funding_statuses: { 'Pending Funding': 'pending_funding',
+                    'Funded': 'funded' }
+
+impact_areas: { 'pediatrics': 'Pediatrics',
+               'hiv_aids': 'HIV/AIDS',
+               'hypertension': 'Hypertension',
+               'stroke': 'Stroke',
+               'diabetes': 'Diabetes',
+               'cancer': 'Cancer',
+               'community': 'Community Engagement',
+               'other': 'Other' }
+
+institutions: { "University of South Carolina": "university_of_south_carolina",
+                "Health Sciences South Carolina": "health_sciences_south_carolina",
+                "Clemson University": "clemson_university",
+                "South Carolina State University": "south_carolina_state_university",
+                "Claflin University": "claflin_university",
+                "Greenwood Genetic Center": "greenwood_genetic_center",
+                "South Carolina Research Authority": "south_carolina_research_authority",
+                "VA Medical Centers": "va_medical_centers",
+                "Other": "other",
+                "Medical University of South Carolina": "medical_university_of_south_carolina" }
+
+potential_funding_sources: { 'College Department': 'college',
+                             'Federal': 'federal',
+                             'Foundation/Organization': 'foundation',
+                             'Industry-Initiated/Industry-Sponsored': 'industry',
+                             'Investigator-Initiated/Industry-Sponsored': 'investigator',
+                             'Internal Funded Pilot Project': 'internal',
+                             'Student Funded Research': 'unfunded' }
+
+proxy_rights: { 'Authorize/Change Study Charges': 'approve',
+                'View Rights': 'view',
+                'Member Only': 'none' }
+
+study_types: { 'clinical_trials': 'Clinical Trials',
+               'basic_science': 'Basic Science',
+               'translational_science': 'Translational Science' }
+
+study_type_answers: {  '1' : [true, true,   ~,     ~,     ~,     ~],
+                       '2' : [true, false, true,   ~,     ~,     ~],
+                       '3' : [true, false, false, false, true, true],
+                       '4' : [true, false, false, false, false, true],
+                       '5' : [true, false, false, false, true, false],
+                       '6' : [true, false, false, false, false, false],
+                       '7' :[true, false, false, true, true, true],
+                       '8' : [true, false, false, true, false, true],
+                       '9' : [true, false, false, true, true, false],
+                       '10' : [true, false, false, true, false, false],
+                       '11' : [false, ~,     ~,    false, true, true],
+                       '12' : [false, ~,     ~,    false, false, true],
+                       '13' : [false, ~,     ~,    false, true, false],
+                       '14' : [false, ~,     ~,    false, false, false],
+                       '15' : [false, ~,     ~,    true, true, true],
+                       '16' : [false, ~,     ~,    true, false, true],
+                       '17' : [false, ~,     ~,    true, true, false],
+                       '0' : [false, ~,     ~,    true, false, false] }
+
+study_type_answers_version_2: { '1' : [true, ~,    ~,    ~,    ~,    ~],
+                                '2' : [false, true, true,   ~,    ~,    ~],
+                                '3' : [false, true, false, false, true, true],
+                                '4' : [false, true, false, false, false, true],
+                                '5' : [false, true, false, false, true, false],
+                                '6' : [false, true, false, false, false, false],
+                                '7' : [false, true, false, true, true, true],
+                                '8' : [false, true, false, true, false, true],
+                                '9' : [false, true, false, true, true, false],
+                                '10': [false, true, false, true, false, false],
+                                '11': [false, false, ~,    false, true, true],
+                                '12': [false, false, ~,    false, false, true],
+                                '13': [false, false, ~,    false, true, false],
+                                '14': [false, false, ~,    false, false, false],
+                                '15': [false, false, ~,    true, true, true],
+                                '16': [false, false, ~,    true, false, true],
+                                '17': [false, false, ~,    true, true, false],
+                                '0': [false, false, ~,    true, false, false] }
+
+study_type_answers_version_3: { '1' : [true,    ~,    ~,    ~,    ~,    ~,    ~],
+                                '3' : [false, true, false, false, false,    ~,    ~],
+                                '4' : [false, true, false, true, false,    ~,    ~],
+                                '5' : [false, true, false, false, true,    ~,    ~],
+                                '6' : [false, true, false, true, true,    ~,    ~],
+                                '7' : [false, true, true, false, false,    ~,    ~],
+                                '8' : [false, true, true, true, false,    ~,    ~],
+                                '9' : [false, true, true, false, true,    ~,    ~],
+                                '10': [false, true, true, true, true,    ~,    ~],
+                                '11': [false, false, false, false, false,    ~,    ~],
+                                '12': [false, false, false, true, false,    ~,    ~],
+                                '13': [false, false, false, false, true,    ~,    ~],
+                                '14': [false, false, false, true, true,    ~,    ~],
+                                '15': [false, false, true, false, false,    ~,    ~],
+                                '16': [false, false, true, true, false,    ~,    ~],
+                                '17': [false, false, true, false, true,    ~,    ~],
+                                '0': [false, false, true, true, true,    ~,    ~ ] }
+
+study_type_notes:             { '1' : 'De-identified Research Participant',
+                                '3' : 'Break-The-Glass for research associated encounters',
+                                '4' : 'Break-The-Glass for research associated encounters: no notification, pink header, no MyChart access.',
+                                '5' : 'Break-The-Glass for research associated encounters: no notification, no pink header, MyChart access.',
+                                '6' : 'Break-The-Glass for research associated encounters: no notification, pink header, MyChart access.',
+                                '7' : 'Break-The-Glass for research associated encounters: notification, no pink header, no MyChart access.',
+                                '8' : 'Break-The-Glass for research associated encounters: notification, pink header, no MyChart access.',
+                                '9' : 'Break-The-Glass for research associated encounters: notification, no pink header, MyChart access.',
+                                '10': 'Break-The-Glass for research associated encounters: notification, pink header, MyChart access.',
+                                '11': 'Full Epic Functionality:  no notification, no pink header, no MyChart access.',
+                                '12': 'Full Epic Functionality:  no notification, pink header, no MyChart access.',
+                                '13': 'Full Epic Functionality:  no notification, no pink header, MyChart access.',
+                                '14': 'Full Epic Functionality:  no notification, pink header, MyChart access.',
+                                '15': 'Full Epic Functionality:  notification, no pink header, no MyChart access.',
+                                '16': 'Full Epic Functionality:  notification, pink header, no MyChart access.',
+                                '17': 'Full Epic Functionality:  notification, no pink header, MyChart access.',
+                                '0': 'Full Epic Functionality:  notification, pink header, MyChart access.' }
+
+study_type_questions: ["1a. Does your study require a higher level of privacy for the participants?",
+                         "1b. Does your study have a Certificate of Confidentiality?",
+                         "1c. Do participants enrolled in your study require a second DEIDENTIFIED Medical Record that is not connected to their primary record in Epic?",
+                         "2. Do you wish to receive a notification via Epic InBasket when your research participants are admitted to the hospital or ED?",
+                         "3. Do you wish to remove the 'Research: Active' indicator in the Patient Header for your study participants?",
+                         "4. Do you need to restrict the sending of study related results, such as laboratory and radiology results, to a participants MyChart?"]
+
+study_type_questions_version_2: ["1. Does your study have a Certificate of Confidentiality?*",
+                                 "2. Does your study require a higher level of privacy for the participants?*",
+                                 "2b. Do participants enrolled in your study require a second DEIDENTIFIED Medical Record that is not connected to their primary record in Epic?*",
+                                 "3. Do you wish to receive a notification via Epic InBasket when your research participants are admitted to the hospital or ED?*",
+                                 "4. Do you wish to remove the 'Research: Active' indicator in the Patient Header for your study participants?*",
+                                 "5. Do you need to restrict the sending of study related results, such as laboratory and radiology results, to a participants MyChart?*"]
+
+study_type_questions_version_3: ["1. Does your Informed Consent provide information to the participant specifically stating their study participation will be kept private from anyone outside the research team? (i.e. your study has a Certificate of Confidentiality or involves sensitive data collection which requires de-identification of the research participant in Epic.)",
+                               '2. Does your study require a higher level of privacy protection for the participants? (Your study needs "break the glass" functionality in Epic because it is collection sensitive data, such as HIV/sexually transmitted disease, sexual practice/attitudes, illegal substance, etc., which needs higher privacy protection, yet not complete de-identification of the study participant.)',
+                               "3. Is it appropriate for study team members to receive Epic InBasket notifications if research participants in this study are hospitalized or admitted to the Emergency Department?",
+                               '4. Is it appropriate to display the pink "Research: Active" indicator in the Patient Header for all study participants?',
+                               "5. Is it appropriate for all study participants to receive associated test results, such as labs and/or imaging findings, via MyChart?",
+                               "1. Does your Informed Consent provide information to the participant specifically stating their study participation will be kept private from anyone outside the research team? (i.e. your study has a Certificate of Confidentiality or involves sensitive data collection which requires de-identification of the research participant.)",
+                               '2. Does your study require a higher level of privacy protection for the participants? (Your study needs "break the glass" functionality because it is collection sensitive data, such as HIV/sexually transmitted disease, sexual practice/attitudes, illegal substance, etc., which needs higher privacy protection, yet not complete de-identification of the study participant.)']
+
+subject_ethnicities: { 'Caucasian': 'caucasian',
+                      'African American/Black': 'black',
+                      'Asian': 'asian',
+                      'Middle Eastern': 'middle_eastern',
+                      'Pacific Islander': 'pacific_islander',
+                      'Native American/Alaskan': 'native_american/alaskan',
+                      'Other': 'other' }
+
+subject_genders: { 'Male': 'male',
+                  'Female': 'female',
+                  'Other': 'other' }
+
+
 submission_types: { 'Exempt': 'exempt',
                     'Expedited': 'expedited',
                     'Full Board': 'full_board' }
@@ -730,6 +889,7 @@ user_roles: { 'Primary PI': 'primary-pi',
               'Billing/Business Manager': 'business-grants-manager',
               'Research Nurse': 'research-nurse',
               'Other': 'other' }
+
 document_types: { 'Protocol': 'protocol',
                   'Consent': 'consent',
                   'HIPAA': 'hipaa',
