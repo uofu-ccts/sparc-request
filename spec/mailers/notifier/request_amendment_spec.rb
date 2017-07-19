@@ -49,7 +49,7 @@ RSpec.describe Notifier do
             deleted_and_created_line_item_audit_trail(@service_request, @service, identity)
 
             @report               = @sub_service_request.audit_report(identity, Time.now.yesterday.utc - 4.hours, Time.now.utc)
-            @mail                 = Notifier.notify_service_provider(@service_provider, @service_request, @xls, identity, @sub_service_request, @report, false, true)
+            @mail                 = Notifier.notify_service_provider(@service_provider, @service_request, identity, @sub_service_request, @report, false, true)
           end
 
           # Expected service provider message is defined under request_amendment_intro
@@ -113,7 +113,7 @@ RSpec.describe Notifier do
             created_line_item_audit_trail(@service_request, @service, identity)
 
             @report               = @sub_service_request.audit_report(identity, Time.now.yesterday.utc - 4.hours, Time.now.utc)
-            @mail                 = Notifier.notify_service_provider(@service_provider, @service_request, @xls, identity, @sub_service_request, @report, false, true)
+            @mail                 = Notifier.notify_service_provider(@service_provider, @service_request, identity, @sub_service_request, @report, false, true)
           end
 
           # Expected service provider message is defined under request_amendment_intro
@@ -269,7 +269,7 @@ RSpec.describe Notifier do
             deleted_line_item_audit_trail(@service_request, @service, identity)
 
             @report               = @sub_service_request.audit_report(identity, Time.now.yesterday.utc - 4.hours, Time.now.utc)
-            @mail                 = Notifier.notify_service_provider(@service_provider, @service_request, @xls, identity, @sub_service_request, @report, false, true)
+            @mail                 = Notifier.notify_service_provider(@service_provider, @service_request, identity, @sub_service_request, @report, false, true)
           end
 
           # Expected service provider message is defined under request_amendment_intro
@@ -426,7 +426,7 @@ RSpec.describe Notifier do
         deleted_and_created_line_item_audit_trail(@service_request, @service, identity)
 
         @report               = @sub_service_request.audit_report(identity, Time.now.yesterday.utc - 4.hours, Time.now.utc)
-        @mail                 = Notifier.notify_service_provider(@service_provider, @service_request, @xls, identity, @sub_service_request, @report, false, true)
+        @mail                 = Notifier.notify_service_provider(@service_provider, @service_request, identity, @sub_service_request, @report, false, true)
       end
 
       # Expected service provider message is defined under request_amendment_intro
