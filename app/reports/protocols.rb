@@ -67,6 +67,8 @@ class ProtocolsReport < ReportingModule
     attrs["Primary PI Department"]  = "service_request.try(:protocol).try(:primary_principal_investigator).try(:professional_org_lookup, 'department')"
     attrs["Primary PI Division"]    = "service_request.try(:protocol).try(:primary_principal_investigator).try(:professional_org_lookup, 'division')"
 
+    attrs["unid"] = "service_requester.try(:netid)"
+
     attrs["Primary Coordinator(s)"] = "service_request.try(:protocol).try(:coordinators).try(:map){|x| x.full_name}.try(:join, ', ')"
     attrs["Primary Coordinator Email(s)"] = "service_request.try(:protocol).try(:coordinator_emails)"
 

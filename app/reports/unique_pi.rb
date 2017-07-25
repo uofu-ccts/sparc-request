@@ -60,6 +60,7 @@ class UniquePiReport < ReportingModule
 
     attrs["Unique PI Last Name"] = :last_name
     attrs["Unique PI First Name"] = :first_name
+    attrs["unid"] = :netid
     attrs["Institution"] = "try(:professional_org_lookup, 'institution')"
     attrs["College"]     = "try(:professional_org_lookup, 'college')"
     attrs["Department"]  = "try(:professional_org_lookup, 'department')"

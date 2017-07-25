@@ -85,6 +85,8 @@ class ServiceRequestsReport < ReportingModule
     attrs["Primary PI Department"]  = "service_request.try(:protocol).try(:primary_principal_investigator).try(:professional_org_lookup, 'department')"
     attrs["Primary PI Division"]    = "service_request.try(:protocol).try(:primary_principal_investigator).try(:professional_org_lookup, 'division')"
 
+    attrs["unid"] = "service_requester.try(:netid)"
+
     if params[:apr_data]
       if params[:apr_data].include?("irb")
         attrs["IRB Checked Y/N"] = "service_request.try(:protocol).try(:research_types_info).try(:human_subjects) ? \"Y\" : \"N\""
