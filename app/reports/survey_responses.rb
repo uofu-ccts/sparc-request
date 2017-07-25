@@ -42,6 +42,7 @@ class SurveyResponseReport < ReportingModule
     attrs["SSR ID"] = "sub_service_request.try(:display_id)"
     attrs["User ID"] = :identity_id
     attrs["User Name"] = "identity.try(:full_name)"
+    attrs["unid"] = "identity.try(:netid)"
     attrs["Submitted Date"] = "created_at.try(:strftime, \"%D\")"
 
     if params[:survey_id]
