@@ -34,7 +34,8 @@ class ProtocolsReport < ReportingModule
       Institution => {:field_type => :select_tag, :has_dependencies => "true"},
       Provider => {:field_type => :select_tag, :dependency => '#institution_id', :dependency_id => 'parent_id'},
       Program => {:field_type => :select_tag, :dependency => '#provider_id', :dependency_id => 'parent_id'},
-      Core => {:field_type => :select_tag, :dependency => '#program_id', :dependency_id => 'parent_id'}
+      Core => {:field_type => :select_tag, :dependency => '#program_id', :dependency_id => 'parent_id'},
+	"Current Status" => {:field_type => :check_box_tag, :for => 'status', :multiple => AVAILABLE_STATUSES}
     }
   end
 
@@ -43,7 +44,7 @@ class ProtocolsReport < ReportingModule
     attrs = {}
 
     attrs["Protocol ID"] = "service_request.try(:protocol).try(:id)"
-    attrs["Research Master ID"] = "service_request.try(:protocol).try(:research_master_id)"
+#    attrs["Research Master ID"] = "service_request.try(:protocol).try(:research_master_id)"
     attrs["Protocol Short Title"] = "service_request.try(:protocol).try(:short_title)"
     attrs["Protocol Title"] = "service_request.try(:protocol).try(:title)"
     attrs["Number of Requests"] = "service_request.try(:protocol).try(:sub_service_requests).try(:count)"
@@ -62,12 +63,11 @@ class ProtocolsReport < ReportingModule
     attrs["Primary PI Last Name"]   = "service_request.try(:protocol).try(:primary_principal_investigator).try(:last_name)"
     attrs["Primary PI First Name"]  = "service_request.try(:protocol).try(:primary_principal_investigator).try(:first_name)"
     attrs["Primary PI Email"]       = "service_request.try(:protocol).try(:primary_principal_investigator).try(:email)"
+	attrs["Primary PI uNID"]   = "service_request.try(:protocol).try(:primary_principal_investigator).try(:netid)"
     attrs["Primary PI Institution"] = "service_request.try(:protocol).try(:primary_principal_investigator).try(:professional_org_lookup, 'institution')"
     attrs["Primary PI College"]     = "service_request.try(:protocol).try(:primary_principal_investigator).try(:professional_org_lookup, 'college')"
     attrs["Primary PI Department"]  = "service_request.try(:protocol).try(:primary_principal_investigator).try(:professional_org_lookup, 'department')"
     attrs["Primary PI Division"]    = "service_request.try(:protocol).try(:primary_principal_investigator).try(:professional_org_lookup, 'division')"
-
-    attrs["unid"] = "service_requester.try(:netid)"
 
     attrs["Primary Coordinator(s)"] = "service_request.try(:protocol).try(:coordinators).try(:map){|x| x.full_name}.try(:join, ', ')"
     attrs["Primary Coordinator Email(s)"] = "service_request.try(:protocol).try(:coordinator_emails)"
@@ -75,6 +75,7 @@ class ProtocolsReport < ReportingModule
     attrs["Business Manager(s)"] = "service_request.try(:protocol).try(:billing_managers).try(:map){|x| x.full_name}.try(:join, ', ')"
     attrs["Business Manager Email(s)"] = "service_request.try(:protocol).try(:billing_business_manager_email)"
 
+    attrs["Requestor uNID"] = "service_requester.try(:netid)"
 
     attrs
   end
