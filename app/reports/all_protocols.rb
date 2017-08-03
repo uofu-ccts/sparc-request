@@ -61,6 +61,7 @@ class AllProtocolsReport < ReportingModule
 
     attrs["Primary PI Last Name"]   = "protocol.try(:primary_principal_investigator).try(:last_name)"
     attrs["Primary PI First Name"]  = "protocol.try(:primary_principal_investigator).try(:first_name)"
+    attrs["Primary PI Unid"]       = "protocol.try(:primary_principal_investigator).try(:netid)"
     attrs["Primary PI Email"]       = "protocol.try(:primary_principal_investigator).try(:email)"
     attrs["Primary PI Institution"] = "protocol.try(:primary_principal_investigator).try(:professional_org_lookup, 'institution')"
     attrs["Primary PI College"]     = "protocol.try(:primary_principal_investigator).try(:professional_org_lookup, 'college')"
