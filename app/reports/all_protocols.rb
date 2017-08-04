@@ -32,6 +32,7 @@ class AllProtocolsReport < ReportingModule
     {
       "Date Range" => {:field_type => :date_range, :for => "service_requests_original_created_date", :from => "2012-03-01".to_date, :to => Date.today},
       "Include empty protocols" => {:field_type => :check_box_tag, :for => "include_empty_protocols"},
+      "Include archived" => {:field_type => :check_box_tag, :for => "include_archived"},
       Institution => {:field_type => :select_tag, :has_dependencies => "true"},
       Provider => {:field_type => :select_tag, :dependency => '#institution_id', :dependency_id => 'parent_id'},
       Program => {:field_type => :select_tag, :dependency => '#provider_id', :dependency_id => 'parent_id'},
@@ -113,7 +114,13 @@ class AllProtocolsReport < ReportingModule
 
   # Conditions
   def where args={}
-    return Protocol.arel_table[:id].not_eq(nil) if args[:include_empty_protocols]
+    if args[:include_empty_protocols]
+      if args[:include_archived]
+        return "protocols.id is not null"
+      else
+        return "protocols.id is not null and protocols.archived = 0"
+      end
+    end
     organizations = Organization.all
     selected_organization_id = args[:core_id] || args[:program_id] || args[:provider_id] || args[:institution_id] # we want to go up the tree, service_organization_ids plural because we might have child organizations to include
 
@@ -144,7 +151,12 @@ class AllProtocolsReport < ReportingModule
 
     created_at ||= self.default_options["Date Range"][:from]..self.default_options["Date Range"][:to]
 
-    return :services => {:organization_id => service_organization_ids}, :service_requests => {:created_at => created_at}
+    if args[:include_archived]
+      return :services => {:organization_id => service_organization_ids}, :service_requests => {:created_at => created_at}
+    else
+      return :services => {:organization_id => service_organization_ids}, :service_requests => {:created_at => created_at}, :protocols => { :archived => 0 }
+    end
+
   end
 
   # Return only uniq records for
