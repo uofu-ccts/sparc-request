@@ -36,6 +36,10 @@
       window.I18n = #{current_translations.to_json.html_safe};
 
   %body#body
+    - if ENV['site_name'] != 'production'
+      .alert.alert-danger
+        %p.text-center{:style => "letter-spacing: 8px"}
+          = ENV['site_name']
     #container
       #header
         = render 'layouts/header_logos', in_dashboard: true, location: @location
