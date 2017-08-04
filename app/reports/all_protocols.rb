@@ -31,6 +31,7 @@ class AllProtocolsReport < ReportingModule
   def default_options
     {
       "Date Range" => {:field_type => :date_range, :for => "service_requests_original_created_date", :from => "2012-03-01".to_date, :to => Date.today},
+      "Include empty protocols" => {:field_type => :check_box_tag, :for => "include_empty_protocols"},
       Institution => {:field_type => :select_tag, :has_dependencies => "true"},
       Provider => {:field_type => :select_tag, :dependency => '#institution_id', :dependency_id => 'parent_id'},
       Program => {:field_type => :select_tag, :dependency => '#provider_id', :dependency_id => 'parent_id'},
@@ -94,12 +95,25 @@ class AllProtocolsReport < ReportingModule
   end
 
   # Other tables to include
-  def includes
-    return :protocol, :sub_service_requests => :organization, :line_items => :service
+  def includes args={}
+    if args[:include_empty_protocols]
+      return ""
+    else
+      return :protocol, :sub_service_requests => :organization, :line_items => :service
+    end
+  end
+
+  def joins args={}
+    if args[:include_empty_protocols]
+      return :protocol
+    else
+      return ""
+    end
   end
 
   # Conditions
   def where args={}
+    return Protocol.arel_table[:id].not_eq(nil) if args[:include_empty_protocols]
     organizations = Organization.all
     selected_organization_id = args[:core_id] || args[:program_id] || args[:provider_id] || args[:institution_id] # we want to go up the tree, service_organization_ids plural because we might have child organizations to include
 
