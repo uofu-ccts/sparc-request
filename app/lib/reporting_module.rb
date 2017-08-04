@@ -96,7 +96,8 @@ private
       obj.add_row extract_header_row
 
       self.records.each do |record|
-        obj.add_row extract_row(record)
+        row = extract_row(record)
+        obj.add_row row unless row.all?(&:nil?)
       end
   end
 
