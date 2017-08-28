@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -171,7 +171,7 @@ RSpec.describe Service, type: :model do
 
   describe "display attribute" do
 
-    let!(:service) { create(:service, name: "Foo", abbreviation: "abc") }
+    let!(:service)    { create(:service, name: "Foo", abbreviation: "abc") }
 
     context "service name" do
 
@@ -182,18 +182,6 @@ RSpec.describe Service, type: :model do
       it "should concatenate cpt code to the name if it exists" do
         service.update_attributes(cpt_code: "Bar")
         expect(service.display_service_name).to eq("Foo (Bar)")
-      end
-    end
-
-    context "service abbreviation" do
-
-      it "should return the abbreviation" do
-        expect(service.display_service_abbreviation).to eq("abc")
-      end
-
-      it "should concatenate cpt code to the abbreviation if it exists" do
-        service.update_attributes(cpt_code: "def")
-        expect(service.display_service_abbreviation).to eq("abc (def)")
       end
     end
   end
@@ -251,15 +239,15 @@ RSpec.describe Service, type: :model do
 
     it 'should return the most recent pricing map in the past if there is more than one' do
       service = create(:service, pricing_map_count: 2)
-      service.pricing_maps[0].effective_date = Date.today - 1
-      service.pricing_maps[1].effective_date = Date.today - 2
-      expect(service.current_effective_pricing_map).to eq service.pricing_maps[0]
+      service.pricing_maps[0].update(effective_date: Date.today - 1)
+      service.pricing_maps[1].update(effective_date: Date.today - 2)
+      expect(service.reload.current_effective_pricing_map).to eq service.pricing_maps[0]
     end
 
     it 'should return the pricing map in the past if one is in the past and one is in the future' do
       service = create(:service, pricing_map_count: 2)
-      service.pricing_maps[0].effective_date = Date.today + 1
-      service.pricing_maps[1].effective_date = Date.today - 1
+      service.pricing_maps[0].update(effective_date: Date.today + 1)
+      service.pricing_maps[1].update(effective_date: Date.today - 1)
       expect(service.current_effective_pricing_map).to eq service.pricing_maps[1]
     end
   end
@@ -274,11 +262,11 @@ RSpec.describe Service, type: :model do
     it 'should return the pricing map for the given date if there is a pricing map with a effective date of that date' do
       service = create(:service, pricing_map_count: 5)
       base_date = Date.parse('2012-01-01')
-      service.pricing_maps[0].effective_date = base_date + 1
-      service.pricing_maps[1].effective_date = base_date
-      service.pricing_maps[2].effective_date = base_date - 1
-      service.pricing_maps[3].effective_date = base_date - 2
-      service.pricing_maps[4].effective_date = base_date - 3
+      service.pricing_maps[0].update(effective_date: base_date + 1)
+      service.pricing_maps[1].update(effective_date: base_date)
+      service.pricing_maps[2].update(effective_date: base_date - 1)
+      service.pricing_maps[3].update(effective_date: base_date - 2)
+      service.pricing_maps[4].update(effective_date: base_date - 3)
       expect(service.effective_pricing_map_for_date(base_date)).to eq service.pricing_maps[1]
     end
 
@@ -346,9 +334,9 @@ RSpec.describe Service, type: :model do
     # let!(:program) { create(:program)}
     # let!(:core)    { create(:core, parent_id: program.id) }
     # let!(:service) { create(:service, organization_id: core.id) }
-    let!(:survey)  { create(:survey, title: "System Satisfaction survey", description: nil, access_code: "system-satisfaction-survey", reference_identifier: nil, survey_version: 0) }
-    let!(:survey1) { create(:survey, title: "System Satisfaction survey", description: nil, access_code: "system-satisfaction-survey", reference_identifier: nil, survey_version: 1) }
-    let!(:survey2) { create(:survey, title: "System Satisfaction survey", description: nil, access_code: "system-satisfaction-survey", reference_identifier: nil, survey_version: 2) }
+    let!(:survey)  { create(:survey, title: "System Satisfaction survey", description: nil, access_code: "system-satisfaction-survey", version: 0) }
+    let!(:survey1) { create(:survey, title: "System Satisfaction survey", description: nil, access_code: "system-satisfaction-survey", version: 1) }
+    let!(:survey2) { create(:survey, title: "System Satisfaction survey", description: nil, access_code: "system-satisfaction-survey", version: 2) }
 
     it "should return an array of available surveys for the service" do
       service.update_attributes(organization_id: core.id)

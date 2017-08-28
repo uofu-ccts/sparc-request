@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -35,7 +35,6 @@ end
 
 RSpec.describe EpicInterface do
   server = nil
-  port = nil
   thread = nil
 
   # This array holds the messages received by the epic interface.
@@ -50,15 +49,8 @@ RSpec.describe EpicInterface do
   # block.
   before :all do
     require 'webrick'
-    server = FakeEpicServer.new(
-        Port: 0,               # automatically determine port
-        Logger: Rails.logger,  # send regular log to rails
-        AccessLog: [ ],        # disable access log
-        FakeEpicServlet: {
-          keep_received: true,
-          received: epic_received,
-          results: epic_results
-        })
+    server = FakeEpicServer.new(FakeEpicServlet: { received: epic_received,
+                                                   results: epic_results })
     thread = Thread.new { server.start }
   end
 
@@ -80,20 +72,20 @@ RSpec.describe EpicInterface do
         'wsdl' => "http://localhost:#{server.port}/wsdl",
         'study_root' => '1.2.3.4')
   }
-  
+
   build_study_type_question_groups
 
   let!(:study) {
     human_subjects_info = build(:human_subjects_info, pro_number: nil, hr_number: nil)
-    investigational_products_info = build(:investigational_products_info, ide_number: nil)
-    study = build(:study, human_subjects_info: human_subjects_info, investigational_products_info: investigational_products_info, study_type_question_group_id: active_study_type_question_group.id)
+    investigational_products_info = build(:investigational_products_info, inv_device_number: nil)
+    study = build(:study, human_subjects_info: human_subjects_info, investigational_products_info: investigational_products_info, study_type_question_group_id: study_type_question_group_version_3.id)
     study.save(validate: false)
     study
   }
 
   build_study_type_answers
   build_study_type_questions
-  
+
 
   let!(:provider) {
     create(
@@ -127,13 +119,13 @@ RSpec.describe EpicInterface do
           :identity,
           ldap_uid: 'happyhappyjoyjoy@musc.edu')
 
-      pi_role = create(
-          :project_role,
-          protocol:        study,
-          identity:        identity,
-          project_rights:  "approve",
-          role:            "primary-pi",
-          epic_access:     true, )
+      create(
+        :project_role,
+        protocol:        study,
+        identity:        identity,
+        project_rights:  "approve",
+        role:            "primary-pi",
+        epic_access:     true, )
 
       epic_interface.send_study_creation(study)
 
@@ -164,13 +156,13 @@ RSpec.describe EpicInterface do
           :identity,
           ldap_uid: 'happyhappyjoyjoy@musc.edu')
 
-      pi_role = create(
-          :project_role,
-          protocol:        study,
-          identity:        identity,
-          project_rights:  "approve",
-          role:            "business-grants-manager",
-          epic_access:     true, )
+      create(
+        :project_role,
+        protocol:        study,
+        identity:        identity,
+        project_rights:  "approve",
+        role:            "business-grants-manager",
+        epic_access:     true, )
 
       epic_interface.send_study_creation(study)
 
@@ -201,13 +193,13 @@ RSpec.describe EpicInterface do
           :identity,
           ldap_uid: 'happyhappyjoyjoy@musc.edu')
 
-      pi_role = create(
-          :project_role,
-          protocol:        study,
-          identity:        identity,
-          project_rights:  "approve",
-          role:            "co-investigator",
-          epic_access:     true, )
+      create(
+        :project_role,
+        protocol:        study,
+        identity:        identity,
+        project_rights:  "approve",
+        role:            "co-investigator",
+        epic_access:     true, )
 
       epic_interface.send_study_creation(study)
 
@@ -238,13 +230,13 @@ RSpec.describe EpicInterface do
           :identity,
           ldap_uid: 'happyhappyjoyjoy@musc.edu')
 
-      pi_role = create(
-          :project_role,
-          protocol:        study,
-          identity:        identity,
-          project_rights:  "approve",
-          role:            "research-nurse",
-          epic_access:     true, )
+      create(
+        :project_role,
+        protocol:        study,
+        identity:        identity,
+        project_rights:  "approve",
+        role:            "research-nurse",
+        epic_access:     true, )
 
       epic_interface.send_study_creation(study)
 
@@ -275,13 +267,13 @@ RSpec.describe EpicInterface do
           :identity,
           ldap_uid: 'happyhappyjoyjoy@musc.edu')
 
-      pi_role = create(
-          :project_role,
-          protocol:        study,
-          identity:        identity,
-          project_rights:  "approve",
-          role:            "grad-research-assistant",
-          epic_access:     true, )
+      create(
+        :project_role,
+        protocol:        study,
+        identity:        identity,
+        project_rights:  "approve",
+        role:            "grad-research-assistant",
+        epic_access:     true, )
 
       epic_interface.send_study_creation(study)
 
@@ -308,18 +300,18 @@ RSpec.describe EpicInterface do
     end
 
     it 'should not emit a subjectOf for a Billing Business Manager without Epic Access Rights' do
-      study.update_attributes(study_type_question_group_id: StudyTypeQuestionGroup.where(active:true).pluck(:id).first)
+      study.update_attributes(study_type_question_group_id: StudyTypeQuestionGroup.where(version: 2).pluck(:id).first)
       identity = create(
           :identity,
           ldap_uid: 'happyhappyjoyjoy@musc.edu')
 
-      pi_role = create(
-          :project_role,
-          protocol:        study,
-          identity:        identity,
-          project_rights:  "approve",
-          role:            "business-grants-manager",
-          epic_access:     false, )
+      create(
+        :project_role,
+        protocol:        study,
+        identity:        identity,
+        project_rights:  "approve",
+        role:            "business-grants-manager",
+        epic_access:     false, )
 
       epic_interface.send_study_creation(study)
 
@@ -428,7 +420,7 @@ RSpec.describe EpicInterface do
     end
 
     it 'should emit a subjectOf for an ide number' do
-      study.investigational_products_info.update_attributes(ide_number: '12345678')
+      study.investigational_products_info.update_attributes(inv_device_number: '12345678')
 
       epic_interface.send_study_creation(study)
 
@@ -450,8 +442,8 @@ RSpec.describe EpicInterface do
           'env' => 'http://www.w3.org/2003/05/soap-envelope',
           'rpe' => 'urn:ihe:qrph:rpe:2009',
           'hl7' => 'urn:hl7-org:v3')
-      
-      expect(node).to include(expected.root)
+
+      expect(node[1]).to be_equivalent_to(expected.root)
     end
 
     it 'should emit a subjectOf for a pro number if the study has both a pro number and an hr number' do
@@ -481,18 +473,17 @@ RSpec.describe EpicInterface do
 
       expect(node[0]).to be_equivalent_to(expected.root)
     end
-    describe 'emitting a subjectOf for an INACTIVE study type' do
+    describe 'emitting a subjectOf for an version 1 study type' do
 
       before :each do
-        study.update_attributes(study_type_question_group_id: StudyTypeQuestionGroup.where(active:false).pluck(:id).first)
+        study.update_attributes(study_type_question_group_id: StudyTypeQuestionGroup.where(version: 1).pluck(:id).first)
       end
 
       it 'should have value = NO_COFC' do
-        
 
         answers = [true, false, false, false, true, true]
-        update_answers(false, answers)
-        
+        update_answers(1, answers)
+
         epic_interface.send_study_creation(study)
 
         xml = <<-END
@@ -501,7 +492,7 @@ RSpec.describe EpicInterface do
                     xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>
             <studyCharacteristic classCode="OBS" moodCode="EVN">
               <code code="RGCL3"/>
-              <value value="NO_COFC"/>
+              <value value="YES_COFC"/>
             </studyCharacteristic>
           </subjectOf>
         END
@@ -513,19 +504,13 @@ RSpec.describe EpicInterface do
         'env' => 'http://www.w3.org/2003/05/soap-envelope',
         'rpe' => 'urn:ihe:qrph:rpe:2009',
         'hl7' => 'urn:hl7-org:v3')
-
         expect(node[1]).to be_equivalent_to(expected.root)
       end
 
       it 'should have value = YES_COFC' do
 
         answers = [true, true, nil, nil, nil, nil]
-        update_answers(false, answers)
-        question_id = [ stq_higher_level_of_privacy.id, stq_certificate_of_conf.id, stq_access_study_info.id, stq_epic_inbasket.id, stq_research_active.id, stq_restrict_sending.id]
-        
-        answers.each_with_index do |ans, index|
-          StudyTypeAnswer.create(protocol_id: study.id, study_type_question_id: question_id[index], answer: ans)
-        end
+        update_answers(1, answers)
 
         epic_interface.send_study_creation(study)
 
@@ -553,7 +538,7 @@ RSpec.describe EpicInterface do
 
       it 'should return a study_type of 1' do
         answers = [true, true, nil, nil, nil, nil]
-        update_answers(false, answers)
+        update_answers(1, answers)
 
         epic_interface.send_study_creation(study)
 
@@ -582,7 +567,7 @@ RSpec.describe EpicInterface do
       it 'should return a study_type of 2' do
 
         answers = [true, false, true, nil, nil, nil]
-        update_answers(false, answers)
+        update_answers(1, answers)
 
         epic_interface.send_study_creation(study)
 
@@ -611,8 +596,8 @@ RSpec.describe EpicInterface do
       it 'should return a study_type of 5' do
 
         answers = [true, false, false, false, true, false]
-        update_answers(false, answers)
-        
+        update_answers(1, answers)
+
         epic_interface.send_study_creation(study)
 
         xml = <<-END
@@ -640,8 +625,8 @@ RSpec.describe EpicInterface do
       it 'should return a study_type of 15' do
 
         answers = [false, nil, nil, true, true, true]
-        update_answers(false, answers)
-        
+        update_answers(1, answers)
+
         epic_interface.send_study_creation(study)
 
         xml = <<-END
@@ -667,16 +652,16 @@ RSpec.describe EpicInterface do
       end
     end
 
-    describe 'emitting a subjectOf for an ACTIVE study type' do
+    describe 'emitting a subjectOf for an version 2 study type' do
 
       before :each do
-        study.update_attributes(study_type_question_group_id: StudyTypeQuestionGroup.where(active:true).pluck(:id).first)
+        study.update_attributes(study_type_question_group_id: StudyTypeQuestionGroup.where(version: 2).pluck(:id).first)
       end
 
       it 'should return YES_COFC' do
 
         answers = [true, true, nil, nil, nil, nil]
-        update_answers(true, answers)
+        update_answers(2, answers)
 
         epic_interface.send_study_creation(study)
 
@@ -698,7 +683,7 @@ RSpec.describe EpicInterface do
         'env' => 'http://www.w3.org/2003/05/soap-envelope',
         'rpe' => 'urn:ihe:qrph:rpe:2009',
         'hl7' => 'urn:hl7-org:v3')
-       
+
         expect(node[0]).to be_equivalent_to(expected.root)
 
       end
@@ -706,8 +691,8 @@ RSpec.describe EpicInterface do
        it 'should return NO_COFC' do
 
         answers = [false, true, false, false, false, false]
-        update_answers(true, answers)
-        
+        update_answers(2, answers)
+
         epic_interface.send_study_creation(study)
 
         xml = <<-END
@@ -731,11 +716,11 @@ RSpec.describe EpicInterface do
 
         expect(node[1]).to be_equivalent_to(expected.root)
       end
-      
+
       it 'return a study type of 1' do
         answers = [true, nil, nil, nil, nil, nil]
-        update_answers(true, answers)
-        
+        update_answers(2, answers)
+
         epic_interface.send_study_creation(study)
 
         xml = <<-END
@@ -756,15 +741,15 @@ RSpec.describe EpicInterface do
         'env' => 'http://www.w3.org/2003/05/soap-envelope',
         'rpe' => 'urn:ihe:qrph:rpe:2009',
         'hl7' => 'urn:hl7-org:v3')
-        
+
         expect(node[0]).to be_equivalent_to(expected.root)
       end
 
       it 'return a study type of 2' do
 
         answers = [false, true, true, nil, nil, nil]
-        update_answers(true, answers)
-        
+        update_answers(2, answers)
+
         epic_interface.send_study_creation(study)
 
         xml = <<-END
@@ -792,8 +777,8 @@ RSpec.describe EpicInterface do
       it 'return a study type of 5' do
 
         answers = [false, true, false, false, true, false]
-        update_answers(true, answers)
-        
+        update_answers(2, answers)
+
         epic_interface.send_study_creation(study)
 
         xml = <<-END
@@ -821,8 +806,8 @@ RSpec.describe EpicInterface do
       it 'return a study type of 11' do
 
         answers = [false, false, nil, false, true, true]
-        update_answers(true, answers)
-        
+        update_answers(2, answers)
+
         epic_interface.send_study_creation(study)
 
         xml = <<-END
@@ -932,6 +917,206 @@ RSpec.describe EpicInterface do
 
   end # send_study_creation
 
+  describe 'emitting a subjectOf for an version 3 study type' do
+
+    before :each do
+      study.update_attributes(study_type_question_group_id: StudyTypeQuestionGroup.where(version: 3).pluck(:id).first)
+    end
+
+    it 'should return YES_COFC' do
+
+      answers = [true, nil, nil, nil, nil, nil, nil]
+      update_answers(3, answers)
+
+      epic_interface.send_study_creation(study)
+
+      xml = <<-END
+        <subjectOf typeCode="SUBJ"
+                  xmlns='urn:hl7-org:v3'
+                  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>
+          <studyCharacteristic classCode="OBS" moodCode="EVN">
+            <code code="RGCL3"/>
+            <value value="YES_COFC"/>
+          </studyCharacteristic>
+        </subjectOf>
+      END
+      expected = Nokogiri::XML(xml)
+
+      node = epic_received[0].xpath(
+      '//env:Body/rpe:RetrieveProtocolDefResponse/rpe:protocolDef/hl7:plannedStudy/hl7:subjectOf',
+      'env' => 'http://www.w3.org/2003/05/soap-envelope',
+      'rpe' => 'urn:ihe:qrph:rpe:2009',
+      'hl7' => 'urn:hl7-org:v3')
+      expect(node[1]).to be_equivalent_to(expected.root)
+
+    end
+
+    it 'should return NO_COFC' do
+      answers = [false, true, false, false, false, false]
+      update_answers(2, answers)
+
+      epic_interface.send_study_creation(study)
+
+      xml = <<-END
+        <subjectOf typeCode="SUBJ"
+                  xmlns='urn:hl7-org:v3'
+                  xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>
+          <studyCharacteristic classCode="OBS" moodCode="EVN">
+            <code code="RGCL3"/>
+            <value value="NO_COFC"/>
+          </studyCharacteristic>
+        </subjectOf>
+      END
+
+      expected = Nokogiri::XML(xml)
+
+      node = epic_received[0].xpath(
+      '//env:Body/rpe:RetrieveProtocolDefResponse/rpe:protocolDef/hl7:plannedStudy/hl7:subjectOf',
+      'env' => 'http://www.w3.org/2003/05/soap-envelope',
+      'rpe' => 'urn:ihe:qrph:rpe:2009',
+      'hl7' => 'urn:hl7-org:v3')
+
+      expect(node[1]).to be_equivalent_to(expected.root)
+    end
+
+    it 'return a study type of 1' do
+      answers = [true, nil, nil, nil, nil, nil, nil]
+      update_answers(3, answers)
+
+      epic_interface.send_study_creation(study)
+
+      xml = <<-END
+        <subjectOf typeCode="SUBJ"
+                    xmlns='urn:hl7-org:v3'
+                    xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>
+          <studyCharacteristic classCode="OBS" moodCode="EVN">
+            <code code="STUDYTYPE" />
+            <value value="1" />
+          </studyCharacteristic>
+        </subjectOf>
+      END
+
+      expected = Nokogiri::XML(xml)
+
+      node = epic_received[0].xpath(
+      '//env:Body/rpe:RetrieveProtocolDefResponse/rpe:protocolDef/hl7:plannedStudy/hl7:subjectOf',
+      'env' => 'http://www.w3.org/2003/05/soap-envelope',
+      'rpe' => 'urn:ihe:qrph:rpe:2009',
+      'hl7' => 'urn:hl7-org:v3')
+      
+      expect(node[0]).to be_equivalent_to(expected.root)
+    end
+
+    it 'return a study type of 3' do
+
+      answers = [false, true, false, false, false, nil, nil]
+      update_answers(3, answers)
+
+      epic_interface.send_study_creation(study)
+
+      xml = <<-END
+        <subjectOf typeCode="SUBJ"
+                    xmlns='urn:hl7-org:v3'
+                    xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>
+          <studyCharacteristic classCode="OBS" moodCode="EVN">
+            <code code="STUDYTYPE" />
+            <value value="3" />
+          </studyCharacteristic>
+        </subjectOf>
+      END
+
+      expected = Nokogiri::XML(xml)
+
+      node = epic_received[0].xpath(
+      '//env:Body/rpe:RetrieveProtocolDefResponse/rpe:protocolDef/hl7:plannedStudy/hl7:subjectOf',
+      'env' => 'http://www.w3.org/2003/05/soap-envelope',
+      'rpe' => 'urn:ihe:qrph:rpe:2009',
+      'hl7' => 'urn:hl7-org:v3')
+      expect(node[0]).to be_equivalent_to(expected.root)
+    end
+
+    it 'should emit a subjectOf for the category grouper GOV if its funding source is not industry' do
+      study.update_attributes(funding_source: 'college')
+
+      epic_interface.send_study_creation(study)
+
+      xml = <<-END
+        <subjectOf typeCode="SUBJ"
+                   xmlns='urn:hl7-org:v3'
+                   xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>
+          <studyCharacteristic classCode="OBS" moodCode="EVN">
+            <code code="RGCL1" />
+            <value value="GOV" />
+          </studyCharacteristic>
+        </subjectOf>
+      END
+
+      expected = Nokogiri::XML(xml)
+
+      node = epic_received[0].xpath(
+          '//env:Body/rpe:RetrieveProtocolDefResponse/rpe:protocolDef/hl7:plannedStudy/hl7:subjectOf',
+          'env' => 'http://www.w3.org/2003/05/soap-envelope',
+          'rpe' => 'urn:ihe:qrph:rpe:2009',
+          'hl7' => 'urn:hl7-org:v3')
+
+      expect(node[0]).to be_equivalent_to(expected.root)
+    end
+
+    it 'should emit a subjectOf for the category grouper CORP if its funding source is industry' do
+      study.update_attributes(funding_source: 'industry')
+
+      epic_interface.send_study_creation(study)
+
+      xml = <<-END
+        <subjectOf typeCode="SUBJ"
+                   xmlns='urn:hl7-org:v3'
+                   xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>
+          <studyCharacteristic classCode="OBS" moodCode="EVN">
+            <code code="RGCL1" />
+            <value value="CORP" />
+          </studyCharacteristic>
+        </subjectOf>
+      END
+
+      expected = Nokogiri::XML(xml)
+
+      node = epic_received[0].xpath(
+          '//env:Body/rpe:RetrieveProtocolDefResponse/rpe:protocolDef/hl7:plannedStudy/hl7:subjectOf',
+          'env' => 'http://www.w3.org/2003/05/soap-envelope',
+          'rpe' => 'urn:ihe:qrph:rpe:2009',
+          'hl7' => 'urn:hl7-org:v3')
+
+      expect(node[0]).to be_equivalent_to(expected.root)
+    end
+
+    it 'should emit a subjectOf for the category grouper GOV if its potential funding source is other' do
+      study.update_attributes(potential_funding_source: 'other')
+
+      epic_interface.send_study_creation(study)
+
+      xml = <<-END
+        <subjectOf typeCode="SUBJ"
+                   xmlns='urn:hl7-org:v3'
+                   xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>
+          <studyCharacteristic classCode="OBS" moodCode="EVN">
+            <code code="RGCL1" />
+            <value value="GOV" />
+          </studyCharacteristic>
+        </subjectOf>
+      END
+
+      expected = Nokogiri::XML(xml)
+
+      node = epic_received[0].xpath(
+          '//env:Body/rpe:RetrieveProtocolDefResponse/rpe:protocolDef/hl7:plannedStudy/hl7:subjectOf',
+          'env' => 'http://www.w3.org/2003/05/soap-envelope',
+          'rpe' => 'urn:ihe:qrph:rpe:2009',
+          'hl7' => 'urn:hl7-org:v3')
+
+      expect(node[0]).to be_equivalent_to(expected.root)
+    end
+  end
+
   describe 'send_billing_calendar' do
     before :each do
       study.update_attributes(start_date: Time.now, end_date: Time.now + 10.days)
@@ -971,12 +1156,12 @@ RSpec.describe EpicInterface do
           :identity,
           ldap_uid: 'happyhappyjoyjoy@musc.edu')
 
-      pi_role = create(
-          :project_role,
-          protocol:        study,
-          identity:        identity,
-          project_rights:  "approve",
-          role:            "primary-pi")
+      create(
+        :project_role,
+        protocol:        study,
+        identity:        identity,
+        project_rights:  "approve",
+        role:            "primary-pi")
 
       epic_interface.send_billing_calendar(study)
 
@@ -1007,7 +1192,7 @@ RSpec.describe EpicInterface do
     end
 
     it 'should send an arm as a cell' do
-      service_request = FactoryGirl.create(:service_request_without_validations,
+      FactoryGirl.create(:service_request_without_validations,
                                             protocol: study,
                                             status: 'draft')
 
@@ -1015,8 +1200,9 @@ RSpec.describe EpicInterface do
           :arm,
           name: 'Arm',
           protocol: study,
-          visit_count: 10,
           subject_count: 2)
+
+      arm1.visit_groups.first.update_attribute(:day, 1)
 
       epic_interface.send_billing_calendar(study)
 
@@ -1028,13 +1214,11 @@ RSpec.describe EpicInterface do
               <id root="1.2.3.4" extension="STUDY#{study.id}"/>
               <title>#{study.epic_title}</title>
               <text>#{study.brief_description}</text>
-
               <component4 typeCode="COMP">
                 <timePointEventDefinition classCode="CTTEVENT" moodCode="DEF">
                   <id root="1.2.3.4" extension="STUDY#{study.id}.ARM#{arm1.id}" />
-                  <title>Arm</title>
+                  <title>#{arm1.name}</title>
                   <code code="CELL" codeSystem="n/a" />
-
                   <component1 typeCode="COMP">
                     <sequenceNumber value="1" />
                     <timePointEventDefinition classCode="CTTEVENT" moodCode="DEF">
@@ -1042,16 +1226,37 @@ RSpec.describe EpicInterface do
                       <title>Cycle 1</title>
                       <code code="CYCLE" codeSystem="n/a" />
                       <effectiveTime>
-                        <low value="#{epic_interface.relative_date(0, study.start_date)}"/>
-                        <high value="#{epic_interface.relative_date(0, study.start_date)}"/>
+                        <low value="#{epic_interface.relative_date(arm1.visit_groups.first.day, study.start_date)}"/>
+                        <high value="#{epic_interface.relative_date(arm1.visit_groups.first.day, study.start_date)}"/>
                       </effectiveTime>
+                      <component1 typeCode="COMP">
+                        <sequenceNumber value="1"/>
+                        <timePointEventDefinition classCode="CTTEVENT" moodCode="DEF">
+                          <id root="1.2.3.4" extension="STUDY#{study.id}.ARM#{arm1.id}.CYCLE1.DAY#{arm1.visit_groups.first.day}"/>
+                          <title>#{arm1.visit_groups.first.name}</title>
+                        </timePointEventDefinition>
+                      </component1>
                     </timePointEventDefinition>
                   </component1>
-
                 </timePointEventDefinition>
               </component4>
+              <component4 typeCode="COMP">
+                <timePointEventDefinition classCode="CTTEVENT" moodCode="DEF">
+                  <id root="1.2.3.4" extension="STUDY#{study.id}.ARM#{arm1.id}.CYCLE1.DAY#{arm1.visit_groups.first.day}"/>
+                  <title>#{arm1.visit_groups.first.name}</title>
+                  <code code="VISIT" codeSystem="n/a"/>
+                  <component2 typeCode="COMP">
+                    <encounter classCode="ENC" moodCode="DEF">
+                      <effectiveTime>
+                        <low value="#{epic_interface.relative_date(arm1.visit_groups.first.day, study.start_date)}"/>
+                        <high value="#{epic_interface.relative_date(arm1.visit_groups.first.day, study.start_date)}"/>
+                      </effectiveTime>
+                      <activityTime value="#{epic_interface.relative_date(arm1.visit_groups.first.day, study.start_date)}"/>
+                    </encounter>
+                  </component2>
+               </timePointEventDefinition>
+             </component4>
             </plannedStudy>
-
           </protocolDef>
         </RetrieveProtocolDefResponse>
       END
@@ -1068,7 +1273,7 @@ RSpec.describe EpicInterface do
     end
 
     it 'should send two arms as two cells' do
-      service_request = FactoryGirl.create(:service_request_without_validations,
+      FactoryGirl.create(:service_request_without_validations,
                                             protocol: study,
                                             status: 'draft')
 
@@ -1076,15 +1281,16 @@ RSpec.describe EpicInterface do
           :arm,
           name: 'Arm 1',
           protocol: study,
-          visit_count: 10,
           subject_count: 2)
 
       arm2 = create(
           :arm,
           name: 'Arm 2',
           protocol: study,
-          visit_count: 10,
           subject_count: 2)
+
+      arm1.visit_groups.first.update_attribute(:day, 1)
+      arm2.visit_groups.first.update_attribute(:day, 1)
 
       epic_interface.send_billing_calendar(study)
 
@@ -1096,13 +1302,11 @@ RSpec.describe EpicInterface do
               <id root="1.2.3.4" extension="STUDY#{study.id}"/>
               <title>#{study.epic_title}</title>
               <text>#{study.brief_description}</text>
-
-              <component4 typeCode="COMP" xmlns="urn:hl7-org:v3" >
+              <component4 typeCode="COMP">
                 <timePointEventDefinition classCode="CTTEVENT" moodCode="DEF">
                   <id root="1.2.3.4" extension="STUDY#{study.id}.ARM#{arm1.id}" />
-                  <title>Arm 1</title>
+                  <title>#{arm1.name}</title>
                   <code code="CELL" codeSystem="n/a" />
-
                   <component1 typeCode="COMP">
                     <sequenceNumber value="1" />
                     <timePointEventDefinition classCode="CTTEVENT" moodCode="DEF">
@@ -1110,21 +1314,25 @@ RSpec.describe EpicInterface do
                       <title>Cycle 1</title>
                       <code code="CYCLE" codeSystem="n/a" />
                       <effectiveTime>
-                        <low value="#{epic_interface.relative_date(0, study.start_date)}"/>
-                        <high value="#{epic_interface.relative_date(0, study.start_date)}"/>
+                        <low value="#{epic_interface.relative_date(arm1.visit_groups.first.day, study.start_date)}"/>
+                        <high value="#{epic_interface.relative_date(arm1.visit_groups.first.day, study.start_date)}"/>
                       </effectiveTime>
+                      <component1 typeCode="COMP">
+                        <sequenceNumber value="1"/>
+                        <timePointEventDefinition classCode="CTTEVENT" moodCode="DEF">
+                          <id root="1.2.3.4" extension="STUDY#{study.id}.ARM#{arm1.id}.CYCLE1.DAY#{arm1.visit_groups.first.day}"/>
+                          <title>#{arm1.visit_groups.first.name}</title>
+                        </timePointEventDefinition>
+                      </component1>
                     </timePointEventDefinition>
                   </component1>
-
                 </timePointEventDefinition>
               </component4>
-
-              <component4 typeCode="COMP" xmlns="urn:hl7-org:v3" >
+              <component4 typeCode="COMP">
                 <timePointEventDefinition classCode="CTTEVENT" moodCode="DEF">
                   <id root="1.2.3.4" extension="STUDY#{study.id}.ARM#{arm2.id}" />
-                  <title>Arm 2</title>
+                  <title>#{arm2.name}</title>
                   <code code="CELL" codeSystem="n/a" />
-
                   <component1 typeCode="COMP">
                     <sequenceNumber value="2" />
                     <timePointEventDefinition classCode="CTTEVENT" moodCode="DEF">
@@ -1132,17 +1340,53 @@ RSpec.describe EpicInterface do
                       <title>Cycle 1</title>
                       <code code="CYCLE" codeSystem="n/a" />
                       <effectiveTime>
-                        <low value="#{epic_interface.relative_date(0, study.start_date)}"/>
-                        <high value="#{epic_interface.relative_date(0, study.start_date)}"/>
+                        <low value="#{epic_interface.relative_date(arm2.visit_groups.first.day, study.start_date)}"/>
+                        <high value="#{epic_interface.relative_date(arm2.visit_groups.first.day, study.start_date)}"/>
                       </effectiveTime>
+                      <component1 typeCode="COMP">
+                        <sequenceNumber value="1"/>
+                        <timePointEventDefinition classCode="CTTEVENT" moodCode="DEF">
+                          <id root="1.2.3.4" extension="STUDY#{study.id}.ARM#{arm2.id}.CYCLE1.DAY#{arm2.visit_groups.first.day}"/>
+                          <title>#{arm2.visit_groups.first.name}</title>
+                        </timePointEventDefinition>
+                      </component1>
                     </timePointEventDefinition>
                   </component1>
-
                 </timePointEventDefinition>
               </component4>
-
+              <component4 typeCode="COMP">
+                <timePointEventDefinition classCode="CTTEVENT" moodCode="DEF">
+                  <id root="1.2.3.4" extension="STUDY#{study.id}.ARM#{arm1.id}.CYCLE1.DAY#{arm1.visit_groups.first.day}"/>
+                  <title>#{arm1.visit_groups.first.name}</title>
+                  <code code="VISIT" codeSystem="n/a"/>
+                  <component2 typeCode="COMP">
+                    <encounter classCode="ENC" moodCode="DEF">
+                      <effectiveTime>
+                        <low value="#{epic_interface.relative_date(arm1.visit_groups.first.day, study.start_date)}"/>
+                        <high value="#{epic_interface.relative_date(arm1.visit_groups.first.day, study.start_date)}"/>
+                      </effectiveTime>
+                      <activityTime value="#{epic_interface.relative_date(arm1.visit_groups.first.day, study.start_date)}"/>
+                    </encounter>
+                  </component2>
+               </timePointEventDefinition>
+              </component4>
+              <component4 typeCode="COMP">
+                <timePointEventDefinition classCode="CTTEVENT" moodCode="DEF">
+                  <id root="1.2.3.4" extension="STUDY#{study.id}.ARM#{arm2.id}.CYCLE1.DAY#{arm2.visit_groups.first.day}"/>
+                  <title>#{arm2.visit_groups.first.name}</title>
+                  <code code="VISIT" codeSystem="n/a"/>
+                  <component2 typeCode="COMP">
+                    <encounter classCode="ENC" moodCode="DEF">
+                      <effectiveTime>
+                        <low value="#{epic_interface.relative_date(arm2.visit_groups.first.day, study.start_date)}"/>
+                        <high value="#{epic_interface.relative_date(arm2.visit_groups.first.day, study.start_date)}"/>
+                      </effectiveTime>
+                      <activityTime value="#{epic_interface.relative_date(arm2.visit_groups.first.day, study.start_date)}"/>
+                    </encounter>
+                  </component2>
+                </timePointEventDefinition>
+              </component4>
             </plannedStudy>
-
           </protocolDef>
         </RetrieveProtocolDefResponse>
       END
@@ -1252,21 +1496,29 @@ RSpec.describe EpicInterface do
     # TODO: add tests for the full study message
   end
 
-  def update_answers (active, answer_array)
-    if active == true
-      active_answer1.update_attributes(answer: answer_array[0])
-      active_answer2.update_attributes(answer: answer_array[1])
-      active_answer3.update_attributes(answer: answer_array[2])
-      active_answer4.update_attributes(answer: answer_array[3])
-      active_answer5.update_attributes(answer: answer_array[4])
-      active_answer6.update_attributes(answer: answer_array[5])
-    else
-      answer1.update_attributes(answer: answer_array[0])
-      answer2.update_attributes(answer: answer_array[1])
-      answer3.update_attributes(answer: answer_array[2])
-      answer4.update_attributes(answer: answer_array[3])
-      answer5.update_attributes(answer: answer_array[4])
-      answer6.update_attributes(answer: answer_array[5])
+  def update_answers (version, answer_array)
+    if version == 3
+      answer1_version_3.update_attributes(answer: answer_array[0])
+      answer2_version_3.update_attributes(answer: answer_array[1])
+      answer3_version_3.update_attributes(answer: answer_array[2])
+      answer4_version_3.update_attributes(answer: answer_array[3])
+      answer5_version_3.update_attributes(answer: answer_array[4])
+      answer6_version_3.update_attributes(answer: answer_array[5])
+      answer7_version_3.update_attributes(answer: answer_array[6])
+    elsif version == 2
+      answer1_version_2.update_attributes(answer: answer_array[0])
+      answer2_version_2.update_attributes(answer: answer_array[1])
+      answer3_version_2.update_attributes(answer: answer_array[2])
+      answer4_version_2.update_attributes(answer: answer_array[3])
+      answer5_version_2.update_attributes(answer: answer_array[4])
+      answer6_version_2.update_attributes(answer: answer_array[5])
+    elsif version == 1
+      answer1_version_1.update_attributes(answer: answer_array[0])
+      answer2_version_1.update_attributes(answer: answer_array[1])
+      answer3_version_1.update_attributes(answer: answer_array[2])
+      answer4_version_1.update_attributes(answer: answer_array[3])
+      answer5_version_1.update_attributes(answer: answer_array[4])
+      answer6_version_1.update_attributes(answer: answer_array[5])
     end
   end
 end

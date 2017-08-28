@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -30,14 +30,15 @@ class ServiceRequestsReport < ReportingModule
   # see app/reports/test_report.rb for all options
   def default_options
     {
-      "Date Range" => {:field_type => :date_range, :for => "service_requests_submitted_at", :from => "2012-03-01".to_date, :to => Date.today},
+      "Submission Date Range" => {:field_type => :date_range, :for => "submitted_at", :from => "2012-03-01".to_date, :to => Date.today},
       Institution => {:field_type => :select_tag, :has_dependencies => "true"},
       Provider => {:field_type => :select_tag, :dependency => '#institution_id', :dependency_id => 'parent_id'},
       Program => {:field_type => :select_tag, :dependency => '#provider_id', :dependency_id => 'parent_id'},
       Core => {:field_type => :select_tag, :dependency => '#program_id', :dependency_id => 'parent_id'},
       "Tags" => {:field_type => :text_field_tag},
       "Current Status" => {:field_type => :check_box_tag, :for => 'status', :multiple => AVAILABLE_STATUSES},
-      "Show APR Data" => {:field_type => :check_box_tag, :for => 'apr_data', :multiple => {"irb" => "IRB", "iacuc" => "IACUC"}}
+      "Show APR Data" => {:field_type => :check_box_tag, :for => 'apr_data', :multiple => {"irb" => "IRB", "iacuc" => "IACUC"}},
+      "Show SPARCFulfillment Information" => {:field_type => :check_box_tag, :for => 'fulfillment_info', :field_label => 'Show SPARCFulfillment Information' }
     }
   end
 
@@ -46,12 +47,12 @@ class ServiceRequestsReport < ReportingModule
     attrs = {}
 
     attrs["SRID"] = :display_id
+    attrs["Date Submitted"] = "submitted_at.strftime('%Y-%m-%d')"
     attrs["Status"] = :formatted_status
 
     attrs["Protocol Short Title"] = "service_request.try(:protocol).try(:short_title)"
     attrs["Full Protocol Title"] = "service_request.try(:protocol).try(:title)"
 
-    attrs["Date Submitted"] = "service_request.submitted_at.strftime('%Y-%m-%d')"
 
     if params[:institution_id]
       attrs[Institution] = [params[:institution_id], :abbreviation]
@@ -77,10 +78,12 @@ class ServiceRequestsReport < ReportingModule
       attrs["Core"] = "org_tree.select{|org| org.type == 'Core'}.first.try(:abbreviation)"
     end
 
-    attrs["Primary PI Last Name"] = "service_request.try(:protocol).try(:primary_principal_investigator).try(:last_name)"
-    attrs["Primary PI First Name"] = "service_request.try(:protocol).try(:primary_principal_investigator).try(:first_name)"
-    attrs["Primary PI College"] = ["service_request.try(:protocol).try(:primary_principal_investigator).try(:college)", COLLEGES.invert] # we invert since our hash is setup {"Bio Medical" => "bio_med"} for some crazy reason
-    attrs["Primary PI Department"] = ["service_request.try(:protocol).try(:primary_principal_investigator).try(:department)", DEPARTMENTS.invert]
+    attrs["Primary PI Last Name"]   = "service_request.try(:protocol).try(:primary_principal_investigator).try(:last_name)"
+    attrs["Primary PI First Name"]  = "service_request.try(:protocol).try(:primary_principal_investigator).try(:first_name)"
+    attrs["Primary PI Institution"] = "service_request.try(:protocol).try(:primary_principal_investigator).try(:professional_org_lookup, 'institution')"
+    attrs["Primary PI College"]     = "service_request.try(:protocol).try(:primary_principal_investigator).try(:professional_org_lookup, 'college')"
+    attrs["Primary PI Department"]  = "service_request.try(:protocol).try(:primary_principal_investigator).try(:professional_org_lookup, 'department')"
+    attrs["Primary PI Division"]    = "service_request.try(:protocol).try(:primary_principal_investigator).try(:professional_org_lookup, 'division')"
 
     if params[:apr_data]
       if params[:apr_data].include?("irb")
@@ -96,6 +99,12 @@ class ServiceRequestsReport < ReportingModule
         attrs["IACUC Expiration Date"] = "service_request.try(:protocol).try(:vertebrate_animals_info).try(:iacuc_expiration_date).try(:strftime, \"%D\")"
       end
     end
+
+    if params[:fulfillment_info]
+      attrs["Sent to SPARCFulfillment"] = "in_work_fulfillment ? 'Yes' : 'No'"
+    end
+
+    attrs["Owner"] = '"#{owner.try(:first_name)} #{owner.try(:last_name)}"'
 
     attrs
   end
@@ -147,8 +156,8 @@ class ServiceRequestsReport < ReportingModule
       ssr_organization_ids = [ssr_organization_ids, org.all_children(organizations).map(&:id)].flatten
     end
 
-    if args[:service_requests_submitted_at_from] and args[:service_requests_submitted_at_to]
-      submitted_at = args[:service_requests_submitted_at_from].to_time.strftime("%Y-%m-%d 00:00:00")..args[:service_requests_submitted_at_to].to_time.strftime("%Y-%m-%d 23:59:59")
+    if args[:submitted_at_from] and args[:submitted_at_to]
+      submitted_at = args[:submitted_at_from].to_time.strftime("%Y-%m-%d 00:00:00")..args[:submitted_at_to].to_time.strftime("%Y-%m-%d 23:59:59")
     end
 
     # default values if none are provided
@@ -163,10 +172,10 @@ class ServiceRequestsReport < ReportingModule
 
     ssr_organization_ids = Organization.all.map(&:id) if ssr_organization_ids.compact.empty? # use all if none are selected
 
-    submitted_at ||= self.default_options["Date Range"][:from]..self.default_options["Date Range"][:to]
+    submitted_at ||= self.default_options["Submission Date Range"][:from]..self.default_options["Submission Date Range"][:to]
     statuses = args[:status] || AVAILABLE_STATUSES.keys # use all if none are selected
 
-    return :sub_service_requests => {:organization_id => ssr_organization_ids, :status => statuses}, :service_requests => {:submitted_at => submitted_at}, :services => {:organization_id => service_organization_ids}
+    return :sub_service_requests => {:organization_id => ssr_organization_ids, :status => statuses, :submitted_at => submitted_at}, :services => {:organization_id => service_organization_ids}
   end
 
   # Return only uniq records for
@@ -177,7 +186,7 @@ class ServiceRequestsReport < ReportingModule
   end
 
   def order
-    "service_requests.submitted_at ASC"
+    "sub_service_requests.submitted_at ASC"
   end
 
   ##################  END QUERY SETUP   #####################

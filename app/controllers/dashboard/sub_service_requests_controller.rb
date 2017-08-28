@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -20,42 +20,57 @@
 
 class Dashboard::SubServiceRequestsController < Dashboard::BaseController
   before_action :find_sub_service_request,  except: :index
-  before_filter :protocol_authorizer,       only: :update_from_project_study_information
-  before_filter :authorize_admin,           only: :show, unless: :format_js?
+  before_action :find_service_request,      only: :index
+  before_action :find_permissions,          only: :index
+  before_action :find_admin_orgs,           except: :refresh_tab, unless: :show_js?
+  before_action :authorize_protocol,        only: :index
+  before_action :authorize_admin,           except: [:index, :refresh_tab], unless: :show_js?
 
   respond_to :json, :js, :html
 
   def index
-    service_request         = ServiceRequest.find(params[:srid])
-    protocol                = service_request.protocol
-    @admin_orgs             = @user.authorized_admin_organizations
-    @permission_to_edit     = protocol.project_roles.find_by(identity_id: @user.id)
-    @sub_service_requests   = service_request.sub_service_requests
+    service_request       = ServiceRequest.find(params[:srid])
+    protocol              = service_request.protocol
+    @admin_orgs           = @user.authorized_admin_organizations
+    @sub_service_requests = service_request.sub_service_requests.where.not(status: 'first_draft') # TODO: Remove Historical first_draft SSRs and remove this
+    @show_view_ssr_back   = params[:show_view_ssr_back]
   end
 
   def show
     respond_to do |format|
+      format.html { # Admin Edit
+        cookies['admin-tab'] = 'details-tab' unless cookies['admin-tab']
+        session[:service_calendar_pages] = params[:pages] if params[:pages]
+        session[:breadcrumbs].add_crumbs(protocol_id: @sub_service_request.protocol.id, sub_service_request_id: @sub_service_request.id).clear(:notifications)
+
+        @service_request  = @sub_service_request.service_request
+        @protocol         = @sub_service_request.protocol
+
+        render
+      }
+
       format.js { # User Modal Show
         arm_id                            = params[:arm_id] if params[:arm_id]
         page                              = params[:page]   if params[:page]
         session[:service_calendar_pages]  = params[:pages]  if params[:pages]
-        
+
         if page && arm_id
           session[:service_calendar_pages]          = {} unless session[:service_calendar_pages].present?
           session[:service_calendar_pages][arm_id]  = page
         end
 
-        @service_request  = @sub_service_request.service_request
-        @service_list     = @service_request.service_list
-        @line_items       = @sub_service_request.line_items
-        @protocol         = @service_request.protocol
-        @tab              = 'calendar'
-        @portal           = true
-        @thead_class      = 'default_calendar'
-        @review           = true
-        @selected_arm     = Arm.find arm_id if arm_id
-        @pages            = {}
-
+        @service_request    = @sub_service_request.service_request
+        @service_list       = @service_request.service_list
+        @line_items         = @sub_service_request.line_items
+        @protocol           = @service_request.protocol
+        @tab                = 'calendar'
+        @portal             = true
+        @admin              = false
+        @review             = true
+        @merged             = false
+        @consolidated       = false
+        @show_view_ssr_back = params[:show_view_ssr_back] == "true"
+        @pages              = {}
         @service_request.arms.each do |arm|
           new_page = (session[:service_calendar_pages].nil?) ? 1 : session[:service_calendar_pages][arm.id.to_s].to_i
           @pages[arm.id] = @service_request.set_visit_page(new_page, arm)
@@ -63,25 +78,12 @@ class Dashboard::SubServiceRequestsController < Dashboard::BaseController
 
         render
       }
-
-      format.html { # Admin Edit
-        session[:service_calendar_pages] = params[:pages] if params[:pages]
-        session[:breadcrumbs].add_crumbs(protocol_id: @sub_service_request.protocol.id, sub_service_request_id: @sub_service_request.id).clear(:notifications)
-        
-        if @user.can_edit_fulfillment?(@sub_service_request.organization)
-          @service_request  = @sub_service_request.service_request
-          @protocol         = @sub_service_request.protocol
-
-          render
-        else
-          redirect_to dashboard_root_path
-        end
-      }
     end
   end
 
   def update
-    if @sub_service_request.update_attributes(params[:sub_service_request])
+    if @sub_service_request.update_attributes(sub_service_request_params)
+      @sub_service_request.distribute_surveys if @sub_service_request.is_complete?
       flash[:success] = 'Request Updated!'
     else
       @errors = @sub_service_request.errors
@@ -93,17 +95,11 @@ class Dashboard::SubServiceRequestsController < Dashboard::BaseController
     if @sub_service_request.destroy
       # Delete all related toast messages
       ToastMessage.where(sending_class_id: params[:id], sending_class: 'SubServiceRequest').each(&:destroy)
-
-      # notify users with view rights or above of deletion
-      @protocol.project_roles.where.not(project_rights: "none").each do |project_role|
-        Notifier.sub_service_request_deleted(project_role.identity, @sub_service_request, current_user).deliver unless project_role.identity.email.blank?
-      end
-
-      # notify service providers
-      @sub_service_request.organization.service_providers.where.not(hold_emails: true).each do |service_provider|
-        Notifier.sub_service_request_deleted(service_provider.identity, @sub_service_request, current_user).deliver
-      end
+      notifier_logic = NotifierLogic.new(@sub_service_request.service_request, nil, current_user)
+      notifier_logic.ssr_deletion_emails(deleted_ssr: @sub_service_request, ssr_destroyed: false, request_amendment: false, admin_delete_ssr: true)
+    
       flash[:alert] = 'Request Destroyed!'
+      session[:breadcrumbs].clear(:sub_service_request_id)
     end
   end
 
@@ -115,45 +111,36 @@ class Dashboard::SubServiceRequestsController < Dashboard::BaseController
     @thead_class      = @portal == 'true' ? 'default_calendar' : 'red-provider'
     page              = params[:page] if params[:page]
 
-    session[:service_calendar_pages] = params[:pages] if params[:pages]
+    if params[:pages]
+      session[:service_calendar_pages] = params[:pages].permit!.to_h
+    end
     session[:service_calendar_pages][arm_id] = page if page && arm_id
-    
+
     @pages = {}
     @service_request.arms.each do |arm|
       new_page = (session[:service_calendar_pages].nil?) ? 1 : session[:service_calendar_pages][arm.id.to_s].to_i
       @pages[arm.id] = @service_request.set_visit_page(new_page, arm)
     end
-    
+
     @tab = 'calendar'
-  end
-
-  def update_from_project_study_information
-    attrs = params[@protocol.type.downcase.to_sym]
-
-    if @protocol.update_attributes(attrs.merge(study_type_question_group_id: StudyTypeQuestionGroup.active.pluck(:id).first))
-      redirect_to portal_admin_sub_service_request_path(@sub_service_request)
-    else
-      @user_toasts = @user.received_toast_messages.select { |x| x.sending_class == 'SubServiceRequest' }
-      @service_request = @sub_service_request.service_request
-      @protocol.populate_for_edit if @protocol.type == 'Study'
-      @candidate_one_time_fees, @candidate_per_patient_per_visit = @sub_service_request.candidate_services.partition(&:one_time_fee)
-      @subsidy = @sub_service_request.subsidy
-      @notifications = @user.all_notifications.where(sub_service_request_id: @sub_service_request.id)
-      @service_list = @service_request.service_list
-      @related_service_requests = @protocol.all_child_sub_service_requests
-      @approvals = [@service_request.approvals, @sub_service_request.approvals].flatten
-      @selected_arm = @service_request.arms.first
-
-      render action: 'show'
-    end
   end
 
   def push_to_epic
     begin
-      @sub_service_request.service_request.protocol.push_to_epic(EPIC_INTERFACE)
+      @sub_service_request.protocol.push_to_epic(EPIC_INTERFACE, "admin_push", current_user.id)
       flash[:success] = 'Request Pushed to Epic!'
     rescue
       flash[:alert] = $!.message
+    end
+  end
+
+  def resend_surveys
+    if @sub_service_request.surveys_completed?
+      @refresh = true # Refresh the details options
+      flash[:alert] = 'All surveys have already been completed.'
+    else
+      @sub_service_request.distribute_surveys
+      flash[:success] = 'Surveys re-sent!'
     end
   end
 
@@ -162,6 +149,7 @@ class Dashboard::SubServiceRequestsController < Dashboard::BaseController
     #Replaces currently displayed ssr history bootstrap table
     history_path = 'dashboard/sub_service_requests/history/'
     @partial_to_render = history_path + params[:partial]
+    @tab = params[:partial]
   end
 
   def status_history
@@ -174,32 +162,91 @@ class Dashboard::SubServiceRequestsController < Dashboard::BaseController
     service_request = @sub_service_request.service_request
     @approvals = [service_request.approvals, @sub_service_request.approvals].flatten
   end
+
+  def subsidy_history
+    #For Subsidy History Bootstrap Table
+    @subsidies = PastSubsidy.where(sub_service_request_id: @sub_service_request.id)
+  end
   #History Table Methods End
 
+  #Tab Change Ajax
+  def refresh_tab
+    @service_request = @sub_service_request.service_request
+    @protocol = Protocol.find(params[:protocol_id])
+    @partial_name = params[:partial_name]
+  end
+
+
 private
+
+  def sub_service_request_params
+      params.require(:sub_service_request).permit(:service_request_id,
+        :ssr_id,
+        :organization_id,
+        :owner_id,
+        :status_date,
+        :status,
+        :consult_arranged_date,
+        :nursing_nutrition_approved,
+        :lab_approved,
+        :imaging_approved,
+        :committee_approved,
+        :requester_contacted_date,
+        :in_work_fulfillment,
+        :routing,
+        :documents,
+        :service_requester_id,
+        :requester_contacted_date,
+        :submitted_at,
+        line_items_attributes: [:service_request_id,
+          :sub_service_request_id,
+          :service_id,
+          :optional,
+          :complete_date,
+          :in_process_date,
+          :units_per_quantity,
+          :quantity,
+          :fulfillments_attributes,
+          :displayed_cost,
+          :_destroy])
+  end
 
   def find_sub_service_request
     @sub_service_request = SubServiceRequest.find(params[:id])
   end
 
-  def protocol_authorizer
-    @protocol = Protocol.find(params[:protocol_id])
-    authorized_user = ProtocolAuthorizer.new(@protocol, @user)
-
-    if (request.get? && !authorized_user.can_view?) || (!request.get? && !authorized_user.can_edit?)
-      @protocol = nil
-      render partial: 'service_requests/authorization_error', locals: { error: 'You are not allowed to access this protocol.' }
-    end
+  def find_service_request
+    @service_request = ServiceRequest.find(params[:srid])
   end
 
-  def authorize_admin
-    unless (@user.authorized_admin_organizations & @sub_service_request.org_tree).any?
-      @protocol = nil
+  def find_permissions
+    @permission_to_edit = @user.can_edit_protocol?(@service_request.protocol)
+    @permission_to_view = @permission_to_edit || @user.can_view_protocol?(@service_request.protocol)
+  end
+
+  def find_admin_orgs
+    @admin_orgs = @user.authorized_admin_organizations
+  end
+
+  def authorize_protocol
+    unless @permission_to_view || Protocol.for_admin(@user.id).include?(@service_request.protocol)
+      @sub_service_request  = nil
+      @service_request      = nil
+      @permission_to_edit   = nil
+      @permission_to_view   = nil
+
       render partial: 'service_requests/authorization_error', locals: { error: 'You are not allowed to access this Sub Service Request.' }
     end
   end
 
-  def format_js?
-    request.format.js?
+  def authorize_admin
+    unless (@admin_orgs & @sub_service_request.org_tree).any?
+      @sub_service_request = nil
+      render partial: 'service_requests/authorization_error', locals: { error: 'You are not allowed to access this Sub Service Request.' }
+    end
+  end
+
+  def show_js?
+    action_name == 'show' && request.format.js?
   end
 end

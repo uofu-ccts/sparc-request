@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -26,6 +26,8 @@ $("#sub_service_request_header").html("<%= escape_javascript(render(partial: 'da
 $("#subsidy_information").html("<%= escape_javascript(render(partial: 'dashboard/subsidies/subsidy', locals: { sub_service_request: @sub_service_request, admin: true })) %>");
 $(".selectpicker").selectpicker()
 
+refresh_study_schedule()
+  
 $("#modal_place").modal 'hide'
 $("#flashes_container").html("<%= escape_javascript(render('shared/flash')) %>")
 <% end %>

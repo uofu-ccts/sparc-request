@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -19,36 +19,75 @@
 # TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class SubsidiesController < ApplicationController
-  before_filter :find_subsidy, only: [:update, :destroy]
+  respond_to :json, :js, :html
+
+  def new
+    @subsidy = PendingSubsidy.new(sub_service_request_id: params[:ssrid])
+    @header_text = t(:subsidies)[:new]
+    @admin = false
+    @path = subsidies_path
+    @subsidy.percent_subsidy = @subsidy.default_percentage
+    @action = 'new'
+  end
 
   def create
-    @sub_service_request = SubServiceRequest.find params[:subsidy][:sub_service_request_id]
-    @subsidy = PendingSubsidy.create(sub_service_request_id: @sub_service_request.id, pi_contribution: @sub_service_request.direct_cost_total)
+    @subsidy = PendingSubsidy.new(subsidy_params)
+    if @subsidy.valid?
+      @subsidy.save
+      @sub_service_request = @subsidy.sub_service_request
+      @admin = false
+      flash[:success] = t(:subsidies)[:created]
+    else
+      @errors = @subsidy.errors
+    end
+  end
+
+  def edit
+    @subsidy = PendingSubsidy.find(params[:id])
+    @header_text = t(:subsidies)[:edit]
+    @admin = false
+    @path = subsidy_path(@subsidy)
+    @action = 'edit'
   end
 
   def update
-    format_pi_contribution_param
-    unless @subsidy.update_attributes(params[:subsidy])
-      @errors = @subsidy.errors.full_messages
+    @subsidy = PendingSubsidy.find(params[:id])
+    @sub_service_request = @subsidy.sub_service_request
+    if @subsidy.update_attributes(subsidy_params)
+      @admin = false
+      flash[:success] = t(:subsidies)[:updated]
+    else
+      @errors = @subsidy.errors
+      @subsidy.reload
     end
   end
 
   def destroy
-    @subsidy.destroy
+    @subsidy = Subsidy.find(params[:id])
+    @sub_service_request = @subsidy.sub_service_request
+    if @subsidy.destroy
+      @admin = false
+      flash[:alert] = t(:subsidies)[:destroyed]
+    end
   end
 
   private
 
+  def subsidy_params
+    @subsidy_params ||= begin
+      temp = params.require(:pending_subsidy).permit(:sub_service_request_id,
+        :overridden,
+        :status,
+        :percent_subsidy)
+      if temp[:percent_subsidy].present?
+        temp[:percent_subsidy] = temp[:percent_subsidy].gsub(/[^\d^\.]/, '').to_f / 100
+      end
+      temp
+    end
+  end
+
   def find_subsidy
     @subsidy = PendingSubsidy.find(params[:id])
     @sub_service_request = @subsidy.sub_service_request
-  end
-
-  # Refomat pi_contribution string to characters other than numbers and . delimiter,
-  # Convert to float, and multiply by 100 to get cents for db
-  def format_pi_contribution_param
-    if !params[:subsidy].nil? && params[:subsidy][:pi_contribution].present?
-      params[:subsidy][:pi_contribution] = (params[:subsidy][:pi_contribution].gsub(/[^\d^\.]/, '').to_f * 100)
-    end
   end
 end

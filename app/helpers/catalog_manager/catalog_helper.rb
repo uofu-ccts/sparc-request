@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -60,6 +60,12 @@ module CatalogManager::CatalogHelper
     end
 
     tree.join(' / ')
+  end
+
+  def disabled_parent organization
+    if (orgs = organization.parents.insert(0, organization).select{|org| !org.is_available}).any?
+      I18n.t('organization_form.disabled_at', disabled_parent: orgs.last.name)
+    end
   end
 end
 

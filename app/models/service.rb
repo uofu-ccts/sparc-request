@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -18,9 +18,10 @@
 # INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 # TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-class Service < ActiveRecord::Base
+class Service < ApplicationRecord
 
   include RemotelyNotifiable
+  include ServiceUtility
 
   audited
   acts_as_taggable
@@ -32,13 +33,19 @@ class Service < ActiveRecord::Base
   belongs_to :organization, -> { includes(:pricing_setups) }
   belongs_to :revenue_code_range
   # set ":inverse_of => :service" so that the first pricing map can be validated before the service has been saved
-  has_many :pricing_maps, :inverse_of => :service, :dependent => :destroy 
+  has_many :pricing_maps, :inverse_of => :service, :dependent => :destroy
   has_many :service_providers, :dependent => :destroy
+  has_many :sub_service_requests, through: :line_items
+  has_many :service_requests, through: :sub_service_requests
   has_many :line_items, :dependent => :destroy
   has_many :identities, :through => :service_providers
+  has_many :questionnaires
+  has_many :submissions
+  ## commented out to remove tags, but will likely be added in later ##
+  # has_many :taggings, through: :organization
+  # has_many :tags, through: :taggings
 
   # Services that this service depends on
-  # TODO: Andrew thinks "related services" is a bad name
   has_many :service_relations, :dependent => :destroy
   has_many :related_services, :through => :service_relations
   has_many :required_services, -> { where("optional = ? and is_available = ?", false, true) }, :through => :service_relations, :source => :related_service
@@ -49,29 +56,9 @@ class Service < ActiveRecord::Base
   has_many :depending_services, :through => :depending_service_relations, :source => :service
 
   # Surveys associated with this service
-  has_many :associated_surveys, :as => :surveyable
-
-  attr_accessible :name
-  attr_accessible :abbreviation
-  attr_accessible :order
-  attr_accessible :description
-  attr_accessible :is_available
-  attr_accessible :service_center_cost
-  attr_accessible :cpt_code
-  attr_accessible :eap_id
-  attr_accessible :charge_code
-  attr_accessible :revenue_code
-  attr_accessible :organization_id
-  attr_accessible :send_to_epic
-  attr_accessible :tag_list
-  attr_accessible :revenue_code_range_id
-  attr_accessible :line_items_count
-  attr_accessible :one_time_fee
-  attr_accessible :components
+  has_many :associated_surveys, as: :surveyable, dependent: :destroy
 
   validate :validate_pricing_maps_present
-
-  alias :process_ssrs_organization :organization
 
   ###############################################
   # Validations
@@ -79,6 +66,14 @@ class Service < ActiveRecord::Base
     errors.add(:service, "must contain at least 1 pricing map.") if pricing_maps.length < 1
   end
   ###############################################
+
+  def humanized_status
+    self.is_available ? I18n.t(:reporting)[:service_pricing][:available] : I18n.t(:reporting)[:service_pricing][:unavailable]
+  end
+
+  def process_ssrs_organization
+    organization.process_ssrs_parent
+  end
 
   # Return the parent organizations of the service.  Note that this
   # returns the organizations in the reverse order of
@@ -130,9 +125,14 @@ class Service < ActiveRecord::Base
   # Given a dollar amount as a String, return an integer number of
   # cents.
   def self.dollars_to_cents dollars
-    # TODO: should this return nil if passed in nil?
     dollars = dollars.gsub(',','')
-    (BigDecimal(dollars) * 100).to_i
+    #check if dollars arg will be a valid for BigDecimal conversion
+    if ServiceUtility.valid_float?(dollars)
+      #if not we convert dollars to an integer
+      (BigDecimal(dollars) * 100).to_i
+    else
+      (BigDecimal(dollars.to_i) * 100).to_i
+    end
   end
 
   # Given an integer number of cents, return a Float representing the
@@ -160,19 +160,9 @@ class Service < ActiveRecord::Base
       end
     end
 
-    return service_name
-  end
+    service_name = service_name.gsub("/", "/ ")
 
-  def display_service_abbreviation
-    if self.abbreviation.blank?
-      service_abbreviation = self.name
-    elsif self.cpt_code and !self.cpt_code.blank?
-      service_abbreviation = self.abbreviation + " (#{self.cpt_code})"
-    else
-      service_abbreviation = self.abbreviation
-    end
-
-    return service_abbreviation
+    service_name
   end
 
   # Will check for nil display dates on the service's pricing maps
@@ -200,7 +190,9 @@ class Service < ActiveRecord::Base
       if current_maps.empty?
         raise ArgumentError, "Service has no current pricing maps!"
       else
-        pricing_map = current_maps.sort {|a,b| b.display_date <=> a.display_date}.first
+        # If two pricing maps have the same display_date, prefer the most
+        # recently created pricing_map.
+        pricing_map = current_maps.sort {|a,b| [b.display_date, b.id] <=> [a.display_date, a.id]}.first
       end
 
       return pricing_map
@@ -217,6 +209,7 @@ class Service < ActiveRecord::Base
   #This method is only used for the service pricing report
   def pricing_map_for_date(date)
     unless pricing_maps.empty?
+
       current_maps = self.pricing_maps.select { |x| x.display_date.to_date <= date.to_date }
       if current_maps.empty?
         return false
@@ -241,8 +234,7 @@ class Service < ActiveRecord::Base
   def effective_pricing_map_for_date(date=Date.today)
     raise ArgumentError, "Service has no pricing maps" if self.pricing_maps.empty?
 
-    # TODO: use #where? (warning: potential performance issue)
-    current_maps = self.pricing_maps.select { |x| x.effective_date.to_date <= date.to_date }
+    current_maps = self.pricing_maps.select{ |x| x.effective_date <= date.to_date }
     raise ArgumentError, "Service has no current pricing maps" if current_maps.empty?
 
     sorted_maps = current_maps.sort { |lhs, rhs| lhs.effective_date <=> rhs.effective_date }

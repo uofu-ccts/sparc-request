@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -73,6 +73,17 @@ RSpec.describe CatalogManager::CatalogHelper do
     it "should return whether or not it can edit a pricing map based on date" do
       pricing_map = create(:pricing_map, effective_date: Date.parse('2018-01-01'))
       expect(helper.disable_pricing_map(pricing_map, false)).to eq(true)
+    end
+  end
+
+  context '#disabled_parent' do
+    it 'should return the name of the highest disabled organization in the tree' do
+      institution = create(:institution, name: 'Institution', is_available: true)
+      provider    = create(:provider, name: 'Provider', parent_id: institution.id, is_available: false)
+      program     = create(:program, name: 'Program', parent_id: provider.id, is_available: false)
+      core        = create(:core, name: 'Core', parent_id: program.id, is_available: false)
+
+      expect(helper.disabled_parent(core)).to eq("Disabled at: #{provider.name}")
     end
   end
 end

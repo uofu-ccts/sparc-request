@@ -1,3 +1,23 @@
+# Copyright © 2011-2017 MUSC Foundation for Research Development~
+# All rights reserved.~
+
+# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:~
+
+# 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.~
+
+# 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following~
+# disclaimer in the documentation and/or other materials provided with the distribution.~
+
+# 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products~
+# derived from this software without specific prior written permission.~
+
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,~
+# BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT~
+# SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL~
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS~
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR~
+# TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.~
+
 require "rails_helper"
 
 RSpec.describe Dashboard::LineItemsController do
@@ -10,7 +30,7 @@ RSpec.describe Dashboard::LineItemsController do
         allow(@line_item).to receive(:update_attributes).and_return(true)
 
         log_in_dashboard_identity(obj: build_stubbed(:identity))
-        xhr :put, :update, id: @line_item.id, line_item: "line item attributes"
+        put :update, params: { id: @line_item.id, line_item: { quantity: 5 } }, xhr: true
       end
 
       it "should assign @otf to whether or not LineItem's Service is a one time fee" do
@@ -23,7 +43,7 @@ RSpec.describe Dashboard::LineItemsController do
 
       it "should update attributes of LineItem from params[:id]" do
         expect(@line_item).to have_received(:update_attributes).
-          with("line item attributes")
+          with controller_params(quantity: "5")
       end
 
       it "should not set @errors" do
@@ -45,7 +65,7 @@ RSpec.describe Dashboard::LineItemsController do
         allow(@line_item).to receive(:update_attributes).and_return(false)
 
         log_in_dashboard_identity(obj: build_stubbed(:identity))
-        xhr :put, :update, id: @line_item.id, line_item: "line item attributes"
+        put :update, params: { id: @line_item.id, line_item: { quantity: 5 } }, xhr: true
       end
 
       it "should assign @otf to whether or not LineItem's Service is a one time fee" do
@@ -58,7 +78,7 @@ RSpec.describe Dashboard::LineItemsController do
 
       it "should update attributes of LineItem from params[:id]" do
         expect(@line_item).to have_received(:update_attributes).
-          with("line item attributes")
+          with controller_params(quantity: "5")
       end
 
       it "should set @errors" do

@@ -1,67 +1,122 @@
-require "rails_helper"
+# Copyright © 2011-2017 MUSC Foundation for Research Development~
+# All rights reserved.~
+
+# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:~
+
+# 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.~
+
+# 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following~
+# disclaimer in the documentation and/or other materials provided with the distribution.~
+
+# 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products~
+# derived from this software without specific prior written permission.~
+
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,~
+# BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT~
+# SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL~
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS~
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR~
+# TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.~
+
+require 'rails_helper'
 
 RSpec.describe Dashboard::DocumentsController do
-  describe "POST #create" do
-    context "params[:document] describes a valid Document" do
-      before(:each) do
-        # stub a savable SubServiceRequest
-        @sub_service_request = findable_stub(SubServiceRequest) do
-          build_stubbed(:sub_service_request)
-        end
-        allow(@sub_service_request).to receive(:save)
 
-        # stub Document#create to return a valid document
-        document = build_stubbed(:document)
-        allow(Document).to receive(:create).and_return(document)
+  describe 'POST #create' do
 
-        logged_in_user = build_stubbed(:identity)
-        log_in_dashboard_identity(obj: logged_in_user)
+    let(:logged_in_user) { create(:identity) }
 
-        @document_attrs = { "sub_service_request_id" => @sub_service_request.id.to_s }
-        xhr :post, :create, document: @document_attrs
-      end
-
-      it "should create Document" do
-        expect(Document).to have_received(:create).with(@document_attrs)
-      end
-
-      it "should not set @errors" do
-        expect(assigns(:errors)).to be_nil
-      end
-
-      it { is_expected.to render_template "dashboard/documents/create" }
-      it { is_expected.to respond_with :ok }
+    before :each do
+      log_in_dashboard_identity(obj: logged_in_user)
     end
 
-    context "params[:document] describes an invalid Document" do
-      before(:each) do
-        @sub_service_request = findable_stub(SubServiceRequest) do
-          build_stubbed(:sub_service_request)
+    context 'user is authorized to edit protocol' do
+      before :each do
+        @protocol = create(:protocol_without_validations, primary_pi: logged_in_user)
+      end
+
+      context 'instance variables' do
+        before :each do
+          organization    = create(:organization)
+          service_request = create(:service_request_without_validations, protocol: @protocol)
+          @ssr            = create(:sub_service_request_without_validations, service_request: service_request, organization: organization, status: 'draft', protocol_id: @protocol.id)
+                            create(:super_user, identity: logged_in_user, organization: organization)
+          document        = Rack::Test::UploadedFile.new(File.join('doc', 'musc_installation_example.txt'),'text/plain')
+          params          = { org_ids: [organization.id], protocol_id: @protocol.id, document: { protocol: @protocol, doc_type: 'Protocol', document: document }, format: :js }
+
+          post :create, params: params, xhr: true
         end
-        allow(@sub_service_request).to receive(:save)
 
-        # stub an invalid Document
-        document = build_stubbed(:document)
-        allow(document).to receive(:valid?).and_return(false)
-        allow(document).to receive(:errors).and_return("my errors")
-        allow(Document).to receive(:create).and_return(document)
+        it 'should assign @protocol from params[:protocol_id]' do
+          expect(assigns(:protocol)).to eq(@protocol)
+        end
 
-        logged_in_user = build_stubbed(:identity)
-        log_in_dashboard_identity(obj: logged_in_user)
+        it 'should assign @admin' do
+          expect(assigns(:admin)).to eq(true)
+        end
 
-        @document_attrs = { "sub_service_request_id" => @sub_service_request.id.to_s }
-        xhr :post, :create, document: @document_attrs
+        it 'should assign @authorization' do
+          expect(assigns(:authorization)).to be
+        end
+
+        it 'should create Document' do
+          expect(@protocol.documents.count).to eq(1)
+        end
+
+        it { is_expected.to render_template 'dashboard/documents/create' }
+        it { is_expected.to respond_with :ok }
       end
 
-      it "should attempt to create Document" do
-        expect(Document).to have_received(:create).with(@document_attrs)
+      context 'params[:document] describes a valid Document' do
+        before :each do
+          organization    = create(:organization)
+          service_request = create(:service_request_without_validations, protocol: @protocol)
+          @ssr            = create(:sub_service_request_without_validations, service_request: service_request, organization: organization, status: 'draft', protocol_id: @protocol.id)
+                            create(:super_user, identity: logged_in_user, organization: organization)
+          @document       = Rack::Test::UploadedFile.new(File.join('doc', 'musc_installation_example.txt'),'text/plain')
+          params          = { org_ids: [organization.id], protocol_id: @protocol.id, document: { protocol: @protocol, doc_type: 'Protocol', document: @document }, format: :js }
+
+          post :create, params: params, xhr: true
+        end
+
+        it 'should assign sub_service_requests to the document' do
+          expect(assigns(:document).reload.sub_service_requests).to eq([@ssr])
+        end
+
+        it 'should not set @errors' do
+          expect(assigns(:errors)).to be_nil
+        end
+
+        it { is_expected.to render_template 'dashboard/documents/create' }
+        it { is_expected.to respond_with :ok }
       end
 
-      it "should set @errors" do
-        expect(assigns(:errors)).to eq("my errors")
+      context 'params[:document] describes an invalid Document' do
+        before :each do
+          document  = Rack::Test::UploadedFile.new(File.join('doc', 'musc_installation_example.txt'),'txt/plain')
+          params    = { protocol_id: @protocol.id, document: { protocol: @protocol, doc_type: nil, document: document }, format: :js }
+
+          post :create, params: params, xhr: :ture
+        end
+
+        it 'should set @errors' do
+          expect(assigns(:errors)).to be
+        end
+
+        it { is_expected.to render_template 'dashboard/documents/create' }
+        it { is_expected.to respond_with :ok }
+      end
+    end
+
+    context 'user is not authorized to edit protocol' do
+      before :each do
+        protocol  = create(:protocol_without_validations, primary_pi: create(:identity))
+        params    = { protocol_id: protocol.id, document: {}, format: :js }
+
+        post :create, params: params, xhr: :ture
       end
 
-      it { is_expected.to render_template "dashboard/documents/create" }
+      it { is_expected.to render_template 'dashboard/shared/_authorization_error' }
       it { is_expected.to respond_with :ok }
     end
   end

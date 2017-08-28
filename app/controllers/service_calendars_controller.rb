@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -18,310 +18,215 @@
 # INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 # TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+############################################
+############################################
+## NOTES ABOUT SERVICE CALENDAR VARIABLES ##
+############################################
+## portal:        Are we accessing the calendar from the dashboard? True or False
+##
+## admin:         Are we accessing the calendar by clicking Admin Edit from the dashboard? True or False
+##
+## merged:        Are we accessing the Consolidated Request calendar? True or False
+##
+## review:        Are we viewing the Step 4 Review calendar? True or False
+##
+## consolidated:  Are we using the "View Consolidated Request" calendar in dashboard? True or false
+
 class ServiceCalendarsController < ApplicationController
-  before_filter :initialize_service_request
-  before_filter(except: [:merged_calendar, :rename_visit]) do |c|
-    params[:portal] == 'true' ? true : c.send(:authorize_identity)
-  end
+  respond_to :html, :js
   layout false
 
+  before_action :initialize_service_request, unless: :in_dashboard?
+  before_action :authorize_identity,         unless: :in_dashboard?
+  before_action :authorize_dashboard_access, if: :in_dashboard?
+
   def table
-    #use session so we know what page to show when tabs are switched
-    @tab = params[:tab]
-    @portal = params[:portal] 
-    @study_tracker = params[:study_tracker] == "true"
-    @protocol = @service_request.protocol
+    @scroll_true  = params[:scroll].present? && params[:scroll] == 'true'
+    @tab          = params[:tab]
+    @review       = params[:review] == 'true'
+    @portal       = params[:portal] == 'true'
+
+    if params[:admin]
+      @admin = params[:admin] == 'true'
+    else
+      @admin = @portal && @sub_service_request.present?
+    end
+
+    @merged       = false
+    @consolidated = false
     setup_calendar_pages
-    # TODO: This needs to be changed for one time fees page in arms
-    if @sub_service_request
-      @candidate_one_time_fees, @candidate_per_patient_per_visit = @sub_service_request.candidate_services.partition { |x| x.one_time_fee }
-    end
-  end
 
-  def update
-    @portal              = params[:portal]
-    @study_tracker       = params[:study_tracker] == "true"
-    @sub_service_request = SubServiceRequest.find(params[:id]) if params[:id]
-    @user                = current_identity
-    visit                = Visit.find params[:visit] rescue nil
-    @line_items_visit    = LineItemsVisit.find params[:line_items_visit] rescue nil
-    @line_item           = LineItem.find params[:line_item] rescue nil
-    tab                  = params[:tab]
-    checked              = params[:checked]
-    qty                  = params[:undefined].nil? ? params[:qty].to_i : params[:undefined][:qty].to_i
-    column               = params[:column]
-
-    case tab
-    when 'template'
-      if @line_items_visit
-        # TODO: not sure what's going on here (why is @line_items_visit
-        # set above, then set again below?  what are we doing here, and
-        # why do we not care about checked in this case?)
-        @line_items_visit.update_attribute(:subject_count, qty)
-      elsif visit.research_billing_qty.to_i <= 0 and checked == 'true'
-        # set quantity and research billing qty to 1
-        line_item = visit.line_items_visit.line_item
-        service = line_item.service
-
-        visit.attributes = {
-          quantity: service.displayed_pricing_map.unit_minimum,
-          research_billing_qty: service.displayed_pricing_map.unit_minimum
-        }
-        visit.save
-
-      elsif checked == 'false'
-        visit.update_attributes(
-          quantity: 0,
-          research_billing_qty: 0,
-          insurance_billing_qty: 0,
-          effort_billing_qty: 0
-        )
-      end
-
-    when 'quantity'
-      if qty < 0
-        @errors = "Quantity must be greater than zero"
-      else
-        visit.update_attribute(:quantity, qty)
-      end
-
-    when 'billing_strategy'
-      if @line_items_visit
-        # TODO: not sure what's going on here (why is @line_items_visit
-        # set above, then set again below?  what are we doing here, and
-        # why do we not care about checked in this case?)
-        @line_items_visit.update_attribute(:subject_count, qty)
-      end
-
-      if visit
-        if qty < 0
-          @errors = "Quantity must be greater than zero"
-        else
-          #update the total quantity to reflect the 3 billing qty total
-          total = visit.quantity_total
-
-          visit.attributes = {
-            column => qty,
-            quantity: total
-          }
-          visit.save
-        end
-      end
-    end
-
-    @visit = visit
-    @visit_td = visit.nil? ? "" : ".visits_#{visit.id}"
-    @line_items_visit = visit.line_items_visit if @line_items_visit.nil?
-    @line_item = @line_items_visit.line_item if @line_item.nil?
-    @line_item_total_td = ".total_#{@line_items_visit.id}"
-    @line_item_total_study_td = ".total_#{@line_items_visit.id}_per_study"
-    @arm_id = '.arm_' + @line_items_visit.arm.id.to_s
-
-    @line_items_visits =
-      if @sub_service_request
-        @line_items_visit.arm.line_items_visits.joins(:line_item)
-          .where(line_items: { sub_service_request_id: @sub_service_request.id } )
-      elsif @service_request
-        @line_items_visit.arm.line_items_visits.joins(:line_item)
-          .where(line_items: { service_request_id: @service_request.id } )
-      else
-        @line_items_visit.arm.line_items_visits
-      end
-  end
-
-  def rename_visit
-    name = params[:name]
-    position = params[:visit_position].to_i
-    arm = Arm.find params[:arm_id]
-    arm.visit_groups[position].update_attributes(name: name)
-  end
-
-  def set_day
-    day = params[:day]
-    position = params[:position].to_i
-    arm = Arm.find params[:arm_id]
-    portal = params[:portal]
-
-    if !arm.update_visit_group_day(day, position, portal)
-      respond_to do |format|
-        format.js { render status: 418, json: clean_messages(arm.errors.messages) }
-      end
-    end
-  end
-
-  def set_window_before
-    window_before = params[:window_before]
-    position = params[:position].to_i
-    arm = Arm.find params[:arm_id]
-
-    if !arm.update_visit_group_window_before(window_before, position)
-      respond_to do |format|
-        format.js { render status: 418, json: clean_messages(arm.errors.messages) }
-      end
-    end
-  end
-
-  def set_window_after
-    window_after = params[:window_after]
-    position = params[:position].to_i
-    arm = Arm.find params[:arm_id]
-
-    if !arm.update_visit_group_window_after(window_after, position)
-      respond_to do |format|
-        format.js { render status: 418, json: clean_messages(arm.errors.messages) }
-      end
+    respond_to do |format|
+      format.js
+      format.html
     end
   end
 
   def merged_calendar
-    arm_id = params[:arm_id] if params[:arm_id]
-    @arm = Arm.find arm_id if arm_id
-    page = params[:page] if params[:page]
-    session[:service_calendar_pages] = params[:pages] if params[:pages]
-    session[:service_calendar_pages][arm_id] = page if page && arm_id
-    @tab = params[:tab]
-    @portal = params[:portal]
-    @study_tracker = params[:study_tracker] == "true"
-    @pages = {}
-    @protocol = @arm.protocol rescue @service_request.protocol
-    @protocol.arms.each do |arm|
-      new_page = (session[:service_calendar_pages].nil?) ? 1 : session[:service_calendar_pages][arm.id.to_s].to_i
-      @pages[arm.id] = @service_request.set_visit_page new_page, arm
+    @tab              = params[:tab]
+    @review           = params[:review] == 'true'
+    @portal           = params[:portal] == 'true'
+    @admin            = @portal && @sub_service_request.present?
+    @merged           = true
+    @consolidated     = false
+    @statuses_hidden  = []
+    @scroll_true        = params[:scroll].present? && params[:scroll] == 'true'
+    setup_calendar_pages
+
+    respond_to do |format|
+      format.js
+      format.html
     end
-    @merged = true
   end
 
-  def update_otf_qty_and_units_per_qty
-    line_item = LineItem.find params[:line_item_id]
+  def view_full_calendar
+    @tab                   = 'calendar'
+    @review                = false
+    @portal                = true
+    @admin                 = false
+    @merged                = true
+    @consolidated          = true
+    @service_request       = @protocol.any_service_requests_to_display?
+    @statuses_hidden       = params[:statuses_hidden]
+    @scroll_true           = params[:scroll].present? && params[:scroll] == 'true'
+    @visit_dropdown_change = params[:pages].present?
+    setup_calendar_pages
 
-    val = params[:val]
-    if params[:type] == 'qty'
-      line_item.quantity = val
-      if line_item.valid?
-        line_item.save
-      else
-        line_item.reload
-        respond_to do |format|
-          format.js { render status: 500, json: clean_errors(line_item.errors) }
-        end
-      end
-    elsif params[:type] == 'units_per_qty'
-      line_item.update_attributes(units_per_quantity: val)
+    respond_to do |format|
+      format.js
     end
   end
 
   def show_move_visits
-    @arm = Arm.find params[:arm_id]
-    @tab = params[:tab]
-    @portal = params[:portal]
+    @tab                  = params[:tab]
+    @sub_service_request  = params[:sub_service_request]
+    @page                 = params[:page]
+    @pages                = eval(params[:pages]) rescue {}
+    @review               = params[:review]
+    @portal               = params[:portal]
+    @admin                = params[:admin]
+    @consolidated         = params[:consolidated]
+    @merged               = params[:merged]
+    @statuses_hidden      = params[:statuses_hidden]
+    @arm                  = Arm.find( params[:arm_id] )
+    @visit_group          = params[:visit_group_id] ? @arm.visit_groups.find(params[:visit_group_id]) : @arm.visit_groups.first
+
+    respond_to do |format|
+      format.js
+    end
   end
 
   def move_visit_position
-    @arm = Arm.find params[:arm_id]
-    @tab = params[:tab]
+    @tab                  = params[:tab]
+    @sub_service_request  = params[:sub_service_request]
+    @page                 = params[:page]
+    @pages                = eval(params[:pages]) rescue {}
+    @review               = params[:review] == "true"
+    @portal               = params[:portal] == "true"
+    @admin                = params[:admin] == "true"
+    @consolidated         = params[:consolidated] == "true"
+    @merged               = params[:merged] == "true"
+    @statuses_hidden      = params[:statuses_hidden]
+    @arm                  = Arm.find( params[:arm_id] )
+    @visit_group          = VisitGroup.find(params[:visit_group].to_i)
+    @visit_groups         = @arm.visit_groups.page(@page).eager_load(visits: { line_items_visit: { line_item: [:admin_rates, service_request: :protocol, service: [:pricing_maps, organization: [:pricing_setups, parent: [:pricing_setups, parent: [:pricing_setups, :parent]]]]] } })
 
-    @portal = params[:portal]
-    @protocol = @service_request.protocol
+    new_position = params[:position].to_i
 
-    visit_to_move = params[:visit_to_move].to_i
-    move_to_position = params[:move_to_position].to_i
-
-    if @portal
-      @candidate_per_patient_per_visit = @sub_service_request.candidate_services.reject { |x| x.one_time_fee }
-    end
-    setup_calendar_pages
-
-    @arm.visit_groups.reload
-    vg = @arm.visit_groups.find_by_position visit_to_move
-    vg.reload
-
-    vg.insert_at(move_to_position)
-
-    @arm.reload
-    @arm.visit_groups.reload
-  end
-
-  def select_calendar_row
-    @line_items_visit = LineItemsVisit.find params[:line_items_visit_id]
-    @service = @line_items_visit.line_item.service
-    @sub_service_request = @line_items_visit.line_item.sub_service_request
-    failed_visit_list = ''
-    @line_items_visit.visits.each do |visit|
-      visit.attributes = {
-          quantity:              @service.displayed_pricing_map.unit_minimum,
-          research_billing_qty:  @service.displayed_pricing_map.unit_minimum,
-          insurance_billing_qty: 0,
-          effort_billing_qty:    0
-      }
-
-      visit.save
+    if @visit_group.position < new_position
+      @visit_group.insert_at( new_position - 1 )
+    else
+      @visit_group.insert_at( new_position )
     end
 
-    @errors = "The follow visits for #{@service.name} were not checked because they exceeded the linked quantity limit: #{failed_visit_list}" if failed_visit_list.empty? == false
-
-    render partial: 'update_service_calendar'
+    respond_to do |format|
+      format.js
+    end
   end
 
-  def unselect_calendar_row
-    @line_items_visit = LineItemsVisit.find params[:line_items_visit_id]
-    @sub_service_request = @line_items_visit.line_item.sub_service_request
-    @line_items_visit.visits.each do |visit|
-      visit.update_attributes quantity: 0, research_billing_qty: 0, insurance_billing_qty: 0, effort_billing_qty: 0
+  def toggle_calendar_row
+    @admin              = params[:admin] == 'true'
+    @tab                = 'template'
+    @page               = params[:page]
+    @line_items_visit   = LineItemsVisit.eager_load(sub_service_request: { organization: { parent: { parent: :parent } } }, line_item: [:admin_rates, service: [:pricing_maps, organization: [:pricing_setups, parent: [:pricing_setups, parent: [:pricing_setups, parent: :pricing_setups]]]]]).find(params[:line_items_visit_id])
+    @arm                = @line_items_visit.arm
+    @line_items_visits  = @arm.line_items_visits.eager_load(line_item: [:admin_rates, service: [:pricing_maps, organization: [:pricing_setups, parent: [:pricing_setups, parent: [:pricing_setups, parent: :pricing_setups]]]], service_request: :protocol])
+    @visit_groups       = @arm.visit_groups.paginate(page: @page.to_i, per_page: VisitGroup.per_page).eager_load(visits: { line_items_visit: { line_item: [:admin_rates, service: [:pricing_maps, organization: [:pricing_setups, parent: [:pricing_setups, parent: [:pricing_setups, parent: :pricing_setups]]]], service_request: :protocol] } })
+    @visits             = @line_items_visit.ordered_visits.eager_load(service: :pricing_maps)
+    @locked             = !@admin && !@line_items_visit.sub_service_request.can_be_edited?
+
+    if params[:check] && !@locked
+      unit_minimum = @line_items_visit.line_item.service.displayed_pricing_map.unit_minimum
+
+      @visits.update_all(quantity: unit_minimum, research_billing_qty: unit_minimum, insurance_billing_qty: 0, effort_billing_qty: 0)
+    elsif params[:uncheck] && !@locked
+      @visits.update_all(quantity: 0, research_billing_qty: 0, insurance_billing_qty: 0, effort_billing_qty: 0)
     end
 
-    render partial: 'update_service_calendar'
+    # Update the sub service request only if we are not in dashboard; admin's actions should not affect the status
+    unless @admin || @locked
+      @line_items_visit.sub_service_request.update_attribute(:status, "draft")
+      @service_request.update_attribute(:status, "draft")
+    end
+
+    respond_to do |format|
+      format.js
+    end
   end
 
-  def select_calendar_column
-    column_id = params[:column_id].to_i
-    @arm = Arm.find params[:arm_id]
+  def toggle_calendar_column
+    @admin              = params[:admin] == 'true'
+    @tab                = 'template'
+    @page               = params[:page]
+    @visit_group        = VisitGroup.find(params[:visit_group_id])
+    @arm                = @visit_group.arm
+    @line_items_visits  = @arm.line_items_visits.eager_load(line_item: [:admin_rates, service: [:pricing_maps, organization: [:pricing_setups, parent: [:pricing_setups, parent: [:pricing_setups, parent: :pricing_setups]]]], service_request: :protocol])
+    @visit_groups       = @arm.visit_groups.paginate(page: @page.to_i, per_page: VisitGroup.per_page).eager_load(visits: { line_items_visit: { line_item: [:admin_rates, service: [:pricing_maps, organization: [:pricing_setups, parent: [:pricing_setups, parent: [:pricing_setups, parent: :pricing_setups]]]], service_request: :protocol] } })
 
-    @service_request.service_list(false).each do |key, value|
-      next unless @sub_service_request.nil? or @sub_service_request.organization.name == value[:process_ssr_organization_name]
-
-      @arm.line_items_visits.each do |liv|
-        next unless value[:line_items].include?(liv.line_item)
-        visit = liv.visits[column_id - 1] # columns start with 1 but visits array positions start at 0
-        visit.update_attributes(
-          quantity:              liv.line_item.service.displayed_pricing_map.unit_minimum,
-          research_billing_qty:  liv.line_item.service.displayed_pricing_map.unit_minimum,
-          insurance_billing_qty: 0,
-          effort_billing_qty:    0
-        )
+    editable_ssrs =
+      if @sub_service_request
+        SubServiceRequest.where(id: @sub_service_request)
+      else
+        SubServiceRequest.where(id: @arm.sub_service_requests.eager_load(organization: { parent: { parent: :parent } }).select{ |ssr| ssr.can_be_edited? })
       end
-    end
 
-    render partial: 'update_service_calendar'
-  end
+    @visits = @visit_group.visits.joins(:sub_service_request).where(sub_service_requests: { id: editable_ssrs }).eager_load(service: :pricing_maps, line_items_visit: { line_item: [:admin_rates, service: [:pricing_maps, organization: [:pricing_setups, parent: [:pricing_setups, parent: [:pricing_setups, parent: :pricing_setups]]]], service_request: :protocol] })
 
-  def unselect_calendar_column
-    column_id = params[:column_id].to_i
-    @arm = Arm.find params[:arm_id]
-
-    @service_request.service_list(false).each do |key, value|
-      next unless @sub_service_request.nil? || @sub_service_request.organization.name == value[:process_ssr_organization_name]
-
-      @arm.line_items_visits.each do |liv|
-        next unless value[:line_items].include?(liv.line_item)
-        visit = liv.visits[column_id - 1] # columns start with 1 but visits array positions start at 0
-        visit.update_attributes quantity: 0, research_billing_qty: 0, insurance_billing_qty: 0, effort_billing_qty: 0
+    if params[:check]
+      @visits.each do |v|
+        unit_minimum = v.service.displayed_pricing_map.unit_minimum
+        
+        v.update_attributes(quantity: unit_minimum, research_billing_qty: unit_minimum, insurance_billing_qty: 0, effort_billing_qty: 0)
       end
+    elsif params[:uncheck]
+      @visits.update_all(quantity: 0, research_billing_qty: 0, insurance_billing_qty: 0, effort_billing_qty: 0)
     end
-    render partial: 'update_service_calendar'
+
+    # Update the sub service request only if we are not in dashboard; admin's actions should not affect the status
+    unless @admin
+      editable_ssrs.where.not(status: 'draft').update_all(status: 'draft')
+      @service_request.update_attribute(:status, "draft")
+    end
+
+    respond_to do |format|
+      format.js
+    end
   end
 
   private
 
   def setup_calendar_pages
-    @pages = {}
-    page = params[:page] if params[:page]
-    arm_id = params[:arm_id] if params[:arm_id]
-    @arm = Arm.find(arm_id) if arm_id
-    session[:service_calendar_pages] = params[:pages] if params[:pages]
-    session[:service_calendar_pages][arm_id] = page if page && arm_id
+    @pages  = {}
+    page    = params[:page].to_i if params[:page]
+    arm_id  = params[:arm_id].to_i if params[:arm_id]
+    @arm    = Arm.find(arm_id) if arm_id
+
+    session[:service_calendar_pages]          = eval(params[:pages]) if params[:pages]
+    session[:service_calendar_pages][arm_id]  = page if page && arm_id
+
     @service_request.arms.each do |arm|
-      new_page = (session[:service_calendar_pages].nil?) ? 1 : session[:service_calendar_pages][arm.id.to_s].to_i
-      @pages[arm.id] = @service_request.set_visit_page(new_page, arm)
+      new_page        = (session[:service_calendar_pages].nil? || session[:service_calendar_pages][arm.id].nil?) ? 1 : session[:service_calendar_pages][arm.id]
+      @pages[arm.id]  = @service_request.set_visit_page(new_page, arm)
     end
   end
 end

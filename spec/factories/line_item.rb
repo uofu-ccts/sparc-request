@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -64,5 +64,6 @@ FactoryGirl.define do
     factory :line_item_with_service, traits: [:with_service, :with_service_request]
     factory :one_time_fee_line_item, traits: [:one_time_fee]
     factory :per_patient_per_visit_line_item, traits: [:per_patient_per_visit]
+    factory :line_item_without_validations, traits: [:without_validations]
   end
 end

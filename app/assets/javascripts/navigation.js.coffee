@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -19,14 +19,14 @@
 # TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 $(document).ready ->
-  $('.navigation_link').live 'click', ->
-    if $(this).parent('div.exit').size() >= 1
-      $('#processing_request').show()
-    location = $(this).attr('location')
-    validates = $(this).attr('validates')
-    $('#location').val(location)
-    $('#validates').val(validates)
-    if location == 'service_subsidy'
-      $('td.visit input').each ->
-        $(this).attr('disabled', true)
-    $('#navigation_form').submit()
+  $(document).on 'click', '.step-btn', (event) -> 
+    if $(this).data('clicked')
+      event.preventDefault()
+    else
+      $(this).data('clicked', true)
+
+  # We dont want the extra handler on the submit button if we need to use the system
+  # satisfaction survey so that we can preventDefault the submit in system_satisfaction.js.coffee
+  if $('#use_system_satisfaction').val() != 'true'
+    $(document).one 'click', '.form-submit-button', ->
+      $('#service-request-form').submit()

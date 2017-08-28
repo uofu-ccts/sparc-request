@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -22,98 +22,149 @@
 class Notifier < ActionMailer::Base
   helper ApplicationHelper
 
-  def ask_a_question quick_question
-    @quick_question = quick_question
-
-    # TODO: this process needs to be moved to a helper method
-    # it's repeated in each action with slightly different information
-    email = Rails.env == 'production' ? ADMIN_MAIL_TO : DEFAULT_MAIL_TO
-    subject = Rails.env == 'production' ? "New Question from #{I18n.t('application_title')}" : "[#{Rails.env.capitalize} - EMAIL TO #{ADMIN_MAIL_TO}] New Question from #{I18n.t('application_title')}"
-
-    mail(:to => email, :from => @quick_question.from, :subject => subject)
-  end
-
   def new_identity_waiting_for_approval identity
     @identity = identity
 
-    email = Rails.env == 'production' ? ADMIN_MAIL_TO : DEFAULT_MAIL_TO
-    cc = Rails.env == 'production' ? NEW_USER_CC : nil
-    subject = Rails.env == 'production' ? "New Question from #{I18n.t('application_title')}" : "[#{Rails.env.capitalize} - EMAIL TO #{ADMIN_MAIL_TO} AND CC TO #{NEW_USER_CC}] Request for new #{I18n.t('application_title')} account submitted and awaiting approval"
+    email = ADMIN_MAIL_TO
+    cc = NEW_USER_CC
 
+    subject = t(:mailer)[:email_title][:new_account_registration]
     mail(:to => email, :cc => cc, :from => @identity.email, :subject => subject)
   end
 
-  def notify_user(project_role, service_request, xls, approval, user_current)
+  def notify_user(project_role, service_request, ssr, approval, user_current, audit_report=nil, individual_ssr=false, deleted_ssrs=nil, admin_delete_ssr=false)
+    @protocol = service_request.protocol
+    @service_request = service_request
+    @deleted_ssrs = deleted_ssrs
+
+    ### ATTACHMENTS ###
+    service_list_false = @service_request.service_list(false)
+    service_list_true = @service_request.service_list(true)
+    controller = set_instance_variables(user_current, @service_request, service_list_false, service_list_true, @service_request.line_items, @protocol)
+
+    xls = controller.render_to_string action: 'show', formats: [:xlsx]
+    ### END ATTACHMENTS ###
+    @status = status(admin_delete_ssr, audit_report.present?, individual_ssr, ssr, @service_request)
+    @notes = []
     @identity = project_role.identity
     @role = project_role.role
-
-    @approval_link = nil
-    if approval and project_role.project_rights == 'approve'
-      @approval_link = approve_changes_service_request_url(service_request, :approval_id => approval.id)
-    end
-
-    @protocol = service_request.protocol
-    @service_request = service_request
-    @portal_link = DASHBOARD_LINK + "?default_protocol=#{@protocol.id}"
-    @portal_text = "To VIEW and/or MAKE any changes to this request, please click here."
-    @provide_arm_info = false
-
-    @triggered_by = user_current.id
-    @ssr_ids = service_request.sub_service_requests.map{ |ssr| ssr.id }.join(", ")
-
-    attachments["service_request_#{@service_request.protocol.id}.xlsx"] = xls
-
-    # only send these to the correct person in the production env
-    email = Rails.env == 'production' ? @identity.email : DEFAULT_MAIL_TO
-    subject = Rails.env == 'production' ? "#{I18n.t('application_title')} service request" : "[#{Rails.env.capitalize} - EMAIL TO #{@identity.email}] #{I18n.t('application_title')} service request"
-
-    mail(:to => email, :from => NO_REPLY_FROM, :subject => subject)
-  end
-
-  def notify_admin(service_request, submission_email_address, xls, user_current)
-    @protocol = service_request.protocol
-    @service_request = service_request
-    @role = 'none'
-    @approval_link = nil
-    @portal_link = DASHBOARD_LINK
-    @portal_text = "Administrators/Service Providers, Click Here"
-    @provide_arm_info = false
-
-    @triggered_by = user_current.id
-    @ssr_ids = service_request.sub_service_requests.map{ |ssr| ssr.id }.join(", ")
-
-    attachments["service_request_#{@service_request.protocol.id}.xlsx"] = xls
-
-    # only send these to the correct person in the production env
-    email = Rails.env == 'production' ?  submission_email_address : DEFAULT_MAIL_TO
-    subject = Rails.env == 'production' ? "#{I18n.t('application_title')} service request" : "[#{Rails.env.capitalize} - EMAIL TO #{submission_email_address}] #{I18n.t('application_title')} service request"
-
-    mail(:to => email, :from => NO_REPLY_FROM, :subject => subject)
-  end
-
-  def notify_service_provider service_provider, service_request, attachments_to_add, user_current, audit_report=nil, ssr_deleted=false
-    @protocol = service_request.protocol
-    @service_request = service_request
-    @role = 'none'
-    @approval_link = nil
+    @full_name = @identity.full_name
     @audit_report = audit_report
-    @provide_arm_info = audit_report.nil? ? true : SubServiceRequest.find(@audit_report[:sub_service_request_id]).has_per_patient_per_visit_services?
-    @ssr_deleted = ssr_deleted
 
-    @portal_link = DASHBOARD_LINK
-    @portal_text = "Administrators/Service Providers, Click Here"
+    @service_requester_id = service_requester_id(@service_request, deleted_ssrs)
+    @portal_link = DASHBOARD_LINK + "/protocols/#{@protocol.id}"
 
-    @triggered_by = user_current.id
-    @ssr_ids = service_request.sub_service_requests.map{ |ssr| ssr.id }.join(", ")
+    if admin_delete_ssr
+      @ssrs_to_be_displayed = [deleted_ssrs]
+    else
+      @ssrs_to_be_displayed = individual_ssr ? [ssr] : @service_request.sub_service_requests
+    end
 
-    attachments_to_add.each do |file_name, document|
-      next if document.nil?
-      attachments["#{file_name}"] = document
+    if !admin_delete_ssr
+      attachments["service_request_#{@protocol.id}.xlsx"] = xls
     end
 
     # only send these to the correct person in the production env
-    email = Rails.env == 'production' ? service_provider.identity.email : DEFAULT_MAIL_TO
-    subject = Rails.env == 'production' ? "#{@protocol.id} - #{I18n.t('application_title')} service request" : "#{@protocol.id} - [#{Rails.env.capitalize} - EMAIL TO #{service_provider.identity.email}] #{I18n.t('application_title')} service request"
+    email = @identity.email
+    subject = email_title(@status, @protocol, @deleted_ssrs)
+
+    mail(:to => email, :from => NO_REPLY_FROM, :subject => subject)
+  end
+
+  def notify_admin(submission_email_address, user_current, ssr, audit_report=nil, ssr_destroyed=false, individual_ssr=false)
+
+    @protocol = ssr.protocol
+    @service_request = ssr.service_request
+
+    ### ATTACHMENTS ###
+    service_list_false = @service_request.service_list(false, nil, ssr)
+    service_list_true = @service_request.service_list(true, nil, ssr)
+    controller = set_instance_variables(user_current, @service_request, service_list_false, service_list_true, ssr.line_items, @protocol)
+    xls = controller.render_to_string action: 'show', formats: [:xlsx]
+    ### END ATTACHMENTS ###
+
+    @ssr_deleted = false
+    @notes = @protocol.notes
+
+    @status = status(ssr_destroyed, audit_report.present?, individual_ssr, ssr, @service_request)
+
+    @role = 'none'
+    @full_name = submission_email_address
+
+    @service_requester_id = service_requester_id(@service_request, ssr)
+    @ssrs_to_be_displayed = [ssr]
+
+    @portal_link = DASHBOARD_LINK + "/protocols/#{@protocol.id}"
+    @portal_text = "Administrators/Service Providers, Click Here"
+
+    @audit_report = audit_report
+
+    if !ssr_destroyed
+      attachments["service_request_#{@protocol.id}.xlsx"] = xls
+    end
+
+    email =  submission_email_address
+    subject = email_title(@status, @protocol, ssr)
+
+    mail(:to => email, :from => NO_REPLY_FROM, :subject => subject)
+  end
+
+  def notify_service_provider(service_provider, service_request, user_current, ssr, audit_report=nil, ssr_destroyed=false, request_amendment=false, individual_ssr=false)
+    @protocol = service_request.protocol
+    @service_request = service_request
+    @notes = @protocol.notes
+
+    @status = status(ssr_destroyed, request_amendment, individual_ssr, ssr, @service_request)
+    
+    @role = 'none'
+    @full_name = service_provider.identity.full_name
+
+    @service_requester_id = service_requester_id(@service_request, ssr)
+    @audit_report = audit_report
+
+    @portal_link = DASHBOARD_LINK + "/protocols/#{@protocol.id}"
+    @portal_text = "Administrators/Service Providers, Click Here"
+
+    ### ATTACHMENTS ###
+    attachments_to_add = {}
+    service_list_true = @service_request.service_list(true, service_provider)
+    service_list_false = @service_request.service_list(false, service_provider)
+
+    # Retrieves the valid line items for service provider to calculate total direct cost in the xls
+    line_items = []
+    @service_request.sub_service_requests.each do |sub_service_request|
+      if service_provider.identity.is_service_provider?(sub_service_request)
+        line_items << sub_service_request.line_items
+      end
+    end
+
+    line_items = line_items.flatten
+    controller = set_instance_variables(user_current, @service_request, service_list_false, service_list_true, line_items, @protocol)
+
+    xls = controller.render_to_string action: 'show', formats: [:xlsx]
+    attachments_to_add["service_request_#{@service_request.id}.xlsx"] = xls
+    #TODO this is not very multi-institutional
+    # generate the required forms pdf if it's required
+
+    if ssr.organization.tag_list.include? 'required forms'
+      request_for_grant_billing_form = RequestGrantBillingPdf.generate_pdf @service_request
+      attachments_to_add["request_for_grant_billing_#{@service_request.id}.pdf"] = request_for_grant_billing_form
+    end
+    ### END ATTACHMENTS ###
+
+    # only display the ssrs that are associated with service_provider
+    @ssrs_to_be_displayed = [ssr] if service_provider.identity.is_service_provider?(ssr)
+
+    if !ssr_destroyed
+      attachments_to_add.each do |file_name, document|
+        next if document.nil?
+        attachments["#{file_name}"] = document
+      end
+    end
+
+    # only send these to the correct person in the production env
+    email = service_provider.identity.email
+    subject = email_title(@status, @protocol, ssr)
 
     mail(:to => email, :from => NO_REPLY_FROM, :subject => subject)
   end
@@ -121,9 +172,10 @@ class Notifier < ActionMailer::Base
   def account_status_change identity, approved
     @approved = approved
 
+    ##REVIEW: Why do we care what the from is?
     email_from = Rails.env == 'production' ? ADMIN_MAIL_TO : DEFAULT_MAIL_TO
-    email_to = Rails.env == 'production' ? identity.email : DEFAULT_MAIL_TO
-    subject = Rails.env == 'production' ? "#{I18n.t('application_title')} account request - status change" : "[#{Rails.env.capitalize} - EMAIL TO #{identity.email}] #{I18n.t('application_title')} account request - status change"
+    email_to = identity.email
+    subject = "#{t(:mailer)[:application_title]} account request - status change"
 
     mail(:to => email_to, :from => email_from, :subject => subject)
   end
@@ -135,21 +187,21 @@ class Notifier < ActionMailer::Base
   def provide_feedback feedback
     @feedback = feedback
 
-    email_to = Rails.env == 'production' ? FEEDBACK_MAIL_TO : DEFAULT_MAIL_TO
+    email_to = FEEDBACK_MAIL_TO
     email_from = @feedback.email.blank? ? DEFAULT_MAIL_TO : @feedback.email
 
     mail(:to => email_to, :from => email_from, :subject => "Feedback")
   end
 
   def sub_service_request_deleted identity, sub_service_request, user_current
-    @ssr_id = "#{sub_service_request.service_request.protocol.id}-#{sub_service_request.ssr_id}"
+    @ssr_id = "#{sub_service_request.protocol.id}-#{sub_service_request.ssr_id}"
 
     @triggered_by = user_current.id
     @service_request = sub_service_request.service_request
     @ssr = sub_service_request
 
-    email_to = Rails.env == 'production' ? identity.email : DEFAULT_MAIL_TO
-    subject = Rails.env == 'production' ? "#{I18n.t('application_title')} - service request deleted" : "[#{Rails.env.capitalize} - EMAIL TO #{identity.email}] #{I18n.t('application_title')} - service request deleted"
+    email_to = identity.email
+    subject = "#{sub_service_request.protocol.id} - #{t(:mailer)[:application_title]} - service request deleted"
 
     mail(:to => email_to, :from => NO_REPLY_FROM, :subject => subject)
   end
@@ -158,7 +210,7 @@ class Notifier < ActionMailer::Base
     @protocol = protocol
     @primary_pi = @protocol.primary_principal_investigator
 
-    subject = 'Epic Rights Approval'
+    subject = "#{@protocol.id} - Epic Rights Approval"
 
     mail(:to => EPIC_RIGHTS_MAIL_TO, :from => NO_REPLY_FROM, :subject => subject)
   end
@@ -167,8 +219,8 @@ class Notifier < ActionMailer::Base
     @protocol = protocol
     @primary_pi = @protocol.primary_principal_investigator
 
-    email_to = Rails.env == 'production' ? @primary_pi.email : DEFAULT_MAIL_TO
-    subject = 'Epic Rights User Approval'
+    email_to = @primary_pi.email
+    subject = "#{@protocol.id} - Epic Rights User Approval"
 
     mail(:to => email_to, :from => NO_REPLY_FROM, :subject => subject)
   end
@@ -178,7 +230,7 @@ class Notifier < ActionMailer::Base
     @primary_pi = @protocol.primary_principal_investigator
     @project_role = project_role
 
-    subject = 'Epic User Removal'
+    subject = "#{@protocol.id} - Epic User Removal"
 
     mail(:to => EPIC_RIGHTS_MAIL_TO, :from => NO_REPLY_FROM, :subject => subject)
   end
@@ -187,7 +239,7 @@ class Notifier < ActionMailer::Base
     @protocol = protocol
     @project_role = project_role
 
-    subject = 'Remove Epic Access'
+    subject = "#{@protocol.id} - Remove Epic Access"
 
     mail(:to => EPIC_RIGHTS_MAIL_TO, :from => NO_REPLY_FROM, :subject => subject)
   end
@@ -198,7 +250,7 @@ class Notifier < ActionMailer::Base
     @added_rights = project_role.epic_rights - previous_rights
     @removed_rights = previous_rights - project_role.epic_rights
 
-    subject = 'Update Epic Access'
+    subject = "#{@protocol.id} - Update Epic Access"
 
     mail(:to => EPIC_RIGHTS_MAIL_TO, :from => NO_REPLY_FROM, :subject => subject)
   end
@@ -206,18 +258,67 @@ class Notifier < ActionMailer::Base
   def epic_queue_error protocol, error=nil
     @protocol = protocol
     @error = error
-    mail(:to => QUEUE_EPIC_LOAD_ERROR_TO, :from => NO_REPLY_FROM, :subject => "Error batch loading protocol to Epic")
+    subject =  "#{t(:mailer)[:epic_queue_error]} #{@protocol.id}"
+    mail(to: QUEUE_EPIC_LOAD_ERROR_TO, from: NO_REPLY_FROM, subject: subject)
   end
 
   def epic_queue_report
     attachments["epic_queue_report.csv"] = File.read(Rails.root.join("tmp", "epic_queue_report.csv"))
-    mail(:to => EPIC_QUEUE_REPORT_TO, :from => NO_REPLY_FROM, :subject => "Epic Queue Report")
+    subject = "#{t(:mailer)[:email_title][:epic_queue_report]}"
+    mail(to: EPIC_QUEUE_REPORT_TO, from: NO_REPLY_FROM, subject: subject)
   end
 
   def epic_queue_complete sent, failed
     @sent = sent
     @failed = failed
-    mail(:to => EPIC_QUEUE_REPORT_TO, :from => NO_REPLY_FROM, :subject => "Epic Queue Complete")
+    subject = "#{t(:mailer)[:application_title]} #{t(:mailer)[:email_title][:epic_queue_summary]}"
+    mail(to: EPIC_QUEUE_REPORT_TO, from: NO_REPLY_FROM, subject: subject)
   end
 
+  def set_instance_variables(current_user, service_request, service_list_false, service_list_true, line_items, protocol)
+    controller = ServiceRequestsController.new()
+    controller.instance_variable_set(:"@current_user", current_user)
+    controller.instance_variable_set(:"@service_request", service_request)
+    controller.instance_variable_set(:"@service_list_false", service_list_false)
+    controller.instance_variable_set(:"@service_list_true", service_list_true)
+    controller.instance_variable_set(:"@line_items", line_items)
+    controller.instance_variable_set(:"@protocol", protocol)
+    controller
+  end
+
+  def status(ssr_destroyed, request_amendment, individual_ssr, ssr, service_request)
+    if ssr_destroyed
+      status = 'ssr_destroyed'
+    elsif request_amendment
+      status = 'request_amendment'
+    elsif individual_ssr
+      status = ssr.status
+    else
+      status = service_request.status
+    end
+    status
+  end
+
+  def email_title(status, protocol, ssr)
+    email_status = case status
+    when 'get_a_cost_estimate'
+      "Get Cost Estimate"
+    when 'request_amendment'
+      "Amendment Submitted "
+    when 'ssr_destroyed'
+      "Request Deletion"
+    when 'submitted'
+      "Submission"
+    end
+
+    if status == 'ssr_destroyed'
+      t('mailer.email_title.general', email_status: email_status, type: "Request", id: ssr.display_id)
+    else
+      t('mailer.email_title.general', email_status: email_status, type: "Protocol", id: protocol.id)
+    end
+  end
+
+  def service_requester_id(service_request, deleted_ssr)
+    service_request.sub_service_requests.first.present? ? service_request.sub_service_requests.first.service_requester_id : AuditRecovery.where(auditable_id: deleted_ssr.id, auditable_type: 'SubServiceRequest', action: 'destroy').first.audited_changes['service_requester_id']
+  end
 end

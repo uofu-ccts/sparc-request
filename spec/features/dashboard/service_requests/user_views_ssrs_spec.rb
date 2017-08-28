@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -21,66 +21,114 @@
 require 'rails_helper'
 
 RSpec.describe "User views SSR table", js: true do
-	let_there_be_lane
+  let_there_be_lane
   fake_login_for_each_test
 
-	def go_to_show_protocol(protocol_id)
+  def go_to_show_protocol(protocol_id)
     page = Dashboard::Protocols::ShowPage.new
     page.load(id: protocol_id)
     page
   end
 
-  let!(:bob)                  		{ create(:identity) }
+  let!(:bob)                      { create(:identity) }
 
   context 'for an editable SSR' do
-	  context 'As an Authorized User with Edit Privileges' do
-	  	let!(:protocol)					 		{ create(:unarchived_study_without_validations, primary_pi: jug2) }
-	    let!(:service_request) 			{ create(:service_request_without_validations, protocol: protocol, service_requester: jug2, status: 'draft') }
-	    let!(:organization)					{ create(:organization,type: 'Institution', name: 'Megacorp', admin: bob, service_provider: bob) }
-	    let!(:sub_service_request) 	{ create(:sub_service_request, id: 9999, ssr_id: '1234', service_request: service_request, organization_id: organization.id) }
+    context 'As an Authorized User with Edit Privileges' do
+      let!(:protocol)             { create(:unarchived_study_without_validations, primary_pi: jug2) }
+      let!(:service_request)      { create(:service_request_without_validations, protocol: protocol, status: 'draft') }
+      let!(:organization)         { create(:organization,type: 'Institution', name: 'Megacorp', admin: bob, service_provider: bob) }
+      let!(:sub_service_request)  { create(:sub_service_request, id: 9999, ssr_id: '1234', service_request: service_request, organization_id: organization.id, status: 'draft', protocol: protocol) }
 
-	    scenario 'and sees View and Edit' do
-				page = go_to_show_protocol(protocol.id)
-				wait_for_javascript_to_finish
+      scenario 'and sees View and Edit' do
+        page = go_to_show_protocol(protocol.id)
 
-				expect(page).to have_selector('button', text: 'View')
-				expect(page).to have_selector('button', text: 'Edit')
-				expect(page).not_to have_selector('button', text: 'Admin Edit')
-			end
-	  end
+        expect(page).to have_selector('button', text: /\AView\z/)
+        expect(page).to have_selector('button', text: /\AEdit\z/)
+        expect(page).not_to have_selector('button', text: 'Admin Edit')
+      end
 
-	  context 'As an Authorized User with View Privileges' do
-	  	let!(:protocol)					 		{ create(:unarchived_study_without_validations, primary_pi: bob) }
-	    let!(:service_request) 			{ create(:service_request_without_validations, protocol: protocol, service_requester: bob, status: 'draft') }
-	    let!(:organization)					{ create(:organization,type: 'Institution', name: 'Megacorp', admin: bob, service_provider: bob) }
-	    let!(:sub_service_request) 	{ create(:sub_service_request, id: 9999, ssr_id: '1234', service_request: service_request, organization_id: organization.id) }
+      context 'for a locked SSR' do
+        let!(:protocol)             { create(:unarchived_study_without_validations, primary_pi: jug2) }
+        let!(:service_request)      { create(:service_request_without_validations, protocol: protocol, status: 'draft') }
+        let!(:organization)         { create(:organization,type: 'Institution', name: 'Megacorp', admin: bob, service_provider: bob) }
 
-	    scenario 'and sees View' do
-	    	create(:project_role, identity: jug2, protocol: protocol, project_rights: 'view', role: 'consultant')
+        scenario 'and sees View but not Edit' do
+          organization.editable_statuses.where(status: 'on_hold').destroy_all
 
-	    	page = go_to_show_protocol(protocol.id)
-				wait_for_javascript_to_finish
+          sub_service_request.update_attribute(:status, 'on_hold')
 
-				expect(page).to have_selector('button', text: 'View')
-				expect(page).not_to have_selector('button', text: 'Edit')
-				expect(page).not_to have_selector('button', text: 'Admin Edit')
-	    end
-	  end
+          page = go_to_show_protocol(protocol.id)
 
-		context 'As an admin' do
-			let!(:protocol)					 		{ create(:unarchived_study_without_validations, primary_pi: jug2) }
-	    let!(:service_request) 			{ create(:service_request_without_validations, protocol: protocol, service_requester: jug2, status: 'draft') }
-	    let!(:organization)					{ create(:organization,type: 'Institution', name: 'Megacorp', admin: jug2, service_provider: jug2) }
-	    let!(:sub_service_request) 	{ create(:sub_service_request, id: 9999, ssr_id: '1234', service_request: service_request, organization_id: organization.id) }
+          expect(page).to have_selector('button', text: /\AView\z/)
+          expect(page).not_to have_selector('button', text: /\AEdit\z/)
+          expect(page).not_to have_selector('button', text: 'Admin Edit')
+        end
+      end
+    end
 
-			scenario 'and sees View, Edit, and Admin Edit' do
-				page = go_to_show_protocol(protocol.id)
-				wait_for_javascript_to_finish
+    context 'As an Authorized User with View Privileges' do
+      let!(:protocol)             { create(:unarchived_study_without_validations, primary_pi: bob) }
+      let!(:service_request)      { create(:service_request_without_validations, protocol: protocol, status: 'draft') }
+      let!(:organization)         { create(:organization,type: 'Institution', name: 'Megacorp', admin: bob, service_provider: bob) }
+      let!(:sub_service_request)  { create(:sub_service_request, id: 9999, ssr_id: '1234', service_request: service_request, organization_id: organization.id, status: 'draft', protocol: protocol) }
 
-				expect(page).to have_selector('button', text: 'View')
-				expect(page).to have_selector('button', text: 'Edit')
-				expect(page).to have_selector('button', text: 'Admin Edit')
-			end
-		end
-	end
+      scenario 'and sees View' do
+        create(:project_role, identity: jug2, protocol: protocol, project_rights: 'view', role: 'consultant')
+
+        page = go_to_show_protocol(protocol.id)
+
+        expect(page).to have_selector('button', text: /\AView\z/)
+        expect(page).not_to have_selector('button', text: /\AEdit\z/)
+        expect(page).not_to have_selector('button', text: 'Admin Edit')
+      end
+    end
+
+    context 'As an admin' do
+      let!(:protocol)             { create(:unarchived_study_without_validations, primary_pi: bob) }
+      let!(:service_request)      { create(:service_request_without_validations, protocol: protocol, status: 'draft') }
+      let!(:organization)         { create(:organization,type: 'Institution', name: 'Megacorp', admin: jug2, service_provider: jug2) }
+      let!(:sub_service_request)  { create(:sub_service_request, id: 9999, ssr_id: '1234', service_request: service_request, organization_id: organization.id, status: 'draft', protocol: protocol) }
+
+      scenario 'and sees View, and Admin Edit, but not Edit' do
+        page = go_to_show_protocol(protocol.id)
+
+        expect(page).to have_selector('button', text: /\AView\z/)
+        expect(page).not_to have_selector('button', text: /\AEdit\z/)
+        expect(page).to have_selector('button', text: 'Admin Edit')
+      end
+    end
+  end
+
+  context 'for an SSR with forms to complete' do
+    let!(:organization)         { create(:organization) }
+    let!(:service)              { create(:service, organization: organization) }
+    let!(:questionnaire)        { create(:questionnaire, :without_validations, service: service, active: true) }
+    let!(:protocol)             { create(:protocol_federally_funded, primary_pi: jug2, type: 'Study') }
+    let!(:service_request)      { create(:service_request_without_validations, protocol: protocol) }
+    let!(:sub_service_request)  { create(:sub_service_request, service_request: service_request, organization: organization, status: 'draft', protocol: protocol) }
+    let!(:line_item)            { create(:line_item, service_request: service_request, sub_service_request: sub_service_request, service: service) }
+
+    scenario 'and sees the complete form dropdown' do
+      page = go_to_show_protocol(protocol.id)
+
+      expect(page).to have_content('Complete Form')
+      expect(page).to have_selector('.complete-details .badge', text: /\A1\z/)
+    end
+  end
+
+  context 'for a ssr without forms to complete' do
+    let!(:organization)         { create(:organization) }
+    let!(:service)              { create(:service, organization: organization) }
+    let!(:protocol)             { create(:protocol_federally_funded, primary_pi: jug2, type: 'Study') }
+    let!(:service_request)      { create(:service_request_without_validations, protocol: protocol) }
+    let!(:sub_service_request)  { create(:sub_service_request, service_request: service_request, organization: organization, status: 'draft', protocol: protocol) }
+    let!(:line_item)            { create(:line_item, service_request: service_request, sub_service_request: sub_service_request, service: service) }
+
+    scenario 'and does not see the complete form dropdown' do
+      page = go_to_show_protocol(protocol.id)
+
+      expect(page).to_not have_selector('.complete-details button .filter-option', text: /\AComplete Form\z/)
+      expect(page).to_not have_selector('.complete-details button .filter-option .badge', text: /\A1\z/)
+    end
+  end
 end

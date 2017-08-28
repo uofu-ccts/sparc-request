@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -21,6 +21,24 @@
 class Dashboard::LineItemsVisitsController < Dashboard::BaseController
   respond_to :json, :js, :html
 
+  # Used for x-editable update and validations
+  def update
+    @scroll_true      = params[:scroll].present? && params[:scroll] == 'true'
+    @line_items_visit = LineItemsVisit.find( params[:id] )
+    @service_request  = ServiceRequest.find( params[:srid] )
+
+    if @line_items_visit.update_attributes(line_items_visit_params)
+      unless params[:portal] == 'true'
+        @service_request.update_attributes(status: 'draft')
+        @line_items_visit.sub_service_request.update_attributes(status: 'draft')
+      end
+      head :ok
+    else
+      render json: @line_items_visit.errors, status: :unprocessable_entity
+    end
+
+  end
+
   def destroy
     @line_items_visit = LineItemsVisit.find(params[:id])
     @sub_service_request = @line_items_visit.line_item.sub_service_request
@@ -30,14 +48,21 @@ class Dashboard::LineItemsVisitsController < Dashboard::BaseController
     @line_items = @sub_service_request.line_items
 
     ActiveRecord::Base.transaction do
-      @line_items_visit.remove_procedures
       if @line_items_visit.destroy
         line_item.destroy unless line_item.line_items_visits.count > 0
         # Have to reload the service request to get the correct direct cost total for the subsidy
         @service_request = @sub_service_request.service_request
-        @candidate_one_time_fees, @candidate_per_patient_per_visit = @sub_service_request.candidate_services.partition(&:one_time_fee)
         render 'dashboard/sub_service_requests/add_line_item'
       end
     end
+  end
+
+  private
+
+  def line_items_visit_params
+    params.require(:line_items_visit).permit(:arm_id,
+      :line_item_id,
+      :subject_count,
+      :hidden)
   end
 end

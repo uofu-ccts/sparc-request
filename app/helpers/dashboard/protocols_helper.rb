@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -19,23 +19,20 @@
 # TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 module Dashboard::ProtocolsHelper
-
-  def consolidated_request_buttons_display(protocol)
-    if !protocol.has_first_draft_service_request? && protocol.service_requests.present?
-      raw(
-        content_tag( :div,
-          content_tag( :button, t(:dashboard)[:protocols][:service_requests][:view_consolidated], type: 'button', class: 'view-full-calendar-button btn btn-primary btn-sm', data: { protocol_id: protocol.id }
-          )+
-          link_to( t(:dashboard)[:protocols][:service_requests][:export_consolidated], dashboard_protocol_path(protocol, format: :xlsx), class: "btn btn-primary btn-sm", data: { protocol_id: protocol.id }
-          ), class: "export-consolidated-request"
-        )
-      )
+  def break_before_parenthetical(s)
+    i = s.index('(')
+    if i.present?
+      beginning = s[0...i]
+      ending = s[i..-1]
+      raw(beginning +'<br>'+ ending)
+    else
+      s
     end
   end
 
   def edit_protocol_button_display(protocol, permission_to_edit)
     if permission_to_edit
-      content_tag( :button, t(:dashboard)[:protocols][:summary][:edit1] + protocol.type.capitalize + t(:dashboard)[:protocols][:summary][:edit2], type: 'button', class: 'edit-protocol-information-button btn btn-warning btn-sm', data: { permission: permission_to_edit.to_s, protocol_id: protocol.id })
+      content_tag( :button, I18n.t('protocols.edit', protocol_type: protocol.type), type: 'button', class: 'edit-protocol-information-button btn btn-warning btn-sm', data: { permission: permission_to_edit.to_s, protocol_id: protocol.id })
     end
   end
 
@@ -47,7 +44,19 @@ module Dashboard::ProtocolsHelper
     protocol.principal_investigators.map(&:full_name).join ", "
   end
 
-  def archived_button_display(protocol)
-    content_tag( :button, (protocol.archived ? t(:dashboard)[:protocols][:table][:unarchive] : t(:dashboard)[:protocols][:table][:archive])+" #{protocol.type.capitalize}", type: 'button', class: 'protocol-archive-button btn btn-warning btn-sm' )
+  def display_requests_button(protocol, admin_protocols, current_user)
+    if protocol.sub_service_requests.any? && (protocol.project_roles.where(identity: current_user).any? || admin_protocols.try(:include?, protocol.id))
+      content_tag( :button, t(:dashboard)[:protocols][:table][:requests], type: 'button', class: 'requests_display_link btn btn-default btn-sm' )
+    end
+  end
+
+  def display_archive_button(protocol, permission_to_edit)
+    if permission_to_edit
+      content_tag( :button, (protocol.archived ? t(:protocols)[:summary][:unarchive] : t(:protocols)[:summary][:archive])+" #{protocol.type.capitalize}", 
+                    type: 'button', 
+                    class: 'protocol-archive-button btn btn-default btn-sm',
+                    data: { protocol_id: protocol.id }
+      )
+    end
   end
 end

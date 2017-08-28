@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -18,49 +18,39 @@
 # INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 # TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-class Subsidy < ActiveRecord::Base
+class Subsidy < ApplicationRecord
   audited
 
   belongs_to :sub_service_request
   has_many :notes, as: :notable
 
-  attr_accessible :sub_service_request_id
-  attr_accessible :pi_contribution
-  attr_accessible :overridden
-  attr_accessible :status
-
-  delegate :organization, to: :sub_service_request, allow_nil: true
+  delegate :organization, :direct_cost_total, to: :sub_service_request, allow_nil: true
   delegate :subsidy_map, to: :organization, allow_nil: true
-  delegate :max_dollar_cap, to: :subsidy_map, allow_nil: true
-  delegate :max_percentage, to: :subsidy_map, allow_nil: true
-
-  delegate :direct_cost_total, to: :sub_service_request, allow_nil: true
+  delegate :max_dollar_cap, :max_percentage, :default_percentage, to: :subsidy_map, allow_nil: true
   alias_attribute :total_request_cost, :direct_cost_total
 
-  validates_presence_of :pi_contribution
   validate :contribution_caps
+
+  def pi_contribution
+    # This ensures that if pi_contribution is null (new record),
+    # then it will reflect the full cost of the request.
+    total_request_cost.to_f - (total_request_cost.to_f * percent_subsidy) || total_request_cost.to_f
+  end
 
   # Generates error messages if user input is out of parameters
   def contribution_caps
-    dollar_cap, percent_cap = max_dollar_cap, max_percentage
-    request_cost = total_request_cost()
-    subsidy_cost = (request_cost - pi_contribution)
-    potential_subsidy = ((subsidy_cost / request_cost) * 100.0).round(2)
-    percent_subsidy = potential_subsidy.nan? ?  0.0 : potential_subsidy
-
+    subsidy_cost = (total_request_cost.to_f - pi_contribution)
     if pi_contribution < 0
-      errors.add(:pi_contribution, "can not be less than 0")
-    elsif dollar_cap.present? and dollar_cap > 0 and (subsidy_cost / 100.0) > dollar_cap
-      errors.add(:requested_funding, "can not be greater than the cap of #{dollar_cap}")
-    elsif percent_cap.present? and percent_cap > 0 and percent_subsidy > percent_cap
-      errors.add(:percent_subsidy, "can not be greater than the cap of #{percent_cap}")
+      errors.add(:pi_contribution, "must be greater than or equal to 0")
+    elsif max_dollar_cap.present? and max_dollar_cap > 0 and (subsidy_cost / 100.0) > max_dollar_cap
+      errors.add(:requested_funding, "must be less than than the cap of #{max_dollar_cap}")
+    elsif max_percentage.present? and max_percentage > 0 and percent_subsidy * 100 > max_percentage
+      errors.add(:percent_subsidy, "must be less than than the cap of #{max_percentage}")
     elsif pi_contribution > total_request_cost
-      errors.add(:pi_contribution, "can not be greater than the total request cost")
+      errors.add(:pi_contribution, "must be less than than the total request cost")
+    elsif percent_subsidy == 0
+      errors.add(:percent_subsidy, "must not be 0")
     end
-  end
-
-  def percent_subsidy
-    pi_contribution.present? ? (pi_contribution.to_f / total_request_cost * 100.0).round(2) : nil
   end
 
   def subsidy_audits

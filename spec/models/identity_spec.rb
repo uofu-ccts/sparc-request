@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -19,9 +19,8 @@
 # TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 require 'rails_helper'
-require 'net/ldap' # TODO: not sure why this is necessary
 
-RSpec.describe "Identity" do
+RSpec.describe Identity, type: :model do
   let_there_be_lane
   let_there_be_j
   build_service_request_with_project
@@ -87,12 +86,6 @@ RSpec.describe "Identity" do
       expect(Identity.search('error')).not_to be_empty()
     end
 
-    it "should return identities without an e-mail address" do
-      expect(Identity.all.count).to eq(3)
-      expect(Identity.search('iamabadldaprecord')).not_to be_empty()
-      expect(Identity.all.count).to eq(4)
-    end
-
     it "should still search the database if the identity creation fails for some reason" do
       create(:identity, first_name: "ash", last_name: "evil", email: "another_ash@s-mart.com", ldap_uid: 'ashley@musc.edu')
       Identity.search('ash')
@@ -110,7 +103,11 @@ RSpec.describe "Identity" do
     let!(:clinical_provider)    {create(:clinical_provider, identity_id: user2.id, organization_id: core.id)}
     let!(:ctrc_provider)        {create(:clinical_provider, identity_id: user2.id, organization_id: program.id)}
     let!(:project_role)         {create(:project_role, identity_id: user.id, protocol_id: project.id, project_rights: 'approve')}
-    let!(:request)              {create(:sub_service_request, service_request_id: service_request.id, organization_id: core.id)}
+    let!(:request)              {create(:sub_service_request, service_request_id: service_request.id, organization_id: core.id, ssr_id: '0002')}
+
+    before :each do
+      stub_const("FINISHED_STATUSES", ['complete'])
+    end
 
     describe "permission methods" do
 
@@ -120,7 +117,6 @@ RSpec.describe "Identity" do
 
         it "should return false if the users rights are not 'approve' or request" do
           project_role.update_attributes(project_rights: 'none')
-          service_request.update_attributes(service_requester_id: user2.id)
           expect(user.can_edit_service_request?(service_request)).to eq(false)
         end
 
@@ -138,14 +134,13 @@ RSpec.describe "Identity" do
           expect(user.can_edit_sub_service_request?(sub_service_request)).to eq(true)
         end
 
-        it "should return true if not a nexus request, regardless of status" do
+        it "should return false if not a nexus request, if completed" do
           request.update_attributes(status: "complete")
-          expect(user.can_edit_sub_service_request?(request)).to eq(true)
+          expect(user.can_edit_sub_service_request?(request)).to eq(false)
         end
 
         it "should return false if the user does not have correct rights" do
           project_role.update_attributes(project_rights: 'none')
-          service_request.update_attributes(service_requester_id: user2.id)
           expect(user.can_edit_sub_service_request?(sub_service_request)).to eq(false)
         end
       end
@@ -171,22 +166,6 @@ RSpec.describe "Identity" do
 
         it "should return false if the flag is not set" do
           expect(user.can_edit_historical_data_for?(institution)).to eq(false)
-        end
-      end
-
-      describe "can edit fulfillment" do
-
-        it "should return true if the user is a super user for an organization's parent" do
-          expect(user.can_edit_fulfillment?(provider)).to eq(true)
-        end
-
-        it "should return true if the user is a service provider for a given organization" do
-          expect(user.can_edit_fulfillment?(institution)).to eq(true)
-        end
-
-        it "should return false if these conditions are not met" do
-          random_user = create(:identity)
-          expect(random_user.can_edit_fulfillment?(institution)).to eq(false)
         end
       end
 

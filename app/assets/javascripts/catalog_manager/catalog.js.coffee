@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -255,7 +255,7 @@ $ ->
   ############################q
 
   $('.one_time_fee').live 'click', ->
-    pricing_map_ids = $(this).data('pricing_map_ids')
+    pricing_map_ids = String($(this).data('pricing_map_ids'))
     pricing_map_ids = pricing_map_ids.split(' ')
     index = 0
     while index < pricing_map_ids.length
@@ -523,9 +523,17 @@ $ ->
     $(this).children('fieldset').show('blind')
     $(this).addClass('active')
 
+  $(document).on('change', 'input#service_one_time_fee', ->
+    $('#components_wrapper').toggle()
+  )
+
   $(document).on('change', 'input[id*="_tag_list_epic"]', ->
     $('#epic_wrapper').toggle()
     $("#epic_wrapper input[type='checkbox']").attr('checked', false)
+  )
+
+  $(document).on('change', 'input[id*="_process_ssrs"]', ->
+    $('#available_statuses_wrapper').toggle()
   )
 
   $(document).on('change', 'input[id*="_tag_list_clinical_work_fulfillment"]', ->
@@ -540,5 +548,8 @@ $ ->
     window.location.assign("/catalog_manager?show_unavailable=#{show_unavailable}")
   )
 
-
-
+  $(document).on 'change', '.available-status', ->
+    if $(this).prop('checked')
+      $(".#{$(this).data('status')}-dependent").show()
+    else
+      $(".#{$(this).data('status')}-dependent").hide()

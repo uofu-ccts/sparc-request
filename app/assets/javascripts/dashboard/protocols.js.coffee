@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -24,27 +24,6 @@
 $(document).ready ->
   Sparc.protocol =
     ready: ->
-      $('.service-requests-table').on 'all.bs.table', ->
-        $(this).find('.selectpicker').selectpicker() #Find descendant selectpickers
-
-      $(document).on 'click', '.service-request-button', ->
-        if $(this).data('permission')
-          window.location = $(this).data('url')
-
-      disableButton: (containing_text, change_to) ->
-        button = $(".ui-dialog .ui-button:contains(#{containing_text})")
-        button.html("<span class='ui-button-text'>#{change_to}</span>")
-          .attr('disabled', true)
-          .addClass('button-disabled')
-
-      enableButton: (containing_text, change_to) ->
-        button = $(".ui-dialog .ui-button:contains(#{containing_text})")
-        button.html("<span class='ui-button-text'>#{change_to}</span>").attr('disabled', false).removeClass('button-disabled')
-
-      # Delete cookies from previously visited SSR
-      $.cookie('admin-tab', null, {path: '/'})
-      $.cookie('admin-ss-tab', null, {path: '/'})
-
       #  Protocol Index Begin
       $(document).on 'click', '.protocols_index_row > .id, .protocols_index_row > .title, .protocols_index_row > .pis', ->
         #if you click on the row, it opens the protocol show
@@ -61,16 +40,16 @@ $(document).ready ->
             $('#modal_place').html(data.modal)
             $('#modal_place').modal 'show'
             $('.service-requests-table').bootstrapTable()
-            $('.service-requests-table').on 'all.bs.table', ->
-              $(this).find('.selectpicker').selectpicker()
-
+            reset_service_requests_handlers()
 
       $(document).on 'click', '.protocol-archive-button', ->
-        protocol_id = $(this).parents("tr").data('protocol-id')
+        protocol_id = $(this).data('protocol-id')
         $.ajax
           type: 'PATCH'
           url:  "/dashboard/protocols/#{protocol_id}/archive.js"
-          data: { protocol_id: protocol_id }
+
+      $(document).on 'submit', '#filterrific-no-ajax-auto-submit', ->
+        $('#filterrific_sorted_by').val("#{$('.protocol-sort').data('sort-name')} #{$('.protocol-sort').data('sort-order')}")
 
       $(document).on 'click', '#save_filters_link', ->
         data = {} #Grab form values
@@ -83,8 +62,11 @@ $(document).ready ->
         if data["filterrific[with_status][]"].length
           data["filterrific[with_status][]"] = $("#filterrific_with_status").val()
 
-        if data["filterrific[with_organization][]"].length
+        if data["filterrific[with_organization][]"] && data["filterrific[with_organization][]"].length
           data["filterrific[with_organization][]"] = $("#filterrific_with_organization").val()
+
+        if data["filterrific[with_owner][]"] && data["filterrific[with_owner][]"].length
+          data["filterrific[with_owner][]"] = $("#filterrific_with_owner").val()
 
         $.ajax
           type: 'GET'
@@ -109,7 +91,7 @@ $(document).ready ->
         protocol_id = $(this).data('protocol-id')
         $.ajax
           method: 'get'
-          url: "/dashboard/protocols/#{protocol_id}/view_details"
+          url: "/protocols/#{protocol_id}.js?portal=true"
 
       $(document).on 'click', '.edit-protocol-information-button', ->
         if $(this).data('permission')
@@ -117,16 +99,23 @@ $(document).ready ->
           window.location = "/dashboard/protocols/#{protocol_id}/edit"
 
       $(document).on 'click', '.view-full-calendar-button', ->
-        protocol_id = $(this).data('protocol-id')
+        protocol_id = $(this).data('protocolId')
+        statuses_hidden = $(this).data('statusesHidden')
         $.ajax
           method: 'get'
-          url: "/dashboard/service_calendars/view_full_calendar.js?portal=true&protocol_id=#{protocol_id}"
+          url: "/service_calendars/view_full_calendar.js"
+          data:
+            portal: 'true'
+            protocol_id: protocol_id
+            statuses_hidden: statuses_hidden
 
       $(document).on 'click', '.view-service-request', ->
         id = $(this).data('sub-service-request-id')
+        show_view_ssr_back = $(this).data('show-view-ssr-back')
         $.ajax
           method: 'GET'
           url: "/dashboard/sub_service_requests/#{id}.js"
+          data: show_view_ssr_back: show_view_ssr_back
 
       $(document).on 'click', '.edit-service-request', ->
         if $(this).data('permission')
@@ -136,15 +125,71 @@ $(document).ready ->
         if $(this).data('permission')
           protocol_id         = $(this).data('protocol-id')
           window.location     = "/?protocol_id=#{protocol_id}&from_portal=true"
+
+      $(document).on 'click', '.view-ssr-back-button', ->
+        protocol_id = $(this).data('protocol-id')
+        $.ajax
+          type: 'GET'
+          url: "/dashboard/protocols/#{protocol_id}/display_requests"
+          success: (data) ->
+            $('#modal_place').html(data.modal)
+            $('#modal_place').modal 'show'
+            $('.service-requests-table').bootstrapTable()
+            reset_service_requests_handlers()
+
+      $(document).on 'change', '.complete-details', ->
+        $selected_options = $('option:selected', this)
+
+        if $selected_options.length > 0
+          $selected_option    = $selected_options.first()
+          service_id          = $selected_option.data('service-id')
+          protocol_id         = $selected_option.data('protocol-id')
+          line_item_id        = $selected_option.data('line-item-id')
+          $this               = $(this)
+          
+          $.ajax
+            method: 'GET'
+            url: "/services/#{service_id}/additional_details/submissions/new.js"
+            data:
+              protocol_id: protocol_id
+              line_item_id: line_item_id
+            success: ->
+              $this.selectpicker('deselectAll')
+              $this.selectpicker('render')
+
+      reset_service_requests_handlers()
       # Protocol Show End
 
-      # Protocol Edit Begin
-      $(document).on 'click', '#protocol_type_button', ->
-        protocol_id = $(this).data('protocol-id')
-        data = type : $("#protocol_type").val()
-        if confirm "This will change the type of this Project/Study.  Are you sure?"
-          $.ajax
-            type: 'PATCH'
-            url: "/dashboard/protocols/#{protocol_id}/update_protocol_type"
-            data: data
-      # Protocol Edit End
+      # Protocol Table Sorting
+      $(document).on 'click', '.protocol-sort', ->
+        sorted_by         = "#{$(this).data('sort-name')} #{$(this).data('sort-order')}"
+        page              = $('#page').val() || 1
+
+        data = {} #Grab form values
+
+        # REVIEW this is not fetching values from multiselects
+        $.each $('form#filterrific-no-ajax-auto-submit').serializeArray(), (i, field) ->
+          data[field.name] = field.value
+
+        data["page"] = page
+        data["filterrific[sorted_by]"] = sorted_by
+
+        # manually enter those in
+        if data["filterrific[with_status][]"].length
+          data["filterrific[with_status][]"] = $("#filterrific_with_status").val()
+
+        if data["filterrific[with_organization][]"] && data["filterrific[with_organization][]"].length
+          data["filterrific[with_organization][]"] = $("#filterrific_with_organization").val()
+
+        if data["filterrific[with_owner][]"] && data["filterrific[with_owner][]"].length
+          data["filterrific[with_owner][]"] = $("#filterrific_with_owner").val()
+
+        $.ajax
+          type: 'get'
+          url: "/dashboard/protocols.js"
+          data: data
+
+(exports ? this).reset_service_requests_handlers = -> 
+  $('.service-requests-table').on 'all.bs.table', ->
+    #Enable selectpickers
+    $(this).find('.selectpicker').selectpicker()

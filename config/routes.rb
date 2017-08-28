@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -19,36 +19,61 @@
 # TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 SparcRails::Application.routes.draw do
-  match '/direct_link_to/:survey_code', :to => 'surveyor#create', :as => 'direct_link_survey', :via => :get
-  match '/surveys/:survey_code/:response_set_code', :to => 'surveyor#destroy', :via => :delete
-  mount Surveyor::Engine => "/surveys", :as => "surveyor"
+  post 'study_type/determine_study_type_note'
+
+  resources :services do
+    namespace :additional_details do
+      resources :questionnaires
+      resource :questionnaire do
+        resource :preview, only: [:create]
+      end
+      resources :submissions
+      resources :update_questionnaires, only: [:update]
+    end
+  end
+
+  namespace :surveyor do
+    resources :surveys, only: [:index, :show, :create, :destroy] do
+      get :preview
+      get :update_dependents_list
+    end
+    resources :sections, only: [:create, :destroy]
+    resources :questions, only: [:create, :destroy]
+    resources :options, only: [:create, :destroy]
+    resources :responses, only: [:show, :new, :edit, :create, :update] do
+      get :complete
+    end
+    resources :survey_updater, only: [:update]
+  end
+
+  resources :feedback
 
   if USE_SHIBBOLETH_ONLY
     devise_for :identities,
                controllers: {
-                 omniauth_callbacks: 'identities/omniauth_callbacks'
+                 omniauth_callbacks: 'identities/omniauth_callbacks',
+                 sessions: 'identities/sessions',
+                 registrations: 'identities/registrations'
                }, path_names: { sign_in: 'auth/shibboleth' }
 
   elsif USE_CAS_ONLY
     devise_for :identities,
                controllers: {
-                 omniauth_callbacks: 'identities/omniauth_callbacks'
+                 omniauth_callbacks: 'identities/omniauth_callbacks',
+                 sessions: 'identities/sessions',
+                 registrations: 'identities/registrations'
                }, path_names: { sign_in: 'auth/cas' }
   else
     devise_for :identities,
                controllers: {
                  omniauth_callbacks: 'identities/omniauth_callbacks',
-                 registrations:      'identities/registrations'
+                 sessions: 'identities/sessions',
+                 registrations: 'identities/registrations'
                }
   end
 
-  resources :identities, only: [:show] do
-    collection do
-      post 'add_to_protocol'
-    end
-
+  resources :identities, only: [] do
     member do
-      post 'show'
       get 'approve_account'
       get 'disapprove_account'
     end
@@ -56,7 +81,9 @@ SparcRails::Application.routes.draw do
 
   resources :contact_forms, only: [:new, :create]
 
-  resources :subsidies, only: [:create, :update, :destroy]
+  resource :locked_organizations, only: [:show]
+
+  resources :subsidies, only: [:new, :create, :edit, :update, :destroy]
 
   resources :service_requests, only: [:show] do
     resources :projects, except: [:index, :show, :destroy]
@@ -74,51 +101,60 @@ SparcRails::Application.routes.draw do
       post 'navigate'
       get 'refresh_service_calendar'
       get 'save_and_exit'
+      get 'get_help'
       get 'approve_changes'
     end
 
     collection do
-      post 'ask_a_question'
       post 'feedback'
     end
-
-    resource :service_calendars, only: [:update, :index] do
-      member do
-        get 'table'
-        get 'merged_calendar'
-      end
-      collection do
-        put 'rename_visit'
-        put 'set_day'
-        put 'set_window_before'
-        put 'set_window_after'
-        put 'update_otf_qty_and_units_per_qty'
-        put 'move_visit_position'
-        put 'show_move_visits'
-      end
-    end
   end
 
-  resources :protocols, except: [:index, :show, :destroy] do
+  resources :protocols, except: [:index, :destroy] do
     member do
+      put :update_protocol_type
       get :approve_epic_rights
       get :push_to_epic
-    end
-  end
-
-  resources :projects, except: [:index, :show, :destroy] do
-    member do
       get :push_to_epic_status
     end
   end
 
-  resources :studies, except: [:index, :show, :destroy] do
-    resources :identities, only: [:show]
+  resources :projects, controller: :protocols, except: [:index, :show, :destroy]
 
-    member do
-      get :push_to_epic_status
+  resources :studies, controller: :protocols, except: [:index, :show, :destroy]
+
+  resources :associated_users, except: [:show] do
+    collection do
+      get :search_identities
     end
   end
+
+  resources :arms, only: [:index, :new, :create, :edit, :update, :destroy]
+
+  resource :service_calendars, only: [] do
+    member do
+      get 'table'
+      get 'merged_calendar'
+      get 'view_full_calendar'
+    end
+    collection do
+      get 'show_move_visits'
+      post 'move_visit_position'
+      post 'toggle_calendar_row'
+      post 'toggle_calendar_column'
+    end
+  end
+
+  resources :line_items, only: [:update]
+  resources :line_items_visits, only: [:update, :destroy]
+  resources :visit_groups, only: [:edit, :update]
+  resources :visits, only: [:edit, :update, :destroy]
+
+  resources :documents, only: [:index, :new, :create, :edit, :update, :destroy]
+
+  resources :notes, only: [:index, :new, :create]
+
+  resources :sub_service_requests, only: [:show]
 
   resources :catalogs, only: [] do
     member do
@@ -135,13 +171,6 @@ SparcRails::Application.routes.draw do
 
   match 'service_requests/:id/add_service/:service_id' => 'service_requests#add_service', via: [:get, :post]
   match 'service_requests/:id/remove_service/:line_item_id' => 'service_requests#remove_service', via: [:all]
-  match 'service_requests/:id/select_calendar_row/:line_items_visit_id' => 'service_calendars#select_calendar_row', via: [:get, :post]
-  match 'service_requests/:id/unselect_calendar_row/:line_items_visit_id' => 'service_calendars#unselect_calendar_row', via: [:get, :post]
-  match 'service_requests/:id/select_calendar_column/:column_id/:arm_id' => 'service_calendars#select_calendar_column', via: [:get, :post]
-  match 'service_requests/:id/unselect_calendar_column/:column_id/:arm_id' => 'service_calendars#unselect_calendar_column', via: [:get, :post]
-  match 'service_requests/:id/delete_document/:document_id' => 'service_requests#delete_documents', via: [:all]
-  match 'service_requests/:id/edit_document/:document_id' => 'service_requests#edit_documents', via: [:get, :post]
-  match 'service_requests/:id/new_document' => 'service_requests#new_document', via: [:get, :post]
 
   ##### sparc-services routes brought in and namespaced
   namespace :catalog_manager do
@@ -163,6 +192,7 @@ SparcRails::Application.routes.draw do
       end
     end
 
+    resources :organizations, only: [:show, :update, :create]
     resources :institutions, only: [:show, :update, :create]
     resources :providers, only: [:show, :update, :create]
     resources :programs, only: [:show, :update, :create]
@@ -202,12 +232,14 @@ SparcRails::Application.routes.draw do
     resources :associated_users, only: [:index, :new, :create, :edit, :update, :destroy] do
       collection do
         get :search_identities
+        get :update_professional_organization_form_items
       end
     end
 
-    resources :documents
+    resources :documents, except: [:show]
 
     resources :epic_queues, only: [:index, :destroy]
+    resources :epic_queue_records, only: [:index]
 
     resources :fulfillments
 
@@ -217,8 +249,6 @@ SparcRails::Application.routes.draw do
         put :update_from_cwf
       end
     end
-
-    resources :line_items_visits, only: [:destroy]
 
     resources :messages, only: [:index, :new, :create]
 
@@ -230,8 +260,6 @@ SparcRails::Application.routes.draw do
         put :destroy_line_items
       end
     end
-
-    resources :notes, only: [:index, :new, :create]
 
     resources :notifications, only: [:index, :new, :create] do
       member do
@@ -246,12 +274,12 @@ SparcRails::Application.routes.draw do
     resources :projects, controller: :protocols, except: [:destroy]
 
     resources :protocols, except: [:destroy] do
+      resource :milestones, only: [:update]
+      resource :study_type_answers, only: [:edit]
       member do
-        get :view_full_calendar
-        patch :update_protocol_type
+        put :update_protocol_type
         get :display_requests
         patch :archive
-        get :view_details
       end
     end
 
@@ -263,8 +291,7 @@ SparcRails::Application.routes.draw do
       scope '/protocols', controller: :protocols, except: [:destroy] do
         resources :test, except: [:destroy] do
           member do
-            get :view_full_calendar
-            patch :update_protocol_type
+            put :update_protocol_type
             get :display_requests
             patch :archive
           end
@@ -272,37 +299,13 @@ SparcRails::Application.routes.draw do
       end
     end
 
-    resources :protocol_filters, only: [:new, :create]
-
-    resources :services, only: [:show]
-
-    resource :service_calendars, only: [:update, :index] do
-      member do
-        get 'table'
-        get 'merged_calendar'
-        get 'view_full_calendar'
-      end
-
-      collection do
-        put 'rename_visit'
-        put 'set_day'
-        put 'set_window_before'
-        put 'set_window_after'
-        put 'update_otf_qty_and_units_per_qty'
-        put 'move_visit_position'
-        put 'show_move_visits'
-        post 'select_calendar_row'
-        post 'unselect_calendar_row'
-        post 'select_calendar_column'
-        post 'unselect_calendar_column'
-      end
-    end
+    resources :protocol_filters, only: [:new, :create, :destroy]
 
     resources :service_requests, only: [:show]
 
     resources :studies, controller: :protocols, except: [:destroy]
 
-    resources :subsidies, except: [:index] do
+    resources :subsidies, except: [:index, :show] do
       member do
         patch :approve
       end
@@ -310,16 +313,16 @@ SparcRails::Application.routes.draw do
 
     resources :sub_service_requests, except: [:new, :create, :edit]do
       member do
-        patch :update_from_project_study_information
         put :push_to_epic
+        put :resend_surveys
         get :change_history_tab
         get :status_history
         get :approval_history
+        get :subsidy_history
         get :refresh_service_calendar
+        get :refresh_tab
       end
     end
-
-    resources :visits, only: [:destroy]
 
     resources :visit_groups, only: [:new, :create, :update, :destroy] do
       collection do
@@ -335,12 +338,6 @@ SparcRails::Application.routes.draw do
       get :setup
       post :generate
     end
-
-    member do
-      get :research_project_summary
-      post :cwf_audit
-      get :cwf_subject
-    end
   end
 
   ##### Admin Identities #####
@@ -353,4 +350,8 @@ SparcRails::Application.routes.draw do
   mount API::Base => '/'
 
   root to: 'service_requests#catalog'
+
+  ## error page routes ##
+  match "/404", :to => "error_pages#not_found", :via => :all
+  match "/500", :to => "error_pages#internal_server_error", :via => :all
 end

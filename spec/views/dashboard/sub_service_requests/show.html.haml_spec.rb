@@ -1,16 +1,37 @@
+# Copyright © 2011-2017 MUSC Foundation for Research Development~
+# All rights reserved.~
+
+# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:~
+
+# 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.~
+
+# 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following~
+# disclaimer in the documentation and/or other materials provided with the distribution.~
+
+# 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products~
+# derived from this software without specific prior written permission.~
+
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,~
+# BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT~
+# SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL~
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS~
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR~
+# TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.~
+
 require 'rails_helper'
 
 RSpec.describe 'dashboard/sub_service_requests/show', type: :view do
   before(:each) do
     @protocol = build_stubbed(:protocol_without_validations)
 
-    @service_request = build_stubbed(:service_request_without_validations, protocol: @protocol, service_requester: build_stubbed(:identity))
+    @service_request = build_stubbed(:service_request_without_validations, protocol: @protocol)
     assign(:service_request, @service_request)
 
     @sub_service_request = build_stubbed(:sub_service_request, service_request: @service_request)
 
     organization = Organization.new(name: "MegaCorp")
     allow(@sub_service_request).to receive(:organization).and_return(organization)
+    allow(@sub_service_request).to receive(:protocol).and_return(@protocol)
     assign(:sub_service_request, @sub_service_request)
 
     @logged_in_user = build_stubbed(:identity)
@@ -31,29 +52,5 @@ RSpec.describe 'dashboard/sub_service_requests/show', type: :view do
 
   it "should render header" do
     expect(response).to render_template(partial: "dashboard/sub_service_requests/_header", locals: { sub_service_request: @sub_service_request })
-  end
-
-  it "should render request details" do
-    expect(response).to render_template(partial: "dashboard/sub_service_requests/_request_details", locals: { sub_service_request: @sub_service_request, service_request: @service_request, protocol: @protocol })
-  end
-
-  it "should render per patient per visit calendars" do
-    expect(response).to render_template(partial: "dashboard/sub_service_requests/_per_patient_per_visit", locals: { sub_service_request: @sub_service_request, service_request: @service_request })
-  end
-
-  it "should render study level activities table" do
-    expect(response).to render_template(partial: "dashboard/study_level_activities/study_level_activities_table", locals: { sub_service_request: @sub_service_request })
-  end
-
-  it "should render documents table" do
-    expect(response).to render_template(partial: "dashboard/documents/documents_table", locals: { sub_service_request: @sub_service_request, service_request: @service_request })
-  end
-
-  it "should render status changes table" do
-    expect(response).to render_template(partial: "dashboard/sub_service_requests/history/status_changes", locals: { sub_service_request_id: @sub_service_request.id })
-  end
-
-  it "should render notifications table" do
-    expect(response).to render_template(partial: "dashboard/notifications/notifications", locals: { sub_service_request: @sub_service_request, user: @logged_in_user })
   end
 end

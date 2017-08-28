@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -23,4 +23,4 @@ $("#modal_place").html("<%= escape_javascript(render(:partial =>'dashboard/study
 <% end %>
 $("#modal_place").modal 'show'
 $(".selectpicker").selectpicker()
-$(".datetimepicker").datetimepicker(format: 'MM-DD-YYYY', allowInputToggle: true)
+$(".datetimepicker").datetimepicker(format: 'MM/DD/YYYY', allowInputToggle: true)

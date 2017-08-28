@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -38,18 +38,5 @@ module Dashboard::AssociatedUsersHelper
       type: 'button', data: { project_role_id: pr.id, identity_role: pr.role, identity_id: pr.identity_id, permission: permission_to_edit.to_s }, 
       class: "btn btn-danger actions-button delete-associated-user-button #{permission_to_edit ? '' : 'disabled'}"
     )
-  end
-
-  def pre_select_user_credentials(credentials)
-    unless credentials.blank?
-      selected =  USER_CREDENTIALS.map {|k,v| {pretty_tag(v) => k}}.select{|obj| obj unless obj[pretty_tag(credentials)].blank? }
-      selected.blank? ? 'other' : selected.first.try(:keys).try(:first)
-    else
-      ''
-    end
-  end
-
-  def reverse_user_credential_hash
-    USER_CREDENTIALS.each{|k, v| [v, k]}
   end
 end

@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -20,12 +20,14 @@
 
 FactoryGirl.define do
   factory :sub_service_request do
-    owner_id           { Random.rand(1000) }
+    service_requester_id { Random.rand(1000) }
+    sequence(:ssr_id) { |n| "000#{n}" }
+    status "draft"
 
     trait :without_validations do
       to_create { |instance| instance.save(validate: false) }
     end
-    
+
     trait :with_payment do
       after(:create) do |sub_service_request, evaluator|
         FactoryGirl.create(:payment, sub_service_request: sub_service_request)
@@ -51,7 +53,7 @@ FactoryGirl.define do
 
     trait :with_subsidy do
       after(:create) do |sub_service_request, evaluator|
-        create(:subsidy, sub_service_request: sub_service_request)
+        create(:subsidy_without_validations, sub_service_request: sub_service_request)
       end
     end
 

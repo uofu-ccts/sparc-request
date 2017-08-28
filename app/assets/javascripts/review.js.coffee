@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -18,27 +18,8 @@
 # INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 # TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#= require navigation
+#= require protocol
+#= require service_calendar
+#= require document_management
 
 $(document).ready ->
-  #Save as Draft Notification
-  notification_open = false
-  $('#draft_notification').dialog
-    resizable: false,
-    height: 220,
-    modal: true,
-    autoOpen: false,
-    buttons:
-      "Yes": ->
-        sr_id = $(this).data('sr-id')
-        window.location = "/service_requests/#{sr_id}/save_and_exit"
-
-      "No": ->
-        notification_open = false
-        $(this).dialog('close')
-
-  $(document).on('click', '#save-as-draft', (event) ->
-    event.preventDefault()
-    if notification_open == false
-      $('#draft_notification').dialog('open')
-  )

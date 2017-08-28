@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -48,12 +48,12 @@ class Dashboard::LineItemsController < Dashboard::BaseController
   end
 
   def create
-    @sub_service_request = SubServiceRequest.find(params[:line_item][:sub_service_request_id])
+    @sub_service_request = SubServiceRequest.find(line_item_params[:sub_service_request_id])
     @service_request = @sub_service_request.service_request
-    if params[:line_item][:service_id].blank?
+    if line_item_params[:service_id].blank?
       @sub_service_request.errors.add(:service, 'must be selected')
       @errors = @sub_service_request.errors
-    elsif !@sub_service_request.create_line_item(params[:line_item])
+    elsif !@sub_service_request.create_line_item(line_item_params)
       @errors = @sub_service_request.errors
     else
       flash[:success] = t(:dashboard)[:study_level_activities][:created]
@@ -69,11 +69,29 @@ class Dashboard::LineItemsController < Dashboard::BaseController
   end
 
   def update
-    @otf = @line_item.service.one_time_fee
-    if @line_item.update_attributes(params[:line_item])
-      flash[:success] = @otf ? t(:dashboard)[:study_level_activities][:updated] : t(:dashboard)[:line_items][:updated]
-    else
-      @errors = @line_item.errors
+    @sub_service_request  = @line_item.sub_service_request
+    @otf                  = @line_item.service.one_time_fee
+    success = @line_item.displayed_cost_valid?(line_item_params[:displayed_cost]) && @line_item.update_attributes(line_item_params)
+
+    respond_to do |format|
+      format.js do
+        if success
+          if @otf
+            flash[:success] = t(:dashboard)[:study_level_activities][:updated]
+          else
+            render partial: 'service_calendars/update_service_calendar'
+          end
+        elsif @otf
+          @errors = @line_item.errors
+        end
+      end
+      format.json do
+        if success
+          render json: { success: true, header: render_to_string(partial: 'dashboard/sub_service_requests/header.html', locals: { sub_service_request: @sub_service_request} )  }
+        else
+          render json: @line_item.errors, status: :unprocessable_entity
+        end
+      end
     end
   end
 
@@ -106,8 +124,7 @@ class Dashboard::LineItemsController < Dashboard::BaseController
       updated_service_relations = @line_item.valid_otf_service_relation_quantity?
     end
 
-    if updated_service_relations && @line_item.update_attributes(params[:line_item])
-      @candidate_one_time_fees = @sub_service_request.candidate_services.select(&:one_time_fee)
+    if updated_service_relations && @line_item.update_attributes(line_item_params)
       render 'dashboard/sub_service_requests/add_otf_line_item'
     else
       @line_item.reload
@@ -118,6 +135,30 @@ class Dashboard::LineItemsController < Dashboard::BaseController
   end
 
   private
+
+  def line_item_params
+    @line_item_params ||= params.require(:line_item).
+      permit(:service_request_id,
+        :sub_service_request_id,
+        :service_id,
+        :optional,
+        :complete_date,
+        :in_process_date,
+        :units_per_quantity,
+        :quantity,
+        :displayed_cost,
+        fulfillments_attributes: [:line_item_id,
+          :timeframe,
+          :notes,
+          :time,
+          :date,
+          :quantity,
+          :unit_quantity,
+          :quantity_type,
+          :unit_type,
+          :formatted_date,
+          :_destroy])
+  end
 
   def find_line_item
     @line_item = LineItem.find(params[:id])
@@ -130,10 +171,7 @@ class Dashboard::LineItemsController < Dashboard::BaseController
       updated_service_relations = @line_item.valid_otf_service_relation_quantity?
     end
 
-    if updated_service_relations && @line_item.update_attributes(params[:line_item])
-      # Have to reload the service request to get the correct direct cost total for the subsidy
-      @candidate_one_time_fees = @sub_service_request.candidate_services.select(&:one_time_fee)
-      @candidate_per_patient_per_visit = @sub_service_request.candidate_services.reject(&:one_time_fee)
+    if updated_service_relations && @line_item.update_attributes(line_item_params)
       render 'dashboard/sub_service_requests/add_line_item'
     else
       @line_item.reload
@@ -144,10 +182,9 @@ class Dashboard::LineItemsController < Dashboard::BaseController
   end
 
   def update_per_patient_line_item
-    #Create new line_item, and link up line_items_visit, modify CWF data, etc...
+    #Create new line_item, and link up line_items_visit, etc...
     @old_line_item = @line_item
     visit_ids = @line_items_visit.visits.pluck(:id)
-    @procedures = @old_line_item.procedures.where(visit_id: visit_ids)
 
     ActiveRecord::Base.transaction do
       if (@line_item = LineItem.create(service_request_id: @service_request.id, service_id: @service_id, sub_service_request_id: @sub_service_request.id))

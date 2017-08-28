@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -30,7 +30,7 @@ module Dashboard::ApplicationHelper
 
   def format_datetime date
     if date.present?
-      date.strftime('%D %I:%M %p')
+      date.strftime('%D %I:%M:%S %p')
     else
       ''
     end
@@ -58,6 +58,10 @@ module Dashboard::ApplicationHelper
 
   def cents_to_dollars_float cost
     number_with_precision(cents_to_dollars(cost), precision: 2) || number_with_precision(0, precision: 2)
+  end
+
+  def display_as_percent(percent_subsidy)
+    (percent_subsidy * 100.0).round(2) rescue nil
   end
 
   def display_user_role(user)

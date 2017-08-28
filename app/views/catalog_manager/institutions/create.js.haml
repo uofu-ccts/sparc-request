@@ -1,4 +1,4 @@
--# Copyright © 2011 MUSC Foundation for Research Development
+-# Copyright © 2011-2017 MUSC Foundation for Research Development
 -# All rights reserved.
 
 -# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -24,19 +24,19 @@
     $("#catalog"),
     1,
     { attr:
-      { id: "INSTITUTION#{@institution.id}"},
+      { id: "INSTITUTION#{@organization.id}"},
       data:
       { attr:
-        { cid: "#{@institution.id}",
+        { cid: "#{@organization.id}",
         class: "institution",
         object_type: "institution"},
-      title: "#{@institution.name}"
+      title: "#{@organization.name}"
       }
     },
 
     function(){
       $('#catalog').jstree('create_node',
-        $("#INSTITUTION#{@institution.id}"),
+        $("#INSTITUTION#{@organization.id}"),
         'inside',
         {data: 'Create New Provider'},
         true)

@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -18,17 +18,14 @@
 # INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 # TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-require File.expand_path('../boot', __FILE__)
+require_relative 'boot'
 
 require 'rails/all'
-require 'devise'
 
-if defined?(Bundler)
-  # If you precompile assets before deploying to production, use this line
-  Bundler.require(*Rails.groups(:assets => %w(development test profile)))
-  # If you want your assets lazily compiled in production, use this line
-  # Bundler.require(:default, :assets, Rails.env)
-end
+# Require the gems listed in Gemfile, including any gems
+# you've limited to :test, :development, or :production.
+
+Bundler.require(*Rails.groups)
 
 module SparcRails
   class Application < Rails::Application
@@ -36,21 +33,11 @@ module SparcRails
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.
 
-    # Custom directories with classes and modules you want to be autoloadable.
-    #config.autoload_paths += %W(#{config.root}/app/reports)
-
-    # /lib path
-    config.autoload_paths += Dir[Rails.root.join('lib')]
-    # /lib/portal path
-    config.autoload_paths += Dir[Rails.root.join('lib/portal')]
-    config.autoload_paths += Dir[Rails.root.join('lib/dashboard')]
-
-    # /app/jobs path
-    config.paths.add File.join('app', 'jobs'), glob: File.join('**', '*.rb')
-    config.autoload_paths += Dir[Rails.root.join('app', 'jobs', '*')]
-
     config.action_dispatch.default_headers.merge!({'X-Frame-Options' => 'ALLOWALL', 'X-UA-Compatible' => 'IE=edge,chrome=1'})
 
+    config.eager_load = true
+
+    config.action_view.field_error_proc = Proc.new { |html_tag, instance| html_tag }
     # Only load the plugins named here, in the order given (default is alphabetical).
     # :all can be used as a placeholder for all plugins not explicitly named.
     # config.plugins = [ :exception_notification, :ssl_requirement, :all ]
@@ -67,6 +54,10 @@ module SparcRails
     # config.i18n.default_locale = :de
     # see /initializers/obis_setup.rb and application.yml for overriding the :en locale for custom text specific to your institution
     # and, you don't need to override all of the text, only the sets of texts you need customized
+    config.i18n.load_path += Dir[Rails.root.join('config/locales/proper', '*.{rb,yml}').to_s]
+    config.i18n.load_path += Dir[Rails.root.join('config/locales/dashboard', '*.{rb,yml}').to_s]
+    config.i18n.load_path += Dir[Rails.root.join('config/locales/additional_details', '*.{rb,yml}').to_s]
+    config.i18n.load_path += Dir[Rails.root.join('config/locales/surveyor', '*.{rb,yml}').to_s]
     config.i18n.fallbacks = [:en]
 
     # Configure the default encoding used in templates for Ruby 1.9.
@@ -83,12 +74,6 @@ module SparcRails
     # like if you have constraints or database-specific column types
     # config.active_record.schema_format = :sql
 
-    # Enforce whitelist mode for mass assignment.
-    # This will create an empty whitelist of attributes available for mass-assignment for all models
-    # in your app. As such, your models will need to explicitly whitelist or blacklist accessible
-    # parameters by using an attr_accessible or attr_protected declaration.
-    config.active_record.whitelist_attributes = false
-
     # Enable the asset pipeline
     config.assets.enabled = false
 
@@ -102,11 +87,8 @@ module SparcRails
       margin_top: '2in',
       margin_bottom: '1in',
       print_media_type: true
-
-    config.to_prepare do
-      Devise::SessionsController.layout "custom_devise"
-      Devise::RegistrationsController.layout "custom_devise"
-      Devise::PasswordsController.layout "custom_devise"
-    end
+      
+    ##  Error pages
+    config.exceptions_app = self.routes
   end
 end

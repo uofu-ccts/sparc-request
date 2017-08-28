@@ -1,3 +1,23 @@
+# Copyright © 2011-2017 MUSC Foundation for Research Development~
+# All rights reserved.~
+
+# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:~
+
+# 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.~
+
+# 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following~
+# disclaimer in the documentation and/or other materials provided with the distribution.~
+
+# 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products~
+# derived from this software without specific prior written permission.~
+
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,~
+# BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT~
+# SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL~
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS~
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR~
+# TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.~
+
 require 'rails_helper'
 
 RSpec.describe 'Notifications index', js: true do
@@ -20,30 +40,30 @@ RSpec.describe 'Notifications index', js: true do
     page
   end
 
-  describe "Compose Message button" do
-    context "user clicks button" do
-      it "should allow user to search for a recipient and compose a new message to them" do
-        stub_const('USE_LDAP', false) # forces search to use db
-        create(:identity, first_name: 'Santa', last_name: 'Claws')
-        page = visit_notifications_index_page
+  # describe "Compose Message button" do
+  #   context "user clicks button" do
+  #     it "should allow user to search for a recipient and compose a new message to them" do
+  #       stub_const('USE_LDAP', false) # forces search to use db
+  #       create(:identity, first_name: 'Santa', last_name: 'Claws')
+  #       page = visit_notifications_index_page
 
-        expect do
-          page.compose_button.click
-          page.wait_for_send_notification_modal
-          page.send_notification_modal.instance_exec do
-            select_user.set("Claws")
-            wait_until_search_results_visible(10)
-            search_results.select { |sr| sr.text =~ /Claws/ }.first.click
-            wait_for_subject_line
-            subject_line.set("subject")
-            message_box.set("important message")
-            send_button.click
-          end
-          page.wait_until_send_notification_modal_invisible
-        end.to change { Notification.count }.by(1)
-      end
-    end
-  end
+  #       expect do
+  #         page.compose_button.click
+  #         page.wait_for_send_notification_modal
+  #         page.send_notification_modal.instance_exec do
+  #           select_user.set("Claws")
+  #           wait_until_search_results_visible(10)
+  #           search_results.select { |sr| sr.text =~ /Claws/ }.first.click
+  #           wait_for_subject_line
+  #           subject_line.set("subject")
+  #           message_box.set("important message")
+  #           send_button.click
+  #         end
+  #         page.wait_until_send_notification_modal_invisible
+  #       end.to change { Notification.count }.by(1)
+  #     end
+  #   end
+  # end
 
   describe 'default' do
     # TODO extract to view specs

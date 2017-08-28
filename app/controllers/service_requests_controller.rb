@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -21,212 +21,114 @@
 require 'generate_request_grant_billing_pdf'
 
 class ServiceRequestsController < ApplicationController
-  before_filter :initialize_service_request,      except: [:approve_changes]
-  before_filter :authorize_identity,              except: [:approve_changes, :show]
-  before_filter :authenticate_identity!,          except: [:catalog, :add_service, :remove_service, :ask_a_question, :feedback]
-  before_filter :authorize_protocol_edit_request, only: :catalog
-  before_filter :prepare_catalog,                 only: :catalog
-
-  layout false,                                   only: [:ask_a_question, :feedback]
   respond_to :js, :json, :html
+
+  before_action :initialize_service_request,      except: [:approve_changes, :get_help, :feedback]
+  before_action :validate_step,                   only:   [:protocol, :service_details, :service_calendar, :service_subsidy, :document_management, :review, :obtain_research_pricing, :confirmation, :save_and_exit]
+  before_action :setup_navigation,                only:   [:navigate, :catalog, :protocol, :service_details, :service_calendar, :service_subsidy, :document_management, :review, :obtain_research_pricing, :confirmation]
+  before_action :authorize_identity,              except: [:approve_changes, :get_help, :feedback, :show]
+  before_action :authenticate_identity!,          except: [:catalog, :add_service, :remove_service, :get_help, :feedback]
+  before_action :authorize_protocol_edit_request, only:   [:catalog]
+  before_action :find_locked_org_ids,             only:   [:catalog]
 
   def show
     @protocol = @service_request.protocol
-    @service_list = @service_request.service_list
     @admin_offset = params[:admin_offset]
+    @show_signature_section = params[:show_signature_section]
+    @service_list_true = @service_request.service_list(true)
+    @service_list_false = @service_request.service_list(false)
+    @line_items = @service_request.line_items
 
-    # TODO: this gives an error in the spec tests, because they think
-    # it's trying to render html instead of xlsx
-    #
-    #   render xlsx: "show", filename: "service_request_#{@service_request.id}", disposition: "inline"
-    #
-    # So I did this instead, but I don't know if it's right:
-    #
+
     respond_to do |format|
       format.xlsx do
-        render xlsx: "show", filename: "service_request_#{@service_request.protocol.id}", disposition: "inline"
+        render xlsx: "show", filename: "service_request_#{@protocol.id}", disposition: "inline"
       end
     end
   end
 
   def navigate
-    errors = []
-    # need to save and navigate to the right page
-
-    #### add logic to save data
-    referrer = request.referrer.split('/').last
-
-    @service_request.update_attributes(params[:service_request])
-
-    #### if study/project attributes are available (step 2 arms nested form), update them
-    if params[:study]
-      @service_request.protocol.update_attributes(params[:study])
-    elsif params[:project]
-      @service_request.protocol.update_attributes(params[:project])
+    case session[:current_location]
+    when 'protocol'
+      @service_request.group_valid?(:protocol)
+    when 'service_details'
+      @service_request.protocol.update_attributes(details_params) if @service_request.protocol && details_params
+      @service_request.group_valid?(:service_details)
+    when 'service_calendar'
+      @service_request.group_valid?(:service_calendar)
     end
 
-    if params[:current_location] == 'service_details'
-      @service_request.reload
-    end
+    @errors = @service_request.errors
 
-    # Save/Update any document info we may have
-    document_save_update(errors)
-
-    location = params["location"]
-    additional_params = request.referrer.split('/').last.split('?').size == 2 ? "?" + request.referrer.split('/').last.split('?').last : nil
-    validates = params["validates"]
-
-    if (@validation_groups[location].nil? or @validation_groups[location].map{|vg| @service_request.group_valid? vg.to_sym}.all?) and (validates.blank? or @service_request.group_valid? validates.to_sym) and errors.empty?
-      @service_request.save(validate: false)
-      redirect_to "/service_requests/#{@service_request.id}/#{location}#{additional_params}"
+    if @errors.any?
+      render action: @page
     else
-      if @validation_groups[location]
-        @validation_groups[location].each do |vg|
-          errors << @service_request.grouped_errors[vg.to_sym].messages unless @service_request.grouped_errors[vg.to_sym].messages.empty?
-        end
-      end
-
-      unless validates.blank?
-        errors << @service_request.grouped_errors[validates.to_sym].messages unless @service_request.grouped_errors[validates.to_sym].empty?
-      end
-
-      session[:errors] = errors.compact.flatten.first # TODO I DON'T LIKE THIS AT ALL
-
-      if @page != 'navigate'
-        send @page.to_sym
-        render action: @page
-      else
-        redirect_to :back
-      end
+      ssr_id_params = @sub_service_request ? "?sub_service_request_id=#{@sub_service_request.id}" : ""
+      redirect_to "/service_requests/#{@service_request.id}/#{@forward}" + ssr_id_params
     end
   end
 
   # service request wizard pages
 
   def catalog
-    # uses a before filter defined in application controller named 'prepare_catalog', extracted so that devise controllers could use as well
-    @locked = params[:locked]
-
-    if @locked
-      @locked_org_ids = []
-
-      @service_request.sub_service_requests.each do |ssr|
-        organization = ssr.organization
-        if organization.has_editable_statuses?
-          self_or_parent_id = ssr.find_editable_id(organization.id)
-          @locked_org_ids << self_or_parent_id if !EDITABLE_STATUSES[self_or_parent_id].include?(ssr.status)
-        end
-
-        @locked_org_ids << organization.all_children(Organization.all).map(&:id)
-      end
+    if @sub_service_request
+      @institutions = Institution.where(id: @sub_service_request.organization.parents.select{|x| x.type == 'Institution'}.map(&:id))
+    else
+      @institutions = Institution.order('`order`')
     end
 
-    unless @locked_org_ids.nil?
-      @locked_org_ids = @locked_org_ids.flatten!.uniq!
-    end
-
-    @locked_org_ids
+    setup_catalog_calendar
+    setup_catalog_news_feed
   end
 
   def protocol
-    cookies.delete :current_step
-    @service_request.update_attribute(:service_requester_id, current_user.id) if @service_request.service_requester_id.nil?
-    
-    if session[:saved_protocol_id]
-      @service_request.protocol = Protocol.find session[:saved_protocol_id]
-      session.delete :saved_protocol_id
-    end
-
-    @ctrc_services = false
-    if session[:errors] and session[:errors] != []
-      if session[:errors][:ctrc_services]
-        @ctrc_services = true
-        @ssr_id = @service_request.protocol.find_sub_service_request_with_ctrc(@service_request.id)
-      end
-    end
+    @service_request.sub_service_requests.where(service_requester_id: nil).update_all(service_requester_id: current_user.id)
   end
 
   def service_details
-    @service_request.add_or_update_arms
+    if @service_request.has_per_patient_per_visit_services? && @service_request.arms.empty?
+        @service_request.protocol.arms.create(
+          name: 'Screening Phase',
+          visit_count: 1,
+          new_with_draft: true
+        )
+    end
   end
 
   def service_calendar
-    #use session so we know what page to show when tabs are switched
     session[:service_calendar_pages] = params[:pages] if params[:pages]
-
-    # TODO: why is @page not set here?  if it's not supposed to be set
-    # then there should be a comment as to why it's set in #review but
-    # not here
-
-    @service_request.arms.each do |arm|
-      #check each ARM for line_items_visits (in other words, it's a new arm)
-      if arm.line_items_visits.empty?
-        #Create missing line_items_visits
-        @service_request.per_patient_per_visit_line_items.each do |line_item|
-          arm.create_line_items_visit(line_item)
-        end
-      else
-        #Check to see if ARM has been modified...
-        arm.line_items_visits.each do |liv|
-          #Update subject counts under certain conditions
-          if @service_request.status == 'first_draft' or liv.subject_count.nil? or liv.subject_count > arm.subject_count
-            liv.update_attribute(:subject_count, arm.subject_count)
-          end
-        end
-        #Arm.visit_count has benn increased, so create new visit group, and populate the visits
-        if arm.visit_count > arm.visit_groups.count
-          ActiveRecord::Base.transaction do
-            arm.mass_create_visit_group
-          end
-        end
-        #Arm.visit_count has been decreased, destroy visit group (and visits)
-        if arm.visit_count < arm.visit_groups.count
-          ActiveRecord::Base.transaction do
-            arm.mass_destroy_visit_group
-          end
-        end
-      end
-    end
   end
 
-  # do not delete.  Method will be needed if calendar totals page is
-  # used.
-  # def calendar_totals
-  #   if @service_request.arms.blank?
-  #     @back = 'service_details'
-  #   end
-  # end
-
-
   def service_subsidy
-    # this is only if the calendar totals page is not going to be used.
-    if @service_request.arms.blank?
-      @back = 'service_details'
-    end
-    @has_subsidy = @service_request.sub_service_requests.map(&:has_subsidy?).any?
-    @eligible_for_subsidy = @service_request.sub_service_requests.map(&:eligible_for_subsidy?).any?
+    @has_subsidy          = @sub_service_request ? @sub_service_request.has_subsidy? : @service_request.sub_service_requests.map(&:has_subsidy?).any?
+    @eligible_for_subsidy = @sub_service_request ? @sub_service_request.eligible_for_subsidy? : @service_request.sub_service_requests.map(&:eligible_for_subsidy?).any?
 
-    if not @has_subsidy and not @eligible_for_subsidy
-      redirect_to "/service_requests/#{@service_request.id}/document_management"
+    if !@has_subsidy && !@eligible_for_subsidy
+      ssr_id_params = @sub_service_request ? "?sub_service_request_id=#{@sub_service_request.id}" : ""
+      redirect_to "/service_requests/#{@service_request.id}/document_management" + ssr_id_params
     end
   end
 
   def document_management
-    unless @service_request.sub_service_requests.map(&:has_subsidy?).any?
+    @notable_type         = 'Protocol'
+    @notable_id           = @service_request.protocol_id
+    @has_subsidy          = @service_request.sub_service_requests.map(&:has_subsidy?).any?
+    @eligible_for_subsidy = @service_request.sub_service_requests.map(&:eligible_for_subsidy?).any?
+
+    unless @has_subsidy || @eligible_for_subsidy
       @back = 'service_calendar'
     end
   end
 
   def review
-    arm_id = params[:arm_id].to_s if params[:arm_id]
-    page = params[:page] if params[:page]
-    session[:service_calendar_pages] = params[:pages] if params[:pages]
-    session[:service_calendar_pages][arm_id] = page if page && arm_id
-    @thead_class = 'red-provider'
-    @review = true
-    @portal = false
-    @service_list = @service_request.service_list
-    @protocol = @service_request.protocol
+    @notable_type = 'Protocol'
+    @notable_id = @service_request.protocol_id
+    @tab          = 'calendar'
+    @review       = true
+    @portal       = false
+    @admin        = false
+    @merged       = true
+    @consolidated = false
 
     # Reset all the page numbers to 1 at the start of the review request
     # step.
@@ -234,77 +136,106 @@ class ServiceRequestsController < ApplicationController
     @service_request.arms.each do |arm|
       @pages[arm.id] = 1
     end
-
-    @tab = 'calendar'
-    @review = true
   end
 
   def obtain_research_pricing
-    # TODO: refactor into the ServiceRequest model
-    update_service_request_status(@service_request, 'get_a_cost_estimate')
-    @service_request.ensure_ssr_ids
-
     @protocol = @service_request.protocol
-    # As the service request leaves draft, so too do the arms
-    @protocol.arms.each do |arm|
-      arm.update_attributes({new_with_draft: false})
-    end
-    @service_list = @service_request.service_list
+    @service_request.previous_submitted_at = @service_request.submitted_at
 
-    send_confirmation_notifications
-
+    NotifierLogic.new(@service_request, @sub_service_request, current_user).update_status_and_send_get_a_cost_estimate_email
     render formats: [:html]
   end
 
   def confirmation
-    update_service_request_status(@service_request, 'submitted')
-    @service_request.ensure_ssr_ids
-    @service_request.update_arm_minimum_counts
-
     @protocol = @service_request.protocol
-    # As the service request leaves draft, so too do the arms
-    @protocol.arms.each do |arm|
-      arm.update_attributes({new_with_draft: false})
-      if @protocol.service_requests.map {|x| x.sub_service_requests.map {|y| y.in_work_fulfillment}}.flatten.include?(true)
-        arm.populate_subjects
+    @service_request.previous_submitted_at = @service_request.submitted_at
+
+    should_push_to_epic = @sub_service_request ? @sub_service_request.should_push_to_epic? : @service_request.should_push_to_epic?
+
+    if should_push_to_epic && USE_EPIC && @protocol.selected_for_epic
+      # Send a notification to Lane et al to create users in Epic.  Once
+      # that has been done, one of them will click a link which calls
+      # approve_epic_rights.
+      @protocol.ensure_epic_user
+      if QUEUE_EPIC
+        EpicQueue.create(protocol_id: @protocol.id, identity_id: current_user.id) unless EpicQueue.where(protocol_id: @protocol.id).size == 1
+      else
+        @protocol.awaiting_approval_for_epic_push
+        send_epic_notification_for_user_approval(@protocol)
       end
     end
-    @service_list = @service_request.service_list
-
-    @service_request.sub_service_requests.each do |ssr|
-      ssr.update_attributes(nursing_nutrition_approved: false, lab_approved: false, imaging_approved: false, committee_approved: false)
-    end
-
-    send_confirmation_notifications
-
-    # Send a notification to Lane et al to create users in Epic.  Once
-    # that has been done, one of them will click a link which calls
-    # approve_epic_rights.
-    if USE_EPIC
-      if @protocol.selected_for_epic
-        @protocol.ensure_epic_user
-        if QUEUE_EPIC
-          EpicQueue.create(protocol_id: @protocol.id) unless EpicQueue.where(protocol_id: @protocol.id).size == 1
-        else
-          @protocol.awaiting_approval_for_epic_push
-          send_epic_notification_for_user_approval(@protocol)
-        end
-      end
-    end
-
+    NotifierLogic.new(@service_request, @sub_service_request, current_user).update_ssrs_and_send_emails
     render formats: [:html]
   end
 
-  def send_confirmation_notifications
-    if @service_request.previous_submitted_at.nil?
-      send_notifications(@service_request, @sub_service_request)
-    elsif service_request_has_changed_ssr?(@service_request)
-      xls = render_to_string action: 'show', formats: [:xlsx]
-      @service_request.sub_service_requests.each do |ssr|
-        if ssr_has_changed?(@service_request, ssr)
-          send_ssr_service_provider_notifications(@service_request, ssr, xls)
+  def save_and_exit
+    respond_to do |format|
+      format.html {
+        if @sub_service_request #if editing a sub service request, update status
+          @sub_service_request.update_attribute(:status, 'draft')
+        else
+          @service_request.update_status('draft')
+          @service_request.ensure_ssr_ids
         end
+        redirect_to dashboard_root_path, sub_service_request_id: @sub_service_request.try(:id)
+      }
+      format.js
+    end
+  end
+
+  def add_service
+    add_service = AddService.new(@service_request,
+                                 params[:service_id].to_i,
+                                 current_user
+                                )
+    add_service.existing_service_ids
+    if add_service.existing_service_ids.include?( params[:service_id].to_i )
+      @duplicate_service = true
+    else
+      add_service.generate_new_service_request
+      @line_items_count     = (@sub_service_request || @service_request).line_items.count
+      @sub_service_requests = @service_request.cart_sub_service_requests
+    end
+  end
+
+  def remove_service
+    line_item = @service_request.line_items.find(params[:line_item_id])
+    ssr       = line_item.sub_service_request
+
+    if ssr.can_be_edited?
+      ssr.line_items.where(service: line_item.service.related_services).update_all(optional: true)
+
+      line_item.destroy
+
+      ssr.update_attribute(:status, 'draft') unless ssr.status == 'first_draft'
+      @service_request.reload
+
+      if ssr.line_items.empty?
+        NotifierLogic.new(@service_request, nil, current_user).ssr_deletion_emails(deleted_ssr: ssr, ssr_destroyed: true, request_amendment: false, admin_delete_ssr: false)
+        ssr.destroy
       end
+    end
+
+    @service_request.reload
+
+    @line_items_count     = (@sub_service_request || @service_request).line_items.count
+    @sub_service_requests = @service_request.cart_sub_service_requests
+
+    respond_to do |format|
+      format.js { render layout: false }
+    end
+  end
+
+  def get_help
+  end
+
+  def feedback
+    feedback = Feedback.new(feedback_params)
+    if feedback.save
+      Notifier.provide_feedback(feedback).deliver_now
+      flash.now[:success] = t(:proper)[:right_navigation][:feedback][:submitted]
+    else
+      @errors = feedback.errors
     end
   end
 
@@ -319,207 +250,151 @@ class ServiceRequestsController < ApplicationController
     end
   end
 
-  def save_and_exit
-    unless @sub_service_request # if we are editing a sub service request just redirect
-      @service_request.update_status('draft', false)
-      @service_request.ensure_ssr_ids
-    end
-
-    redirect_to dashboard_root_path
-  end
-
-  def refresh_service_calendar
-    arm_id = params[:arm_id].to_s if params[:arm_id]
-    @arm = Arm.find arm_id if arm_id
-    @portal = params[:portal] if params[:portal]
-    @thead_class = @portal == 'true' ? 'default_calendar' : 'red-provider'
-    page = params[:page] if params[:page]
-    session[:service_calendar_pages] = params[:pages] if params[:pages]
-    session[:service_calendar_pages][arm_id] = page if page && arm_id
-    @pages = {}
-    @service_request.arms.each do |arm|
-      new_page = (session[:service_calendar_pages].nil?) ? 1 : session[:service_calendar_pages][arm.id.to_s].to_i
-      @pages[arm.id] = @service_request.set_visit_page new_page, arm
-    end
-    @tab = 'calendar'
-  end
-
-  # methods only used by ajax requests
-
-  def add_service
-    id = params[:service_id].sub('service-', '').to_i
-    @new_line_items = []
-    existing_service_ids = @service_request.line_items.map(&:service_id)
-
-    if existing_service_ids.include? id
-      render text: 'Service exists in line items'
-    else
-      service = Service.find id
-
-      @new_line_items = @service_request.create_line_items_for_service(
-          service: service,
-          optional: true,
-          existing_service_ids: existing_service_ids,
-          recursive_call: false)
-
-      # create sub_service_requests
-      @service_request.reload
-      @service_request.service_list.each do |org_id, values|
-        line_items = values[:line_items]
-        ssr = @service_request.sub_service_requests.where(organization_id: org_id.to_i).first_or_create
-        unless @service_request.status.nil? and !ssr.status.nil?
-          ssr.update_attribute(:status, @service_request.status) if ['first_draft', 'draft', nil].include?(ssr.status)
-          @service_request.ensure_ssr_ids unless ['first_draft', 'draft'].include?(@service_request.status)
-        end
-
-        line_items.each do |li|
-          li.update_attribute(:sub_service_request_id, ssr.id)
-        end
-      end
-    end
-  end
-
-  def remove_service
-    id = params[:line_item_id].sub('line_item-', '').to_i
-
-    @line_item = @service_request.line_items.find(id)
-    service = @line_item.service
-    line_item_service_ids = @service_request.line_items.map(&:service_id)
-
-    # look at related services and set them to optional
-    # TODO POTENTIAL ISSUE: what if another service has the same related service
-    service.related_services.each do |rs|
-      if line_item_service_ids.include? rs.id
-        @service_request.line_items.find_by_service_id(rs.id).update_attribute(:optional, true)
-      end
-    end
-
-    @line_items.find_by_service_id(service.id).destroy
-    @line_items.reload
-
-    #@service_request = current_user.service_requests.find session[:service_request_id]
-    @service_request = ServiceRequest.find session[:service_request_id]
-    @page = request.referrer.split('/').last # we need for pages other than the catalog
-
-    # Have the protocol clean up the arms
-    @service_request.protocol.arm_cleanup if @service_request.protocol
-
-    # clean up sub_service_requests
-    @service_request.reload
-
-    to_delete = @service_request.sub_service_requests.map(&:organization_id) - @service_request.service_list.keys
-    to_delete.each do |org_id|
-      ssr = @service_request.sub_service_requests.find_by_organization_id(org_id)
-      if !['first_draft', 'draft'].include?(@service_request.status) and !@service_request.submitted_at.nil? and @service_request.submitted_at > ssr.created_at
-        @protocol = @service_request.protocol
-        xls = @protocol.nil? ? nil : render_to_string(action: 'show', formats: [:xlsx])
-        send_ssr_service_provider_notifications(@service_request, ssr, xls, ssr_deleted=true)
-      end
-      ssr.destroy
-    end
-
-    @service_request.reload
-
-    @line_items = (@sub_service_request.nil? ? @service_request.line_items : @sub_service_request.line_items)
-    render formats: [:js]
-  end
-
-  def ask_a_question
-    from = params['quick_question']['email'].blank? ? NO_REPLY_FROM : params['quick_question']['email']
-    body = params['quick_question']['body'].blank? ? 'No question asked' : params['quick_question']['body']
-
-    quick_question = QuickQuestion.create to: DEFAULT_MAIL_TO, from: from, body: body
-    Notifier.ask_a_question(quick_question).deliver
-  end
-
-  def feedback
-    feedback = Feedback.new(params[:feedback])
-    if feedback.save
-      Notifier.provide_feedback(feedback).deliver_now
-      render nothing: true
-    else
-      respond_to do |format|
-        format.js { render status: 403, json: feedback.errors.to_a.map {|k,v| "#{k.humanize} #{v}".rstrip + '.'} }
-      end
-    end
-  end
-
-  def delete_documents
-    # deletes a document unless we are working with a sub_service_request
-    @document = @service_request.documents.find params[:document_id]
-    @tr_id = "#document_id_#{@document.id}"
-
-    if @sub_service_request.nil?
-      @document.destroy # destroys the document
-    else
-      @sub_service_request.documents.delete @document # removes doc from ssr
-      @sub_service_request.save
-      @document.destroy if @document.sub_service_requests.empty? #if no ssrs left, destroys document
-    end
-  end
-
-  def edit_documents
-    @document = @service_request.documents.find params[:document_id]
-    @service_list = @service_request.service_list
-  end
-
-  def new_document
-    @service_list = @service_request.service_list
-  end
-
   private
 
-  # Send notifications to all users.
-  def send_notifications(service_request, sub_service_request)
-    xls = render_to_string action: 'show', formats: [:xlsx]
-    send_user_notifications(service_request, xls)
-
-    if sub_service_request then
-      sub_service_requests = [ sub_service_request ]
-    else
-      sub_service_requests = service_request.sub_service_requests
-    end
-
-    send_admin_notifications(sub_service_requests, xls)
-    send_service_provider_notifications(service_request, sub_service_requests, xls)
+  def feedback_params
+    params.require(:feedback).permit(:email, :message)
   end
 
-  def send_user_notifications(service_request, xls)
-    # Does an approval need to be created?  Check that the user
-    # submitting has approve rights.
-    if service_request.protocol.project_roles.detect{|pr| pr.identity_id == current_user.id}.project_rights != "approve"
-      approval = service_request.approvals.create
-    else
-      approval = false
-    end
+  def details_params
+    @details_params ||= begin
+      required_keys = params[:study] ? :study : params[:project] ? :project : nil
+      if required_keys.present?
+        temp = params.require(required_keys).permit(:start_date, :end_date,
+          :recruitment_start_date, :recruitment_end_date).to_h
 
-    # send e-mail to all folks with view and above
-    service_request.protocol.project_roles.each do |project_role|
-      next if project_role.project_rights == 'none'
-      Notifier.notify_user(project_role, service_request, xls, approval, current_user).deliver_now unless project_role.identity.email.blank?
-    end
-  end
-
-  def send_admin_notifications(sub_service_requests, xls)
-    sub_service_requests.each do |sub_service_request|
-      sub_service_request.organization.submission_emails_lookup.each do |submission_email|
-        Notifier.notify_admin(sub_service_request.service_request, submission_email.email, xls, current_user).deliver
+        # Finally, transform date attributes.
+        date_attrs = %w(start_date end_date recruitment_start_date recruitment_end_date)
+        temp.inject({}) do |h, (k, v)|
+          if date_attrs.include?(k) && v.present?
+            h.merge(k => Time.strptime(v, "%m/%d/%Y"))
+          else
+            h.merge(k => v)
+          end
+        end
       end
     end
   end
 
-  def send_service_provider_notifications(service_request, sub_service_requests, xls) #all sub-service requests on service request
-    sub_service_requests.each do |sub_service_request|
-      send_ssr_service_provider_notifications(service_request, sub_service_request, xls)
+  # Each of these helper methods assigns session[:errors] to persist the errors through the
+  # redirect_to so that the user has an explanation
+  def validate_step
+    case action_name
+    when 'protocol'
+      validate_catalog
+    when -> (n) { ['service_details', 'save_and_exit'].include?(n) }
+      validate_catalog && validate_protocol
+    when 'service_calendar'
+      validate_catalog && validate_protocol && validate_service_details
+    else
+      validate_catalog && validate_protocol && validate_service_details && validate_service_calendar
     end
   end
 
-  def send_ssr_service_provider_notifications(service_request, sub_service_request, xls, ssr_deleted=false) #single sub-service request
-    previously_submitted_at = service_request.previous_submitted_at.nil? ? Time.now.utc : service_request.previous_submitted_at.utc
-    audit_report = sub_service_request.audit_report(current_user, previously_submitted_at, Time.now.utc)
+  def validate_catalog
+    unless @service_request.group_valid?(:catalog)
+      @service_request.errors.full_messages.each do |m|
+        flash[:error] = m
+      end
+      redirect_to catalog_service_request_path(@service_request, sub_service_request_id: @sub_service_request.try(:id)) and return false
+    end
+    return true
+  end
 
-    sub_service_request.organization.service_providers.where("(`service_providers`.`hold_emails` != 1 OR `service_providers`.`hold_emails` IS NULL)").each do |service_provider|
-      send_individual_service_provider_notification(service_request, sub_service_request, service_provider, xls, audit_report, ssr_deleted)
+  def validate_protocol
+    unless @service_request.group_valid?(:protocol)
+      @service_request.errors.full_messages.each do |m|
+        flash[:error] = m
+      end
+      redirect_to protocol_service_request_path(@service_request, sub_service_request_id: @sub_service_request.try(:id)) and return false
+    end
+    return true
+  end
+
+  def validate_service_details
+    unless @service_request.group_valid?(:service_details)
+      @service_request.errors.full_messages.each do |m|
+        flash[:error] = m
+      end
+      redirect_to service_details_service_request_path(@service_request, sub_service_request_id: @sub_service_request.try(:id)) and return false
+    end
+    return true
+  end
+
+  def validate_service_calendar
+    unless @service_request.group_valid?(:service_calendar)
+      @service_request.errors.full_messages.each do |m|
+        flash[:error] = m
+      end
+      redirect_to service_calendar_service_request_path(@service_request, sub_service_request_id: @sub_service_request.try(:id)) and return false
+    end
+    return true
+  end
+
+  def setup_navigation
+    session[:current_location]  = action_name unless action_name == 'navigate'
+    @page                       = session[:current_location]
+
+    c = YAML.load_file(Rails.root.join('config', 'navigation.yml'))[@page]
+    unless c.nil?
+      @step_text   = c['step_text']
+      @css_class   = c['css_class']
+      @back        = c['back']
+      @forward     = c['forward']
+    end
+  end
+
+  def setup_catalog_calendar
+    if USE_GOOGLE_CALENDAR
+      curTime = Time.now.utc
+      startMin = curTime
+      startMax  = (curTime + 1.month)
+
+      @events = []
+      begin
+        path = Rails.root.join("tmp", "basic.ics")
+        if path.exist?
+          #to parse file and get events
+          cal_file = File.open(path)
+
+          cals = Icalendar.parse(cal_file)
+
+          cal = cals.first
+
+          events = cal.try(:events).try(:sort) { |x, y| y.dtstart <=> x.dtstart } || []
+
+          events.each do |event|
+            next if Time.parse(event.dtstart.to_s) > startMax
+            break if Time.parse(event.dtstart.to_s) < startMin
+            @events << create_calendar_event(event)
+          end
+
+          @events.reverse!
+          Alert.where(alert_type: ALERT_TYPES['google_calendar'], status: ALERT_STATUSES['active']).update_all(status: ALERT_STATUSES['clear'])
+        end
+      rescue Exception, ArgumentError => e
+        active_alert = Alert.where(alert_type: ALERT_TYPES['google_calendar'], status: ALERT_STATUSES['active']).first_or_initialize
+        if Rails.env == 'production' && active_alert.new_record?
+          active_alert.save
+          ExceptionNotifier::Notifier.exception_notification(request.env, e).deliver unless request.remote_ip == '128.23.150.107' # this is an ignored IP address, MUSC security causes issues when they pressure test,  this should be extracted/configurable
+        end
+      end
+    end
+  end
+
+  def setup_catalog_news_feed
+    if USE_NEWS_FEED
+      @news = []
+      begin
+        page = Nokogiri::HTML(open("https://www.sparcrequestblog.com"))
+        articles = page.css('article.post').take(3)
+        articles.each do |article|
+          @news << {title: (article.at_css('.entry-title') ? article.at_css('.entry-title').text : ""),
+                  link: (article.at_css('.entry-title a') ? article.at_css('.entry-title a')[:href] : ""),
+                  date: (article.at_css('.date') ? article.at_css('.date').text : "") }
+        end
+      rescue Net::OpenTimeout
+      end
     end
   end
 
@@ -540,102 +415,8 @@ class ServiceRequestsController < ApplicationController
     return false
   end
 
-  def send_individual_service_provider_notification(service_request, sub_service_request, service_provider, xls, audit_report=nil, ssr_deleted=false)
-    attachments = {}
-    attachments["service_request_#{service_request.id}.xlsx"] = xls
-
-    #TODO this is not very multi-institutional
-    # generate the required forms pdf if it's required
-    if sub_service_request.organization.tag_list.include? 'required forms'
-      request_for_grant_billing_form = RequestGrantBillingPdf.generate_pdf service_request
-      attachments["request_for_grant_billing_#{service_request.id}.pdf"] = request_for_grant_billing_form
-    end
-
-    if audit_report.nil?
-      previously_submitted_at = service_request.previous_submitted_at.nil? ? Time.now.utc : service_request.previous_submitted_at.utc
-      audit_report = sub_service_request.audit_report(current_user, previously_submitted_at, Time.now.utc)
-    end
-
-    Notifier.notify_service_provider(service_provider, service_request, attachments, current_user, audit_report, ssr_deleted).deliver_now
-  end
-
   def send_epic_notification_for_user_approval(protocol)
     Notifier.notify_for_epic_user_approval(protocol).deliver unless QUEUE_EPIC
-  end
-
-  # Document saves/updates
-  def document_save_update errors
-     #### save/update documents if we have them
-    process_ssr_organization_ids = params[:process_ssr_organization_ids]
-    document_id = params[:document_id]
-    doc_object = Document.find(document_id) if document_id
-    document = params[:document]
-    doc_type = params[:doc_type]
-    doc_type_other = params[:doc_type_other]
-    upload_clicked = params[:upload_clicked]
-
-    if doc_type and process_ssr_organization_ids and (document or document_id)
-      # have all required ingredients for successful document
-      if document_id # update existing document
-        org_ids = doc_object.sub_service_requests.map{|ssr| ssr.organization_id.to_s}
-        to_delete = org_ids - process_ssr_organization_ids
-        to_add = process_ssr_organization_ids - org_ids
-
-        # add access
-        to_add.each do |org_id|
-          sub_service_request = @service_request.sub_service_requests.find_or_create_by(organization_id: org_id.to_i)
-          sub_service_request.documents << doc_object
-          sub_service_request.save
-        end
-
-        # remove access
-        to_delete.each do |org_id|
-          ssr = @service_request.sub_service_requests.find_by_organization_id org_id.to_i
-          doc_object.sub_service_requests.delete ssr
-          doc_object.reload
-          doc_object.destroy if doc_object.sub_service_requests.empty?
-        end
-
-        # update document's attributes
-        if doc_object
-          if @sub_service_request and doc_object.sub_service_requests.size > 1
-            new_doc = document ? document : doc_object.document # if no new document provided use the old document
-            newDocument = Document.create(document: new_doc, doc_type: params[:doc_type], doc_type_other: params[:doc_type_other], service_request_id: @service_request.id)
-            @sub_service_request.documents << newDocument
-            @sub_service_request.documents.delete doc_object
-            @sub_service_request.save
-          else
-            new_doc = document || doc_object.document
-            doc_object.update_attributes(document: new_doc, doc_type: doc_type, doc_type_other: doc_type_other)
-          end
-        end
-      else # new document
-        newDocument = Document.create(document: document, doc_type: doc_type, doc_type_other: doc_type_other, service_request_id: @service_request.id)
-        process_ssr_organization_ids.each do |org_id|
-          sub_service_request = @service_request.sub_service_requests.find_by_organization_id org_id.to_i
-          sub_service_request.documents << newDocument
-          sub_service_request.save
-        end
-      end
-    elsif upload_clicked == "1" and ((doc_type == "" or !process_ssr_organization_ids) or ( !document and !document_id ))
-      # collect errors
-      doc_errors = {}
-      doc_errors[:recipients] = ["You must select at least one recipient"] if !process_ssr_organization_ids
-      doc_errors[:document] = ["You must select a document to upload"] if !document and !document_id
-      doc_errors[:doc_type] = ["You must provide a document type"] if doc_type == ""
-      errors << doc_errors
-    end
-    # end document saving stuff
-  end
-
-  def update_service_request_status(service_request, status)
-    unless service_request.submitted_at?
-      service_request.update_status(status)
-      if (status == 'submitted')
-        service_request.previous_submitted_at = @service_request.submitted_at
-        service_request.update_attribute(:submitted_at, Time.now)
-      end
-    end
   end
 
   def authorize_protocol_edit_request
@@ -643,10 +424,10 @@ class ServiceRequestsController < ApplicationController
       authorized  = if @sub_service_request
                       current_user.can_edit_sub_service_request?(@sub_service_request)
                     else
-                      current_user.can_edit_service_request?(@service_request)
+                      @service_request.status == 'first_draft' || current_user.can_edit_service_request?(@service_request)
                     end
 
-      protocol = @sub_service_request ? @sub_service_request.service_request.protocol : @service_request.protocol
+      protocol = @sub_service_request ? @sub_service_request.protocol : @service_request.protocol
 
       unless authorized || protocol.project_roles.find_by(identity: current_user).present?
         @service_request     = nil
@@ -655,5 +436,9 @@ class ServiceRequestsController < ApplicationController
         render partial: 'service_requests/authorization_error', locals: { error: 'You are not allowed to edit this Request.' }
       end
     end
+  end
+
+  def set_highlighted_link
+    @highlighted_link ||= 'sparc_request'
   end
 end

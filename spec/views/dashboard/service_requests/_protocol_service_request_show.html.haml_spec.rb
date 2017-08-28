@@ -1,3 +1,23 @@
+# Copyright © 2011-2017 MUSC Foundation for Research Development~
+# All rights reserved.~
+
+# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:~
+
+# 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.~
+
+# 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following~
+# disclaimer in the documentation and/or other materials provided with the distribution.~
+
+# 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products~
+# derived from this software without specific prior written permission.~
+
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,~
+# BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT~
+# SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL~
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS~
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR~
+# TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.~
+
 # TODO rewrite with stubs
 require 'rails_helper'
 
@@ -14,10 +34,6 @@ RSpec.describe 'dashboard/service_requests/protocol_service_request_show', type:
       archived: false)
   end
 
-  let!(:service_requester) do
-    create(:identity, first_name: 'Some', last_name: 'Guy')
-  end
-
   let!(:organization) do
     create(:organization,
       type: 'Institution',
@@ -30,9 +46,11 @@ RSpec.describe 'dashboard/service_requests/protocol_service_request_show', type:
   def render_protocol_service_request_show(service_request, permission_to_edit=false)
     render('dashboard/service_requests/protocol_service_request_show',
       service_request: service_request,
+      protocol: service_request.protocol,
       user: jug2,
       admin: false,
-      permission_to_edit: permission_to_edit)
+      permission_to_edit: permission_to_edit,
+      show_view_ssr_back: false)
   end
 
   describe 'header' do
@@ -41,7 +59,6 @@ RSpec.describe 'dashboard/service_requests/protocol_service_request_show', type:
         service_request = create(:service_request_without_validations,
           id: 9999,
           protocol: protocol,
-          service_requester: jug2,
           status: 'submitted',
           submitted_at: DateTime.now)
         create(:sub_service_request,
@@ -60,7 +77,6 @@ RSpec.describe 'dashboard/service_requests/protocol_service_request_show', type:
         service_request = create(:service_request_without_validations,
           id: 9999,
           protocol: protocol,
-          service_requester: jug2,
           status: 'draft')
         create(:sub_service_request,
           ssr_id: '0001',
@@ -78,41 +94,36 @@ RSpec.describe 'dashboard/service_requests/protocol_service_request_show', type:
     let!(:service_request) do
       create(:service_request_without_validations,
         protocol: protocol,
-        service_requester: service_requester,
         status: 'draft')
     end
 
-    context 'ServiceRequest with SubServiceRequest' do
-      let!(:ssr) do
-        create(:sub_service_request,
-          ssr_id: '1234',
-          service_request: service_request,
-          status: 'draft',
-          organization_id: organization.id)
-      end
+    context 'user can edit ServiceRequest' do
+      it 'should render' do
+        jug2.catalog_overlord = false
+        
+        render_protocol_service_request_show(service_request, true)
 
-      context 'user can edit ServiceRequest' do
-        it 'should render' do
-          render_protocol_service_request_show(service_request, true)
-
-          expect(response).to have_selector('button', text: 'Modify Request')
-        end
-      end
-
-      context 'user cannot edit ServiceRequest' do
-        it 'should not render' do
-          render_protocol_service_request_show service_request
-
-          expect(response).not_to have_selector('button', text: 'Modify Request')
-        end
+        expect(response).to have_selector('button:not(.disabled)', text: 'Modify Request')
       end
     end
 
-    context 'ServiceRequest with no SubServiceRequests' do
+    context 'user cannot edit ServiceRequest' do
       it 'should not render' do
+        jug2.catalog_overlord = false
+
         render_protocol_service_request_show service_request
 
-        expect(response).not_to have_content("Service Request: #{service_request.id} - Draft #{service_request.updated_at.strftime('%D')}")
+        expect(response).not_to have_selector('button', text: 'Modify Request')
+      end
+    end
+
+    context 'user is a Catalog Overlord' do
+      it 'should render' do
+        jug2.catalog_overlord = true
+
+        render_protocol_service_request_show(service_request, true)
+
+        expect(response).to have_selector('button:not(.disabled)', text: 'Modify Request')
       end
     end
   end

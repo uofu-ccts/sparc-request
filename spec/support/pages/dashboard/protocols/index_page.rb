@@ -1,3 +1,23 @@
+# Copyright © 2011-2017 MUSC Foundation for Research Development~
+# All rights reserved.~
+
+# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:~
+
+# 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.~
+
+# 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following~
+# disclaimer in the documentation and/or other materials provided with the distribution.~
+
+# 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products~
+# derived from this software without specific prior written permission.~
+
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,~
+# BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT~
+# SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL~
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS~
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR~
+# TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.~
+
 require "rails_helper"
 require "support/pages/dashboard/notes/index_modal"
 
@@ -11,16 +31,20 @@ module Dashboard
         element :save_link, "a", text: "Save"
         element :reset_link, "a", text: "Reset"
 
-        element :search_field, :field, "Search"
+        element :search_field, "#filterrific_search_query_search_text"
+
         element :archived_checkbox, :field, "Archived"
         element :status_select, "div.status-select button"
         elements :status_options, "div.status-select li"
-
-        # these appear if user is an admin
-        element :my_protocols_checkbox, :field, "My Protocols"
-        element :my_admin_organizations_checkbox, :field, "My Admin Organizations"
         element :core_select, "div.core-select button"
         elements :core_options, "div.core-select li"
+
+        # these appear if user is an admin
+        element :owner_select, "div.owner-select button"
+        elements :owner_options, "div.owner-select li"
+        element :my_protocols_checkbox, ".identity-protocols input"
+        element :my_admin_organizations_checkbox, ".admin-protocols input"
+        element :empty_protocols_checkbox, ".empty-protocols input"
 
         element :apply_filter_button, :button, "Filter"
 
@@ -35,6 +59,13 @@ module Dashboard
           wait_until_status_options_invisible
         end
 
+        def select_search(page, search, search_term)
+          bootstrap_select = page.find("select#filterrific_search_query_search_drop + .bootstrap-select")
+          bootstrap_select.click
+          first('.dropdown-menu.open span.text', text: /\A#{search}\Z/).click
+          page.filter_protocols.search_field.set(search_term.to_s)
+        end
+
         # select a core for :core_select by core
         def select_core(*cores)
           core_select.click
@@ -44,6 +75,17 @@ module Dashboard
           end
           page.find("body").click # seems like Capybara page is available in this context
           wait_until_core_options_invisible
+        end
+
+        # select an owner (service provider) :owner_select by text
+        def select_owner(*owners)
+          owner_select.click
+          wait_for_owner_options
+          owners.each do |owner|
+            owner_options(text: /\A#{owner}\Z/).first.click
+          end
+          page.find("body").click
+          wait_until_owner_options_invisible
         end
       end
 

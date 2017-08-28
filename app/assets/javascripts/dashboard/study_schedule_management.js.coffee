@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -32,10 +32,9 @@ $ ->
       url: '/dashboard/arms/new'
       data: data
 
-  $(document).on 'click', '#add_arm_form_button', ->
-    $this = $(this)
-    $this.attr('disabled','disabled')
-    $this.closest('form').submit()
+  ## This is keyed off of form submit, instead of button click, because chrome does stupid things.
+  $(document).on 'submit', 'form#new_arm', ->
+    $('form#new_arm input#add_arm_form_button').attr('disabled','disabled')
 
   $(document).on 'click', '#remove_arm_button', ->
     data =
@@ -73,9 +72,8 @@ $ ->
       url: '/dashboard/arms/navigate'
       data: data
 
-  $(document).on 'click', '#edit_arm_form_button', ->
-    $(this).attr('disabled','disabled')
-    $(this).closest('form').submit()
+  $(document).on 'submit', 'form#edit_arm', ->
+    $("#edit_arm_form_button").attr('disabled','disabled')
 
   $(document).on 'change', "#arm_form_select", ->
     data =
@@ -94,7 +92,6 @@ $ ->
 
   $(document).on 'click', '#add_visit_group_button', ->
     data =
-      'study_tracker': $('#study_tracker_hidden_field').val() || null
       'current_page'            : $(".visit_dropdown").first().attr('page')
       'schedule_tab'            : $('#current_tab').attr('value')
       'protocol_id'             : $('#study_schedule_buttons').data('protocol-id')
@@ -108,7 +105,6 @@ $ ->
   $(document).on 'change', '#visit_group_arm_id', ->
     arm_id = $(this).find('option:selected').val()
     data =
-      'study_tracker': $('#study_tracker_hidden_field').val() || null
       'current_page'            : $("#visits_select_for_#{arm_id}").val()
       'schedule_tab'            : $('#current_tab').attr('value')
       'protocol_id'             : $('#study_schedule_buttons').data('protocol-id')
@@ -142,6 +138,9 @@ $ ->
       url: '/dashboard/visit_groups/navigate'
       data: data
 
+  $(document).on 'submit', 'form#edit_visit_group', ->
+    $("#edit_visit_group_form_button").attr('disabled','disabled')
+
   $(document).on 'change', "#vg_form_arm_select", ->
     arm_id = $(this).val()
     data =
@@ -169,6 +168,9 @@ $ ->
         url: '/dashboard/visit_groups/navigate'
         data: data
 
+  $(document).on 'submit', '#add_visit_group', ->
+    $("#add_visit_group_form_button").attr('disabled','disabled')
+
   $(document).on 'click', '#remove_visit_group_form_button', ->
     $(this).attr('disabled','disabled')
     schedule_tab = $('#current_tab').attr('value')
@@ -176,7 +178,6 @@ $ ->
     arm_id = $('#vg_form_arm_select').val()
     page = $("#visits_select_for_#{arm_id}").val()
     data =
-      'study_tracker': $('#study_tracker_hidden_field').val() || null
       'sub_service_request_id'  : $('#study_schedule_buttons').data('sub-service-request-id')
       'service_request_id'      : $('#study_schedule_buttons').data('service-request-id')
       'page'                    : page
@@ -206,19 +207,22 @@ $ ->
       url: '/dashboard/multiple_line_items/new_line_items'
       data: data
 
-  $(document).on 'click', '#add_line_items_form_button', ->
-    $(this).attr('disabled','disabled')
-    $(this).closest('form').submit()
+  $(document).on 'submit', 'form#new_service', ->
+    $("#add_line_items_form_button").attr('disabled','disabled')
 
   $(document).on 'click', '#remove_service_button', ->
+    line_item_count = $('#study_schedule_buttons').data('line-item-count')
     data =
       'protocol_id'             : $('#study_schedule_buttons').data('protocol-id')
       'sub_service_request_id'  : $('#study_schedule_buttons').data('sub-service-request-id')
       'service_request_id'      : $('#study_schedule_buttons').data('service-request-id')
-    $.ajax
-      type: 'GET'
-      url: '/dashboard/multiple_line_items/edit_line_items'
-      data: data
+    if line_item_count == 1
+      sweetAlert("Warning", "Please add a new service(s) prior to removing the last service; To remove all services use the 'Delete Request' button.")
+    else
+      $.ajax
+        type: 'GET'
+        url: '/dashboard/multiple_line_items/edit_line_items'
+        data: data
 
   $(document).on 'change', "#remove_service_id", ->
     data =
@@ -231,8 +235,7 @@ $ ->
       url: '/dashboard/multiple_line_items/edit_line_items'
       data: data
 
-  $(document).on 'click', '#remove_line_items_form_button', ->
-    $(this).attr('disabled','disabled')
-    $(this).closest('form').submit()
+  $(document).on 'submit', '#destroy_service', ->
+    $("#remove_line_items_form_button").attr('disabled','disabled')
 
 ##          **END MANAGE LINE ITEMS**               ##

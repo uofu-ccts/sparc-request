@@ -1,4 +1,4 @@
-// Copyright © 2011 MUSC Foundation for Research Development
+// Copyright © 2011-2017 MUSC Foundation for Research Development
 // All rights reserved.
 
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -27,20 +27,38 @@
 // It's not advisable to add code directly here, but if you do, it'll appear at the bottom of the
 // the compiled file.
 //
-//= require jquery
-//= require jquery-ui
-//= require jquery.qtip.min
+//= require jquery2
+//= require jquery-migrate
+//= require bootstrap-sprockets
+//= require bootstrap-select
+//= require bootstrap-table
+//= require bootstrap-table-export
+//= require bootstrap-table-custom
+//= require moment
+//= require bootstrap-datetimepicker
+//= require jquery_ujs
+//= require jquery.remotipart
+//= require jquery_nested_form
 //= require jquery.cookie
 //= require jquery.form
-//= require jquery_ujs
-//= require jquery_nested_form
+//= require editable/bootstrap-editable
+//= require editable/rails
+//= require nprogress
+//= require nprogress-ajax
 //= require json2
-//= require infotip
-//= require shared
 //= require underscore-min
-//= require form_fx_manager
 //= require form_manager
+//= require form_fx_manager
+//= require twitter/typeahead.min
+//= require handlebars-v4.0.5
 //= require assert
 //= require ajax_handler
-//= require review
-//= require survey_submit
+
+//= require global
+//= require associated_users_form
+//= require study_schedule_tabs
+//= require subsidy_form
+//= require surveyor/responses
+//= require surveyor/surveys
+//= require sweetalert.min
+//= require feedback

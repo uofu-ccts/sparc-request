@@ -1,5 +1,5 @@
 # coding: utf-8
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -21,7 +21,7 @@
 
 require 'rails_helper'
 
-RSpec.describe 'SubServiceRequest' do
+RSpec.describe SubServiceRequest, type: :model do
 
   let_there_be_lane
   let_there_be_j
@@ -103,30 +103,6 @@ RSpec.describe 'SubServiceRequest' do
           expect(li.service_id).to eq(@fulfillment_service.id)
           expect(li).not_to be_new_record
         end
-
-        context 'subject calendars exist' do
-
-          before :each do
-            add_visits
-            service_request.arms.each(&:populate_subjects)
-            sub_service_request.update_attribute(:in_work_fulfillment, true)
-          end
-
-          it 'should create procedures for the line item' do
-            count = Procedure.count
-            li = sub_service_request.create_line_item(service_id: @fulfillment_service.id, sub_service_request_id: sub_service_request.id)
-            expect(Procedure.count).to eq(count * 2)
-          end
-
-          it 'should roll back if it fails' do
-            expect {
-              allow(sub_service_request).to receive(:in_work_fulfillment).and_raise('error')
-              sub_service_request.create_line_item(service_id: @fulfillment_service.id, sub_service_request_id: sub_service_request.id) rescue nil
-            }.not_to change(LineItem, :count)
-          end
-
-        end
-
       end
     end
 
@@ -191,7 +167,7 @@ RSpec.describe 'SubServiceRequest' do
       context "subsidy percentage" do
 
         it "should return the correct subsidy percentage" do
-          expect(sub_service_request.subsidy_percentage).to eq(80)
+          expect(sub_service_request.subsidy_percentage).to eq(45)
         end
       end
 
@@ -237,7 +213,7 @@ RSpec.describe 'SubServiceRequest' do
       let!(:line_item2) { create(:line_item, sub_service_request_id: ssr2.id, service_request_id: service_request.id, service_id: service2.id) }
 
       before :each do
-        EDITABLE_STATUSES[sub_service_request.organization.id] = ['first_draft', 'draft', 'submitted', nil, 'get_a_cost_estimate', 'awaiting_pi_approval']
+        sub_service_request.organization.editable_statuses.where(status: 'on_hold').destroy_all
       end
 
       context "can be edited" do
@@ -252,11 +228,6 @@ RSpec.describe 'SubServiceRequest' do
           expect(sub_service_request.can_be_edited?).to eq(true)
         end
 
-        it "should return true if the status is nil" do
-          sub_service_request.update_attributes(status: nil)
-          expect(sub_service_request.can_be_edited?).to eq(true)
-        end
-
         it "should return true if the status is get a cost estimate" do
           sub_service_request.update_attributes(status: 'get_a_cost_estimate')
           expect(sub_service_request.can_be_edited?).to eq(true)
@@ -266,65 +237,11 @@ RSpec.describe 'SubServiceRequest' do
           sub_service_request.update_attributes(status: "on_hold")
           expect(sub_service_request.can_be_edited?).to eq(false)
         end
-      end
 
-      before :each do
-        EDITABLE_STATUSES[ssr1.organization.id] = ['first_draft', 'draft', 'submitted', nil, 'get_a_cost_estimate', 'awaiting_pi_approval']
-      end
-
-      context "update based on status" do
-
-        it "should place a sub service request under a new service request if conditions are met" do
-          sr_count = service_request.protocol.service_requests.count
-          ssr1.update_attributes(status: 'on_hold')
-          ssr1.update_based_on_status('submitted')
-          expect(ssr1.service_request.id).not_to eq(service_request.id)
-          expect(service_request.protocol.service_requests.count).to be > sr_count
-        end
-
-        it "should assign the ssrs line items to the new service request" do
-          ssr1.update_attributes(status: 'on_hold')
-          ssr1.update_based_on_status('submitted')
-          expect(ssr1.line_items.first.service_request_id).not_to eq(service_request.id)
-          expect(line_item2.service_request_id).to eq(service_request.id)
-        end
-
-        it "should not place a sub service request under a new service request if there is only one ssr" do
-          ssr2.destroy
-          sub_service_request.destroy
-          ssr1.update_attributes(status: 'on_hold')
-          ssr1.update_based_on_status('submitted')
-          expect(ssr1.service_request.id).to eq(service_request.id)
-        end
-
-        it "should not place a sub service request under a new service request if the ssr is not tagged with ctrc" do
-          ssr2.update_attributes(status: 'on_hold')
-          ssr2.update_based_on_status('submitted')
-          expect(ssr2.service_request.id).to eq(service_request.id)
-        end
-
-        it "should not place a sub service request under a new service request if the ssr is being switched to another uneditable status" do
-          ssr1.update_attributes(status: 'on_hold')
-          ssr1.update_based_on_status('complete')
-          expect(ssr1.service_request.id).to eq(service_request.id)
-        end
-      end
-
-      context "candidate statuses" do
-
-        before :each do
-          org1.tag_list = "ctrc"
-          org1.save
-        end
-
-        it "should contain 'ctrc approved' and 'ctrc review' if the organization is ctrc" do
-          sub_service_request.update_attributes(organization_id: org1.id)
-          expect(sub_service_request.candidate_statuses).to include('ctrc approved', 'ctrc review')
-        end
-
-        it "should not contain ctrc statuses if the organization is not ctrc" do
-          sub_service_request.update_attributes(organization_id: org2.id)
-          expect(sub_service_request.candidate_statuses).not_to include('ctrc approved', 'ctrc review')
+        it 'should should return false if the status is complete' do
+          stub_const("FINISHED_STATUSES", ['complete'])
+          sub_service_request.update_attributes(status: 'complete')
+          expect(sub_service_request.can_be_edited?).to eq(false)
         end
       end
     end

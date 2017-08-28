@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -20,9 +20,9 @@
 
 require 'rails_helper'
 
-RSpec.describe Document do
-  it{ should belong_to :service_request }
-  it{ should have_and_belong_to_many :sub_service_requests }
+RSpec.describe Document, type: :model do
+  it { should belong_to(:protocol) }
+  it { should have_and_belong_to_many(:sub_service_requests) }
 
   it 'should create a document' do
     doc = Document.create()
@@ -34,11 +34,25 @@ RSpec.describe Document do
     let!(:document2) { create(:document, doc_type: 'hipaa') }
 
     it 'should display correctly for doc type other' do
-      expect(document1.display_document_type).to eq('Support')
+      expect(document1.display_document_type).to eq('support')
     end
 
     it 'should display correctly for typical doc type' do
       expect(document2.display_document_type).to eq('HIPAA')
+    end
+  end
+
+  describe '#all_organizations' do
+    it 'should return SSR organizations and their trees' do
+      document = create(:document)
+      org1     = create(:organization)
+      org2     = create(:organization, parent: org1)
+      ssr1     = create(:sub_service_request_without_validations, organization: org1)
+      ssr2     = create(:sub_service_request_without_validations, organization: org2)
+      
+      document.sub_service_requests = [ssr1, ssr2]
+
+      expect(document.reload.all_organizations).to eq([org1, org2])
     end
   end
 end

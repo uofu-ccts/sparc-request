@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -17,8 +17,6 @@
 # DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
 # INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 # TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-require "#{Rails.root.join("lib/directory")}"
 
 if not USE_LDAP then
   raise "LDAP is not enabled for the test environment.  Please enable it in config/application.yml (Don't worry, the tests won't try to connect to a real LDAP server, because they stub Net::LDAP with test data)."
@@ -46,6 +44,7 @@ RSpec.configure do |config|
       { "givenname" => ['Brian'], "sn" => ['Kelsey'], "uid" => ['bjk7'], "mail" => ['kelsey@musc.edu'] },
       { "givenname" => ['Jason'], "sn" => ['Leonard'], "uid" => ['jpl6@musc.edu'], "mail" => ['leonarjp@musc.edu'] },
       { "givenname" => ['Julia'], "sn" => ['Glenn'], "uid" => ['jug2'], "mail" => ['glennj@musc.edu'] },
+      { "givenname" => ['John'], "sn" => ['Doe'], "uid" => ['joihnd'], "mail" => ['johnd@musc.edu']}
     ]
 
     attributes = ["uid", "sn", "givenname", "mail"]
@@ -59,6 +58,7 @@ RSpec.configure do |config|
     allow(ldap).to receive(:search).with(filter: create_ldap_filter('gary'), attributes: attributes).and_return([])
     allow(ldap).to receive(:search).with(filter: create_ldap_filter('error'), attributes: attributes).and_raise('error')
     allow(ldap).to receive(:search).with(filter: create_ldap_filter('duplicate'), attributes: attributes)
+    allow(ldap).to receive(:search).with(filter: create_ldap_filter('john'), attributes: attributes).and_return([results[6]])
 
     allow(Net::LDAP).to receive(:new).and_return(ldap)
   end

@@ -1,5 +1,22 @@
-#Copyright © 2011-2016 MUSC Foundation for Research Development.
-#All rights reserved.
+# Copyright © 2011-2017 MUSC Foundation for Research Development~
+# All rights reserved.~
+
+# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:~
+
+# 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.~
+
+# 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following~
+# disclaimer in the documentation and/or other materials provided with the distribution.~
+
+# 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products~
+# derived from this software without specific prior written permission.~
+
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,~
+# BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT~
+# SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL~
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS~
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR~
+# TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.~
 
 module V1
 
@@ -54,7 +71,6 @@ module V1
     expose  :service_request_id,
             :sub_service_request_id,
             :service_id,
-            :ssr_id,
             :optional,
             :quantity,
             :units_per_quantity,
@@ -101,7 +117,6 @@ module V1
             :sponsor_name,
             :brief_description,
             :indirect_cost_rate,
-            :study_phase,
             :udak_project_number,
             :funding_rfa,
             :funding_status,
@@ -146,6 +161,7 @@ module V1
             :abbreviation,
             :order,
             :description,
+            :eap_id,
             :is_available,
             :service_center_cost,
             :cpt_code,
@@ -166,15 +182,9 @@ module V1
 
     expose  :protocol_id,
             :status,
-            :service_requester_id,
-            :approved,
-            :subject_count
+            :approved
 
     with_options(format_with: :iso_timestamp) do
-      expose :consult_arranged_date
-      expose :pppv_complete_date
-      expose :pppv_in_process_date
-      expose :requester_contacted_date
       expose :submitted_at
     end
   end
@@ -194,7 +204,8 @@ module V1
             :in_work_fulfillment,
             :routing,
             :org_tree_display,
-            :grand_total
+            :grand_total,
+            :service_requester_id
 
     expose  :formatted_status, as: :status
 

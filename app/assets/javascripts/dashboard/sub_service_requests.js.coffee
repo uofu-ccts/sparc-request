@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -19,8 +19,6 @@
 # TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 $(document).ready ->
-
-
   # SERVICE REQUEST INFO LISTENERS BEGIN
 
   $(document).on 'change', '#sub_service_request_owner', ->
@@ -37,7 +35,7 @@ $(document).ready ->
     status = $(this).val()
     data = 'sub_service_request' : 'status' : status
     $.ajax
-      type: 'PATCH'
+      type: 'PUT'
       url: "/dashboard/sub_service_requests/#{ssr_id}"
       data: data
 
@@ -63,12 +61,28 @@ $(document).ready ->
       type: 'PUT'
       url: "/dashboard/sub_service_requests/#{sub_service_request_id}/push_to_epic"
 
+  $(document).on 'click', '#resend-surveys-button', ->
+    $(this).prop('disabled', true)
+    ssr_id = $(this).data('sub-service-request-id')
+    $.ajax
+      type: 'PUT'
+      url: "/dashboard/sub_service_requests/#{ssr_id}/resend_surveys"
+      success: ->
 
   # SERVICE REQUEST INFO LISTENERS END
   # ADMIN TAB LISTENER BEGIN
 
   $(document).on 'click', '.ssr_tab a', ->
     $.cookie('admin-tab', $(this).attr('id'), {path: '/'})
+    ##Refresh Tabs Ajax
+    protocol_id = $(this).parents('ul').data('protocol-id')
+    ssr_id = $(this).parents('ul').data('ssr-id')
+    partial_name = $(this).data('partial-name')
+
+    $.ajax
+      type: 'GET'
+      url: "/dashboard/sub_service_requests/#{ssr_id}/refresh_tab"
+      data: {"protocol_id": protocol_id, "ssr_id": ssr_id, "partial_name": partial_name}
 
   # ADMIN TAB LISTENER END
   # STUDY SCHEDULE TAB BEGIN
@@ -76,28 +90,20 @@ $(document).ready ->
   $(document).on 'click', '.ss_tab a', ->
     $.cookie('admin-ss-tab', $(this).attr('id'), {path: '/'})
 
+  $(document).on 'click', '.service_calendar_row', ->
+    if confirm(I18n['calendars']['confirm_row_select'])
+      $.ajax
+        type: 'post'
+        url: $(this).data('url')
+
+  $(document).on 'click', '.service_calendar_column', ->
+    if confirm(I18n['calendars']['confirm_column_select'])
+      $.ajax
+        type: 'post'
+        url: $(this).data('url')
+
   # STUDY SCHEDULE TAB END
   # TIMELINE LISTENERS BEGIN
-
-  $(document).on 'dp.hide', '#protocol_start_date_picker', ->
-    protocol_id = $(this).data('protocol_id')
-    ssr_id = $(this).data('sub_service_request_id')
-    start_date = $(this).val()
-    data = 'protocol' : {'start_date' : start_date}, 'sub_service_request' : {'id' : ssr_id}
-    $.ajax
-      type: 'PATCH'
-      url: "/dashboard/protocols/#{protocol_id}"
-      data: data
-
-  $(document).on 'dp.hide', '#protocol_end_date_picker', ->
-    protocol_id = $(this).data('protocol_id')
-    ssr_id = $(this).data('sub_service_request_id')
-    end_date = $(this).val()
-    data = 'protocol' : {'end_date' : end_date}, 'sub_service_request' : {'id' : ssr_id}
-    $.ajax
-      type: 'PATCH'
-      url: "/dashboard/protocols/#{protocol_id}"
-      data: data
 
   $(document).on 'dp.hide', '#sub_service_request_consult_arranged_date_picker', ->
     ssr_id = $(this).data('sub_service_request_id')
@@ -121,11 +127,15 @@ $(document).ready ->
   # HISTORY LISTENERS BEGIN
 
   $(document).on 'click', '.history_button', ->
+    $('#history-spinner').removeClass('hidden')
     ssr_id = $(this).data("sub-service-request-id")
     data = 'partial': $(this).data('table')
     $.ajax
       type: 'GET'
       url: "/dashboard/sub_service_requests/#{ssr_id}/change_history_tab"
       data: data
+      success: ->
+        $('#history-spinner').addClass('hidden')
+
 
   # HISTORY LISTENERS END

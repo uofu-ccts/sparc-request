@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -18,22 +18,17 @@
 # INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 # TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-class Fulfillment < ActiveRecord::Base
+class Fulfillment < ApplicationRecord
   audited
 
   belongs_to :line_item
   has_many :notes, as: :notable, dependent: :destroy
+  validates :date, presence: true
 
-  attr_accessible :line_item_id
-  attr_accessible :timeframe
-  attr_accessible :notes
-  attr_accessible :time
-  attr_accessible :date
-  attr_accessible :quantity
-  attr_accessible :unit_quantity
-  attr_accessible :quantity_type
-  attr_accessible :unit_type
-  attr_accessible :formatted_date
+  validates :time, format: { with: /\A\d+(?:\.\d{0,2})?\z/,
+                             message: 'cannot be a decimal with more than two places after the decimal point. Correct format: "1.23"' },
+                             numericality: { greater_than: 0,
+                                             message: 'must be numerical'}
 
   default_scope -> { order('fulfillments.id ASC') }
 
@@ -42,15 +37,7 @@ class Fulfillment < ActiveRecord::Base
   UNIT_TYPES = ['N/A', 'Each', 'Sample', 'Aliquot', '3kg unit']
 
   def date=(date_arg)
-    write_attribute(:date, Time.strptime(date_arg, "%m-%d-%Y")) if date_arg.present?
-  end
-
-  def formatted_date
-    format_date self.date
-  end
-
-  def formatted_date=(date)
-    self.date = parse_date(date)
+    write_attribute(:date, Time.strptime(date_arg, "%m/%d/%Y")) if date_arg.present?
   end
 
   def within_date_range? start_date, end_date
@@ -66,16 +53,4 @@ class Fulfillment < ActiveRecord::Base
   end
 
   private
-
-  def format_date(date)
-    date.try(:strftime, '%-m/%d/%Y')
-  end
-
-  def parse_date(str)
-    begin
-      Date.strptime(str.to_s.strip, '%m/%d/%Y').strftime("%m-%d-%Y")
-    rescue ArgumentError => e
-      nil
-    end
-  end
 end

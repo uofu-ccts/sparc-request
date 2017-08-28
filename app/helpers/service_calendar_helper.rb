@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -20,20 +20,6 @@
 
 module ServiceCalendarHelper
 
-  def select_row line_items_visit, tab, portal
-    checked = line_items_visit.visits.map{|v| v.research_billing_qty >= 1 ? true : false}.all?
-    action = checked == true ? 'unselect_calendar_row' : 'select_calendar_row'
-    icon = checked == true ? 'ui-icon-close' : 'ui-icon-check'
-    link_to(
-        (content_tag(:span, '', :class => "ui-button-icon-primary ui-icon #{icon}") + content_tag(:span, 'Check All', :class => 'ui-button-text')),
-        "/service_requests/#{line_items_visit.line_item.service_request.id}/#{action}/#{line_items_visit.id}?portal=#{portal}",
-        :remote  => true,
-        :role    => 'button',
-        :class   => "ui-button ui-widget ui-state-default ui-corner-all ui-button-icon-only service_calendar_row",
-        :id      => "check_row_#{line_items_visit.id}_#{tab}",
-        data:    ( line_items_visit.any_visit_quantities_customized? ? { confirm: "This will reset custom values for this row, do you wish to continue?" } : nil))
-  end
-
   def currency_converter cents
     number_to_currency(Service.cents_to_dollars(cents))
   end
@@ -41,15 +27,63 @@ module ServiceCalendarHelper
   def display_service_rate line_item
     full_rate = line_item.service.displayed_pricing_map.full_rate
 
-    full_rate < line_item.applicable_rate ? "" : currency_converter(full_rate)
+    currency_converter(full_rate)
+  end
+
+  def display_liv_notes(liv, portal)
+  has_notes = liv.notes.length > 0
+  raw(content_tag(:button, raw(content_tag(:span, '', class: "glyphicon glyphicon-list-alt note-icon #{has_notes ? "blue-note" : "black-note"}", aria: {hidden: "true"}))+raw(content_tag(:span, liv.notes.length, class: "#{has_notes ? "badge blue-badge" : "badge"}", id: "lineitemsvisit_#{liv.id}_notes")), type: 'button', class: 'btn btn-link form-control actions-button notes', data: {notable_id: liv.id, notable_type: "LineItemsVisit", in_dashboard: portal}))
+  end
+
+  def display_li_notes(li, portal)
+    has_notes = li.notes.length > 0
+    raw(content_tag(:button, raw(content_tag(:span, '', class: "glyphicon glyphicon-list-alt note-icon #{has_notes ? "blue-note" : "black-note"}", aria: {hidden: "true"}))+raw(content_tag(:span, li.notes.length, class: "#{has_notes ? "badge blue-badge" : "badge"}", id: "lineitem_#{li.id}_notes")), type: 'button', class: 'btn btn-link form-control actions-button notes', data: {notable_id: li.id, notable_type: "LineItem", in_dashboard: portal}))
+  end
+
+  def notable_type_is_related_to_li_or_liv(notable_type)
+    notable_type == "LineItemsVisit" || notable_type == "LineItem"
+  end
+
+  def display_freeze_header_button_pppv?(arm, service_request, sub_service_request, portal, merged, statuses_hidden)
+    livs_and_ssrs = Dashboard::ServiceCalendars.pppv_line_items_visits_to_display(arm, service_request, sub_service_request, merged: merged, statuses_hidden: statuses_hidden)
+    
+    if portal && !merged
+      livs_and_ssrs.values.flatten.count > 9
+    else
+      liv_count = livs_and_ssrs.values.flatten.count
+      ssr_count = livs_and_ssrs.keys.count
+      
+      portal ? (liv_count + ssr_count) > 10 : (liv_count + ssr_count) > 8
+    end
+  end
+
+  def display_freeze_header_button_otf?(service_request, sub_service_request, merged, statuses_hidden)
+    lis_and_ssrs = Dashboard::ServiceCalendars.otf_line_items_to_display(service_request, sub_service_request, merged: merged, statuses_hidden: statuses_hidden)
+    
+    (lis_and_ssrs.values.flatten.count + lis_and_ssrs.keys.count) > 10
+  end
+
+  def display_unit_type(liv)
+    liv.line_item.service.displayed_pricing_map.unit_type.gsub("/", "/ ")
+  end
+
+  def display_service_name_and_code(notable_type, notable_id)
+    case notable_type
+    when "LineItem"
+      LineItem.find(notable_id.to_i).service.name + (LineItem.find(notable_id.to_i).service.cpt_code.present? ? " (" + LineItem.find(notable_id.to_i).service.cpt_code + ")" : "")
+    when "LineItemsVisit"
+      LineItemsVisit.find(notable_id.to_i).line_item.service.name + (LineItemsVisit.find(notable_id.to_i).line_item.service.cpt_code.present? ? " (" + LineItemsVisit.find(notable_id.to_i).line_item.service.cpt_code + ")" : "")
+    end
   end
 
   def display_your_cost line_item
     currency_converter(line_item.applicable_rate)
   end
 
-  def update_per_subject_subtotals line_items_visit
-    line_items_visit.per_subject_subtotals
+  def display_org_name(org_name, ssr, locked)
+    header  = content_tag(:span, org_name + (ssr.ssr_id ? " (#{ssr.ssr_id})" : ""))
+    header += content_tag(:span, '', class: 'glyphicon glyphicon-lock locked') if locked
+    header
   end
 
   #############################################
@@ -71,12 +105,6 @@ module ServiceCalendarHelper
     currency_converter sum
   end
 
-  def display_max_total_indirect_cost_per_patient arm, line_items_visits=nil
-    line_items_visits ||= arm.line_items_visits
-    sum = arm.maximum_indirect_costs_per_patient line_items_visits
-    currency_converter sum
-  end
-
   def display_max_total_cost_per_patient arm, line_items_visits=nil
     line_items_visits ||= arm.line_items_visits
     sum = arm.maximum_total_per_patient line_items_visits
@@ -85,26 +113,22 @@ module ServiceCalendarHelper
 
   def display_total_cost_per_arm arm, line_items_visits=nil
     line_items_visits ||= arm.line_items_visits
-    sum = 0
     sum = arm.total_costs_for_visit_based_service(line_items_visits)
     currency_converter sum
   end
 
   # Displays grand totals per study
   def display_total_direct_cost_per_study_pppvs service_request
-    sum = 0
     sum = service_request.total_direct_costs_per_patient
     currency_converter sum
   end
 
   def display_total_indirect_cost_per_study_pppvs service_request
-    sum = 0
     sum = service_request.total_indirect_costs_per_patient
     currency_converter sum
   end
 
   def display_total_cost_per_study_pppvs service_request
-    sum = 0
     sum = service_request.total_costs_per_patient
     currency_converter(sum)
   end
@@ -123,117 +147,61 @@ module ServiceCalendarHelper
   end
 
   # Display grand totals per study
-  def display_total_direct_cost_per_study_otfs service_request, line_items
-    sum = 0
-    sum = service_request.total_direct_costs_one_time line_items
-    currency_converter sum
+  def display_total_direct_cost_per_study_otfs(service_request)
+    currency_converter(service_request.total_direct_costs_one_time)
   end
 
   def display_total_indirect_cost_per_study_otfs service_request, line_items
-    sum = 0
     sum = service_request.total_indirect_costs_one_time line_items
     currency_converter sum
   end
 
-  def display_total_cost_per_study_otfs service_request, line_items
-    sum = 0
-    sum = service_request.total_costs_one_time line_items
-    currency_converter sum
-  end
-
-  # Display protocol total
-  def display_protocol_total_otfs protocol, current_request, portal
-    sum = 0
-    protocol.service_requests.each do |service_request|
-      next unless service_request.has_one_time_fee_services?
-      if ['first_draft'].include?(service_request.status)
-        next if portal
-        next if service_request != current_request
-      end
-      sum += service_request.total_costs_one_time
-    end
-    currency_converter sum
+  def display_total_cost_per_study_otfs(service_request)
+    currency_converter(service_request.total_costs_one_time)
   end
 
   #############################################
   # Grand Totals
   #############################################
+  def display_ssr_grand_total sub_service_request
+    sum = sub_service_request.direct_cost_total
+    currency_converter sum
+  end
+
   def display_grand_total_direct_costs service_request, line_items
-    sum = 0
     sum = service_request.direct_cost_total line_items
     currency_converter sum
   end
 
   def display_grand_total_indirect_costs service_request, line_items
-    sum = 0
     sum = service_request.indirect_cost_total line_items
     currency_converter sum
   end
 
   def display_grand_total service_request, line_items
-    sum = 0
     sum = service_request.grand_total line_items
     currency_converter sum
   end
 
-  def display_study_grand_total_direct_costs protocol, service_request
-    sum = 0
-    sum = protocol.direct_cost_total service_request
-    currency_converter sum
+  def display_study_grand_total_direct_costs(protocol, service_request)
+    currency_converter(protocol.direct_cost_total(service_request))
   end
 
   def display_study_grand_total_indirect_costs protocol, service_request
-    sum = 0
     sum = protocol.indirect_cost_total service_request
     currency_converter sum
   end
 
-  def display_study_grand_total protocol, service_request
-    sum = 0
-    sum = protocol.grand_total service_request
-    currency_converter sum
+  def display_study_grand_total(protocol, service_request)
+    currency_converter(protocol.grand_total(service_request))
   end
 
   #############################################
   # Other
   #############################################
-  def visits_to_move arm
-    unless arm.visit_groups.empty?
-      vgs = arm.visit_groups
-      last_position = vgs.count
-
-      arr = []
-      vgs.each do |vg|
-        visit_name = vg.name
-        arr << ["#{visit_name}", vg.position]
-      end
-    else
-      arr = [["No Visits", nil]]
-    end
-
-    options_for_select(arr)
-  end
-
-  def move_to_position arm
-    unless arm.visit_groups.empty?
-      vgs = arm.visit_groups
-      arr = []
-      vgs.each do |vg|
-        visit_name = vg.name
-        arr << ["Insert at #{vg.position} - #{visit_name}", vg.position]
-      end
-    else
-      arr = [["No Visits", nil]]
-    end
-
-    options_for_select(arr)
-  end
-
-  def display_line_items_status(line_item)
-    AVAILABLE_STATUSES[line_item.sub_service_request.status]
-  end
-
-  def display_per_patient_calendar?(service_request, sub_service_request, merged)
-    (sub_service_request.nil? ? service_request.has_per_patient_per_visit_services? : sub_service_request.has_per_patient_per_visit_services?) or merged
+  def qty_cost_label qty, cost
+    return nil if qty == 0
+    cost = cost || "$0.00"
+    "#{qty} - #{cost}"
   end
 end

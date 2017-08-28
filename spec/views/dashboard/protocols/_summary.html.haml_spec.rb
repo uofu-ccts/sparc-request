@@ -1,3 +1,23 @@
+# Copyright © 2011-2017 MUSC Foundation for Research Development~
+# All rights reserved.~
+
+# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:~
+
+# 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.~
+
+# 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following~
+# disclaimer in the documentation and/or other materials provided with the distribution.~
+
+# 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products~
+# derived from this software without specific prior written permission.~
+
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,~
+# BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT~
+# SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL~
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS~
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR~
+# TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.~
+
 require 'rails_helper'
 
 RSpec.describe 'dashboard/protocols/summary', type: :view do
@@ -5,7 +25,8 @@ RSpec.describe 'dashboard/protocols/summary', type: :view do
     render 'dashboard/protocols/summary',
       protocol: protocol,
       protocol_type: protocol.type,
-      permission_to_edit: true
+      permission_to_edit: true,
+      user: jug2
   end
 
   let_there_be_lane
@@ -35,7 +56,7 @@ RSpec.describe 'dashboard/protocols/summary', type: :view do
 
       render_summary_for protocol
 
-      expect(response).to have_selector('button', exact: 'Study Notes')
+      expect(response).to have_selector('button', text: 'Study Notes')
     end
 
     context 'Study has potential funding source' do
@@ -88,6 +109,22 @@ RSpec.describe 'dashboard/protocols/summary', type: :view do
         expect(response).to have_content('College Department')
       end
     end
+
+    context 'Study is not archived' do
+      it 'should display the archive button' do
+        protocol = create(:unarchived_study_without_validations, primary_pi: jug2)
+        render_summary_for protocol
+        expect(response).to have_content('Archive Study')
+      end
+    end
+
+    context 'Study is archived' do
+      it 'should display the archive button' do
+        protocol = create(:archived_study_without_validations, primary_pi: jug2)
+        render_summary_for protocol
+        expect(response).to have_content('Unarchive Study')
+      end
+    end
   end
 
   context 'Protocol is a Project' do
@@ -102,7 +139,7 @@ RSpec.describe 'dashboard/protocols/summary', type: :view do
 
       render_summary_for protocol
 
-      expect(response).to have_selector('button', exact: 'Project Notes')
+      expect(response).to have_selector('button', text: 'Project Notes')
     end
 
     it 'should be titled "Project Summary"' do
@@ -166,6 +203,22 @@ RSpec.describe 'dashboard/protocols/summary', type: :view do
         expect(response).not_to have_content('Potential Funding Source')
         expect(response).to have_content('Funding Source')
         expect(response).to have_content('College Department')
+      end
+    end
+
+    context 'Project is not archived' do
+      it 'should display the archive button' do
+        protocol = create(:unarchived_project_without_validations, primary_pi: jug2)
+        render_summary_for protocol
+        expect(response).to have_content('Archive Project')
+      end
+    end
+
+    context 'Project is archived' do
+      it 'should display the archive button' do
+        protocol = create(:archived_project_without_validations, primary_pi: jug2)
+        render_summary_for protocol
+        expect(response).to have_content('Unarchive Project')
       end
     end
   end

@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -18,54 +18,46 @@
 # INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 # TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-class VisitGroup < ActiveRecord::Base
+class VisitGroup < ApplicationRecord
   self.per_page = Visit.per_page
 
   include RemotelyNotifiable
   include Comparable
 
   audited
-
-  attr_accessible :name
-  attr_accessible :position
-  attr_accessible :arm_id
-  attr_accessible :day
-  attr_accessible :window_before
-  attr_accessible :window_after
-
   belongs_to :arm
+  
   has_many :visits, :dependent => :destroy
   has_many :line_items_visits, through: :visits
-  has_many :appointments
-
+  
   acts_as_list scope: :arm
 
-  after_create :set_default_name
-  after_save :set_arm_edited_flag_on_subjects
-  before_destroy :remove_appointments
+  after_create :build_visits, if: Proc.new { |vg| vg.arm.present? }
+  after_create :increment_visit_count, if: Proc.new { |vg| vg.arm.present? && vg.arm.visit_count < vg.arm.visit_groups.count }
+  before_destroy :decrement_visit_count, if: Proc.new { |vg| vg.arm.present? && vg.arm.visit_count >= vg.arm.visit_groups.count  }
 
-  with_options if: :day? do |vg|
-    # with respect to the other VisitGroups associated with the same arm
-    vg.validate :day_must_be_in_order
-    vg.validates :day, numericality: { only_integer: true }
-  end
+  validates :name, presence: true
+  validates :position, presence: true
+  validates :window_before,
+            :window_after,
+            presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
+  validates :day, presence: true, numericality: { only_integer: true }
 
-  def set_arm_edited_flag_on_subjects
-    self.arm.set_arm_edited_flag_on_subjects
-  end
+  validate :day_must_be_in_order
 
-  def set_default_name
-    if name.nil? || name == ""
-      self.update_attributes(:name => "Visit #{self.position}")
-    end
-  end
+  default_scope { order(:position) }
 
   def <=> (other_vg)
-    return self.day <=> other_vg.day
+    return unless other_vg.respond_to?(:day)
+    self.day <=> other_vg.day
+  end
+
+  def self.admin_day_multiplier
+    5
   end
 
   def insertion_name
-    "insert before " + name
+    "Before #{name}" + (day.present? ? " (Day #{day})" : "")
   end
 
   ### audit reporting methods ###
@@ -84,25 +76,33 @@ class VisitGroup < ActiveRecord::Base
     visits.any? { |visit| ((visit.quantities_customized?) && (visit.line_items_visit.line_item.service_request_id == service_request.id)) }
   end
 
+  # TODO: remove after day_must_be_in_order validation is fixed.
+  def in_order?
+    arm.visit_groups.where("position < ? AND day >= ? OR position > ? AND day <= ?", position, day, position, day).none?
+  end
 
+  def per_patient_subtotals
+    self.visits.sum{ |v| v.cost || 0.00 }
+  end
+    
   private
-  def remove_appointments
-    appointments = self.appointments
-    appointments.each do |app|
-      if app.completed?
-        app.update_attributes(position: self.position, name: self.name, visit_group_id: nil)
-      else
-        app.destroy
-      end
+
+  def build_visits
+    self.arm.line_items_visits.each do |liv|
+      self.visits.create(line_items_visit: liv)
     end
   end
 
-  def day_must_be_in_order
-    position_col = VisitGroup.arel_table[:position]
-    day_col = VisitGroup.arel_table[:day]
+  def increment_visit_count
+    self.arm.increment!(:visit_count)
+  end
 
-    if arm.visit_groups.where(position_col.lt(position).and(day_col.gteq(day)).or(
-                              position_col.gt(position).and(day_col.lteq(day)))).any?
+  def decrement_visit_count
+    self.arm.decrement!(:visit_count)
+  end
+
+  def day_must_be_in_order
+    unless in_order?
       errors.add(:day, 'must be in order')
     end
   end

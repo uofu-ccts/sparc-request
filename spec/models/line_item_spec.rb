@@ -1,5 +1,5 @@
 # coding: utf-8
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -21,7 +21,7 @@
 
 require 'rails_helper'
 
-RSpec.describe "Line Item" do
+RSpec.describe LineItem, type: :model do
 
   let_there_be_lane
   let_there_be_j
@@ -33,7 +33,8 @@ RSpec.describe "Line Item" do
       organization.pricing_setups[0].update_attributes(display_date: Date.today - 1)
       service = build(:service, organization_id: organization.id, pricing_map_count: 0)
       service.save!(validate: false)
-      project = Project.create(attributes_for(:protocol), validate: false)
+      project = Project.new(attributes_for(:protocol))
+      project.save!(validate: false)
       # service_request = ServiceRequest.create(attributes_for(:service_request), protocol_id: project.id, validate: false)
       service_request = ServiceRequest.create(attributes_for(:service_request, protocol_id: project.id)); service_request.save!(validate: false); service_request
       line_item = create(:line_item, service_id: service.id, service_request_id: service_request.id)
@@ -51,72 +52,72 @@ RSpec.describe "Line Item" do
       expect(lambda { line_item.applicable_rate }).to raise_exception(ArgumentError)
     end
 
-    it 'should call applicable_rate on the pricing map of a project with the applied percentage and rate type returned by the pricing setup' do
-      # TODO: it's obvious by the complexity of this test that
-      # applicable_rate() is doing too much, but I'm not sure how to
-      # refactor it to be simpler.
-
-      project = Project.create(attributes_for(:protocol))
-      project.save(validate: false)
-
-      organization = create(:organization, pricing_setup_count: 1)
-      organization.pricing_setups[0].update_attributes(display_date: Date.today - 1)
-
-      service = create(:service, organization_id: organization.id, pricing_map_count: 1)
-      service.pricing_maps[0].update_attributes(display_date: Date.today)
-
-      service_request = ServiceRequest.create(attributes_for(:service_request, protocol_id: project.id)); service_request.save!(validate: false); service_request
-      service_request.save(validate: false)
-      line_item = create(:line_item, service_id: service.id, service_request_id: service_request.id)
-      allow(line_item.service_request.protocol).to receive(:funding_status).and_return('funded')
-      allow(line_item.service_request.protocol).to receive(:funding_source).and_return('college')
-
-      allow(line_item.service.organization.pricing_setups[0]).to receive(:rate_type).
-        with('college').
-        and_return('federal')
-      allow(line_item.service.organization.pricing_setups[0]).to receive(:applied_percentage).
-        with('federal').
-        and_return(0.42)
-
-      service.pricing_maps[0] = double(display_date: Date.today - 1)
-      allow(line_item.service.pricing_maps[0]).to receive(:applicable_rate).with('federal', 0.42)
-
-      line_item.applicable_rate
-    end
-
-    it 'should call applicable_rate on the pricing map of a study with the applied percentage and rate type returned by the pricing setup' do
-      # TODO: it's obvious by the complexity of this test that
-      # applicable_rate() is doing too much, but I'm not sure how to
-      # refactor it to be simpler.
-
-      study = Study.create(attributes_for(:protocol))
-      study.save(validate: false)
-
-      organization = create(:organization, pricing_setup_count: 1)
-      organization.pricing_setups[0].update_attributes(display_date: Date.today - 1)
-
-      service = create(:service, organization_id: organization.id, pricing_map_count: 1)
-      service.pricing_maps[0].update_attributes(display_date: Date.today)
-
-      service_request = build(:service_request, protocol_id: study.id)
-      service_request.save(validate: false)
-      line_item = create(:line_item, service_id: service.id, service_request_id: service_request.id)
-      allow(line_item.service_request.protocol).to receive(:funding_source_based_on_status).and_return('college')
-
-      allow(line_item.service.organization.pricing_setups[0]).to receive(:rate_type).
-        with('college').
-        and_return('federal')
-      allow(line_item.service.organization.pricing_setups[0]).to receive(:applied_percentage).
-        with('federal').
-        and_return(0.42)
-
-      service.pricing_maps[0] = double(display_date: Date.today - 1)
-      allow(line_item.service.pricing_maps[0]).to receive(:applicable_rate).
-        with('federal', 0.42)
-
-      line_item.applicable_rate
-    end
-
+    # it 'should call applicable_rate on the pricing map of a project with the applied percentage and rate type returned by the pricing setup' do
+    #   # TODO: it's obvious by the complexity of this test that
+    #   # applicable_rate() is doing too much, but I'm not sure how to
+    #   # refactor it to be simpler.
+    #
+    #   project = Project.create(attributes_for(:protocol))
+    #   project.save(validate: false)
+    #
+    #   organization = create(:organization, pricing_setup_count: 1)
+    #   organization.pricing_setups[0].update_attributes(display_date: Date.today - 1)
+    #
+    #   service = create(:service, organization_id: organization.id, pricing_map_count: 1)
+    #   service.pricing_maps[0].update_attributes(display_date: Date.today)
+    #
+    #   service_request = ServiceRequest.create(attributes_for(:service_request, protocol_id: project.id)); service_request.save!(validate: false); service_request
+    #   service_request.save(validate: false)
+    #   line_item = create(:line_item, service_id: service.id, service_request_id: service_request.id)
+    #   allow(line_item.service_request.protocol).to receive(:funding_status).and_return('funded')
+    #   allow(line_item.service_request.protocol).to receive(:funding_source).and_return('college')
+    #
+    #   allow(line_item.service.organization.pricing_setups[0]).to receive(:rate_type).
+    #     with('college').
+    #     and_return('federal')
+    #   allow(line_item.service.organization.pricing_setups[0]).to receive(:applied_percentage).
+    #     with('federal').
+    #     and_return(0.42)
+    #
+    #   service.pricing_maps[0] = double(display_date: Date.today - 1)
+    #   allow(line_item.service.pricing_maps[0]).to receive(:applicable_rate).with('federal', 0.42)
+    #
+    #   line_item.applicable_rate
+    # end
+    #
+    # it 'should call applicable_rate on the pricing map of a study with the applied percentage and rate type returned by the pricing setup' do
+    #   # TODO: it's obvious by the complexity of this test that
+    #   # applicable_rate() is doing too much, but I'm not sure how to
+    #   # refactor it to be simpler.
+    #
+    #   study = Study.create(attributes_for(:protocol))
+    #   study.save(validate: false)
+    #
+    #   organization = create(:organization, pricing_setup_count: 1)
+    #   organization.pricing_setups[0].update_attributes(display_date: Date.today - 1)
+    #
+    #   service = create(:service, organization_id: organization.id, pricing_map_count: 1)
+    #   service.pricing_maps[0].update_attributes(display_date: Date.today)
+    #
+    #   service_request = build(:service_request, protocol_id: study.id)
+    #   service_request.save(validate: false)
+    #   line_item = create(:line_item, service_id: service.id, service_request_id: service_request.id)
+    #   allow(line_item.service_request.protocol).to receive(:funding_source_based_on_status).and_return('college')
+    #
+    #   allow(line_item.service.organization.pricing_setups[0]).to receive(:rate_type).
+    #     with('college').
+    #     and_return('federal')
+    #   allow(line_item.service.organization.pricing_setups[0]).to receive(:applied_percentage).
+    #     with('federal').
+    #     and_return(0.42)
+    #
+    #   service.pricing_maps[0] = double(display_date: Date.today - 1)
+    #   allow(line_item.service.pricing_maps[0]).to receive(:applicable_rate).
+    #     with('federal', 0.42)
+    #
+    #   line_item.applicable_rate
+    # end
+    #
     context "admin rate" do
 
       before :each do
@@ -183,9 +184,8 @@ RSpec.describe "Line Item" do
     end
 
     describe "cost calculations" do
-
       before :each do
-        add_visits
+        service_request.arms.each { |arm| arm.visits.update_all(quantity: 15, research_billing_qty: 5, insurance_billing_qty: 5, effort_billing_qty: 5) }
       end
 
       context "direct costs for one time fee" do
@@ -237,41 +237,10 @@ RSpec.describe "Line Item" do
           expect(line_item.indirect_costs_for_one_time_fee).to eq(0)
         end
       end
-
-      context "direct costs for one time fees with fulfillments" do
-
-        let!(:otf_line_item) { create(:line_item, service_request_id: service_request.id, service_id: service.id, sub_service_request_id: sub_service_request.id, quantity: 5, units_per_quantity: 1) }
-        let!(:fulfillment1)  { create(:fulfillment, quantity: 5, line_item_id: otf_line_item.id, date: Date.yesterday.strftime("%m-%d-%Y")) }
-        let!(:fulfillment2)  { create(:fulfillment, quantity: 5, line_item_id: otf_line_item.id, date: Date.today.strftime("%m-%d-%Y")) }
-        let!(:fulfillment3)  { create(:fulfillment, quantity: 5, line_item_id: otf_line_item.id, date: Date.today.strftime("%m-%d-%Y")) }
-        let!(:pricing_map2)  { create(:pricing_map, service_id: service.id, unit_type: 'ea', effective_date: Date.today, display_date: Date.today, full_rate: 600, exclude_from_indirect_cost: 0, unit_minimum: 1)}
-
-        it "should correctly calculate a line item's cost that has multiple fulfillments" do
-          # quantity:10 * rate:(percentage:0.5 * cost:600)
-          expect(otf_line_item.direct_cost_for_one_time_fee_with_fulfillments(Date.today, Date.today)).to eq(3000.0)
-        end
-
-        it "should correctly calculate a line item's cost that has a unit factor greater than one" do
-          pricing_map2.update_attributes(unit_factor: 5)
-          fulfillment3 = create(:fulfillment, quantity: 6, line_item_id: otf_line_item.id, date: Date.today.strftime("%m-%d-%Y"))
-          # ceiling(quantity:16/unit_factor:5) * rate:(percentage:0.5 * cost:600)
-          expect(otf_line_item.reload.direct_cost_for_one_time_fee_with_fulfillments(Date.today, Date.today)).to eq(1200.0)
-        end
-
-        it "should correctly calculate a line item's cost for a fulfillment that has historical pricing" do
-          # quantity:5 * rate:(percentage:0.5 * cost:2000)
-          expect(otf_line_item.direct_cost_for_one_time_fee_with_fulfillments(Date.yesterday, Date.yesterday)).to eq(5000.0)
-        end
-      end
     end
   end
 
   context "validations for one time fees" do
-    let!(:study)               { Study.create(attributes_for(:protocol)) }
-    let!(:organization)        { create(:organization, :pricing_setup_count => 1) }
-    let!(:service)             { create(:service, :organization_id => organization.id, :pricing_map_count => 1, one_time_fee: true) }
-    let!(:service_request)     { build(:service_request_without_validations, protocol_id: study.id) }
-    let!(:sub_service_request) { create(:sub_service_request, service_request_id: service_request.id, organization_id: organization.id) }
     let!(:pricing_map)         { create(:pricing_map, service_id: service.id, unit_type: 'ea', effective_date: Date.today, display_date: Date.today, full_rate: 600, exclude_from_indirect_cost: 0, unit_minimum: 1, units_per_qty_max: 10, quantity_minimum: 1) }
     let!(:otf_line_item)       { create(:line_item, service_request_id: service_request.id, service_id: service.id, sub_service_request_id: sub_service_request.id, quantity: 5, units_per_quantity: 1) }
 
@@ -291,6 +260,28 @@ RSpec.describe "Line Item" do
       otf_line_item.quantity = 11
 
       expect(otf_line_item.valid?).to_not be
+    end
+  end
+
+  context "service abbreviation" do
+    let!(:organization) { create(:organization) }
+    let!(:protocol)     { create(:study_without_validations, primary_pi: create(:identity)) }
+    let!(:sr)           { create(:service_request_without_validations, protocol: protocol) }
+    let!(:ssr)          { create(:sub_service_request_without_validations, service_request: sr, organization: organization) }
+    let!(:service)      { create(:service, abbreviation: 'abc') }
+    let!(:line_item)    { create(:line_item_without_validations, service: service, sub_service_request: ssr) }
+
+    before :each do
+      ssr.update_attribute(:ssr_id, "0001")
+    end
+
+    it "should return the abbreviation" do
+      expect(line_item.display_service_abbreviation).to eq("(0001) abc")
+    end
+
+    it "should concatenate cpt code to the abbreviation if it exists" do
+      service.update_attributes(cpt_code: "def")
+      expect(line_item.display_service_abbreviation).to eq("(0001) abc (def)")
     end
   end
 end

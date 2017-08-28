@@ -1,9 +1,32 @@
+# Copyright © 2011-2017 MUSC Foundation for Research Development~
+# All rights reserved.~
+
+# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:~
+
+# 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.~
+
+# 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following~
+# disclaimer in the documentation and/or other materials provided with the distribution.~
+
+# 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products~
+# derived from this software without specific prior written permission.~
+
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,~
+# BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT~
+# SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL~
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS~
+# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR~
+# TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.~
+
 require 'rails_helper'
 
 RSpec.describe 'dashboard/sub_service_requests/_header', type: :view do
   include RSpecHtmlMatchers
 
-  before(:each) { stub_const("CLINICAL_WORK_FULFILLMENT_URL", "www.future-url.org") }
+  before(:each) do
+    stub_const("CLINICAL_WORK_FULFILLMENT_URL", "www.future-url.org")
+    allow(view).to receive(:user_display_protocol_total).and_return(100)
+  end
 
   describe "status dropdown" do
     it "should be populated with statuses from associated Organization" do
@@ -14,6 +37,8 @@ RSpec.describe 'dashboard/sub_service_requests/_header', type: :view do
       allow(logged_in_user).to receive(:unread_notification_count).
         with(sub_service_request.id).and_return("12345")
       stub_current_user(logged_in_user)
+      allow(sub_service_request).to receive(:notes).and_return(["1"])
+      allow(sub_service_request).to receive(:is_complete?).and_return(false)
 
       render "dashboard/sub_service_requests/header", sub_service_request: sub_service_request
 
@@ -36,6 +61,8 @@ RSpec.describe 'dashboard/sub_service_requests/_header', type: :view do
         allow(logged_in_user).to receive(:unread_notification_count).
           with(sub_service_request.id).and_return("12345")
         stub_current_user(logged_in_user)
+        allow(sub_service_request).to receive(:notes).and_return(["1"])
+        allow(sub_service_request).to receive(:is_complete?).and_return(false)
 
         render "dashboard/sub_service_requests/header", sub_service_request: sub_service_request
 
@@ -59,6 +86,8 @@ RSpec.describe 'dashboard/sub_service_requests/_header', type: :view do
         allow(logged_in_user).to receive(:unread_notification_count).
           with(sub_service_request).and_return("12345")
         stub_current_user(logged_in_user)
+        allow(sub_service_request).to receive(:notes).and_return(["1"])
+        allow(sub_service_request).to receive(:is_complete?).and_return(false)
 
         render "dashboard/sub_service_requests/header", sub_service_request: sub_service_request
 
@@ -86,6 +115,8 @@ RSpec.describe 'dashboard/sub_service_requests/_header', type: :view do
             allow(logged_in_user).to receive_messages(unread_notification_count: 12345,
               clinical_provider_rights?: true)
             stub_current_user(logged_in_user)
+            allow(sub_service_request).to receive(:notes).and_return(["1"])
+            allow(sub_service_request).to receive(:is_complete?).and_return(false)
 
             render "dashboard/sub_service_requests/header", sub_service_request: sub_service_request
 
@@ -107,6 +138,8 @@ RSpec.describe 'dashboard/sub_service_requests/_header', type: :view do
             allow(logged_in_user).to receive_messages(unread_notification_count: 12345,
               clinical_provider_rights?: false)
             stub_current_user(logged_in_user)
+            allow(sub_service_request).to receive(:notes).and_return(["1"])
+            allow(sub_service_request).to receive(:is_complete?).and_return(false)
 
             render "dashboard/sub_service_requests/header", sub_service_request: sub_service_request
 
@@ -127,6 +160,8 @@ RSpec.describe 'dashboard/sub_service_requests/_header', type: :view do
           logged_in_user = build_stubbed(:identity)
           allow(logged_in_user).to receive_messages(unread_notification_count: 12345)
           stub_current_user(logged_in_user)
+          allow(sub_service_request).to receive(:notes).and_return(["1"])
+          allow(sub_service_request).to receive(:is_complete?).and_return(false)
 
           render "dashboard/sub_service_requests/header", sub_service_request: sub_service_request
 
@@ -146,10 +181,12 @@ RSpec.describe 'dashboard/sub_service_requests/_header', type: :view do
         logged_in_user = build_stubbed(:identity)
         allow(logged_in_user).to receive_messages(unread_notification_count: 12345)
         stub_current_user(logged_in_user)
+        allow(sub_service_request).to receive(:notes).and_return(["1"])
+        allow(sub_service_request).to receive(:is_complete?).and_return(false)
 
         render "dashboard/sub_service_requests/header", sub_service_request: sub_service_request
 
-        expect(response).to have_tag("span", text: "This Sub Service Request is not ready for Fulfillment.")
+        expect(response).to have_tag("span", text: "Not enabled in SPARCCatalog.")
       end
     end
   end
@@ -162,6 +199,8 @@ RSpec.describe 'dashboard/sub_service_requests/_header', type: :view do
     allow(logged_in_user).to receive(:unread_notification_count).
       with(sub_service_request).and_return("12345")
     stub_current_user(logged_in_user)
+    allow(sub_service_request).to receive(:notes).and_return(["1"])
+    allow(sub_service_request).to receive(:is_complete?).and_return(false)
 
     render "dashboard/sub_service_requests/header", sub_service_request: sub_service_request
 
@@ -176,10 +215,12 @@ RSpec.describe 'dashboard/sub_service_requests/_header', type: :view do
     allow(logged_in_user).to receive(:unread_notification_count).
       with(sub_service_request).and_return("12345")
     stub_current_user(logged_in_user)
+    allow(sub_service_request).to receive(:notes).and_return(["1"])
+    allow(sub_service_request).to receive(:is_complete?).and_return(false)
 
     render "dashboard/sub_service_requests/header", sub_service_request: sub_service_request
 
-    expect(response).to have_tag("td.display_cost", text: /\$543\.20/)
+    expect(response).to have_tag("td.display_cost", text: /\$100\.00/)
   end
 
   def stub_protocol
@@ -208,6 +249,7 @@ RSpec.describe 'dashboard/sub_service_requests/_header', type: :view do
     expect(d).to receive(:unset_effective_date_for_cost_calculations) do
       allow(d).to receive(:direct_cost_total).and_return(displayed_cost)
     end
+    allow(d).to receive(:service_request)
 
     d
   end
@@ -216,6 +258,7 @@ RSpec.describe 'dashboard/sub_service_requests/_header', type: :view do
     default_statuses = { "draft" => "Draft", "not_draft" => "NotDraft" }
     instance_double(Organization,
       name: "MegaCorp",
+      abbreviation: "MC",
       get_available_statuses: opts[:get_available_statuses].nil? ? default_statuses : opts[:get_available_statuses])
   end
 

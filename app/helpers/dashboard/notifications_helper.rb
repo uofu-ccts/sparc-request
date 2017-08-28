@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -44,5 +44,21 @@ module Dashboard::NotificationsHelper
     else
       format_datetime(notification.updated_at)
     end
+  end
+
+  def display_authorized_user(project_role, ssr_requester_id)
+    returning_html = content_tag(:span, display_user_role(project_role)+": "+project_role.identity.full_name)
+    if project_role.identity_id == ssr_requester_id
+      returning_html += content_tag(:strong, t(:dashboard)[:notifications][:table][:requester], class: 'text-primary dropdown-identifier')
+    end
+    returning_html
+  end
+
+  def display_service_provider(service_provider, ssr_owner_id)
+    returning_html = content_tag(:span, service_provider.identity.full_name)
+    if service_provider.identity_id == ssr_owner_id
+      returning_html += content_tag(:strong, t(:dashboard)[:notifications][:table][:owner], class: 'text-primary dropdown-identifier')
+    end
+    returning_html
   end
 end

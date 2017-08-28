@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -24,15 +24,17 @@ $ ->
   $(document).on 'click', 'button.notes.list',  ->
     id = $(this).data('notable-id')
     type = $(this).data('notable-type')
-    data = note:
-      notable_id: id
-      notable_type: type
+    data = 
+      note:
+        notable_id: id
+        notable_type: type
+      in_dashboard: true
     $.ajax
       type: 'GET'
-      url: '/dashboard/notes'
+      url: '/notes.js'
       data: data
 
-  $(document).on 'click', 'button.note.new',  ->
+  $(document).on 'click', 'button.notes.cancel',  ->
     id = $(this).data('notable-id')
     type = $(this).data('notable-type')
     data = note:
@@ -40,6 +42,6 @@ $ ->
       notable_type: type
     $.ajax
       type: 'GET'
-      url: '/dashboard/notes/new'
+      url: '/notes'
       data: data
   # NOTES LISTENERS END

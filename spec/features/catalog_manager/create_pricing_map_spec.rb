@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -24,6 +24,7 @@ Capybara.ignore_hidden_elements = true
 RSpec.describe 'as a user on catalog page', js: true do
   before :each do
     default_catalog_manager_setup
+    wait_for_javascript_to_finish
   end
 
   it 'the user should create a pricing map' do
@@ -123,7 +124,7 @@ RSpec.describe 'as a user on catalog page', js: true do
     end
 
     it "should open up the one time fee section correctly and display error message" do
-      expect(page).to have_content "If the Pricing Map is a one time fee (the box is checked), Quantity Type, Quantity Minimum, Unit Type, and Unit Maximum are required."
+      expect(page).to have_content "If the Pricing Map is a non-clinical service (the box is checked), Quantity Type, Quantity Minimum, Unit Type, and Unit Maximum are required."
     end
 
     it "should not allow save if one time fee fields are not filled in" do

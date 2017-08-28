@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -19,54 +19,41 @@
 # TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 class SearchController < ApplicationController
-  before_filter :initialize_service_request
-  before_filter :authorize_identity
+  before_action :initialize_service_request
+  before_action :authorize_identity
+
   def services
-    term = params[:term].strip
-    results = Service.where("(name LIKE ? OR abbreviation LIKE ? OR cpt_code LIKE ?) AND is_available != ?", "%#{term}%", "%#{term}%", "%#{term}%", "0")
-                     .reject{|s| (s.parents.map(&:is_available).compact.all? == false) or ((s.current_pricing_map rescue false) == false)}
-    
+    term              = params[:term].strip
+    locked_org_ids    = @service_request.
+                          sub_service_requests.
+                          reject{ |ssr| !ssr.is_locked? }.
+                          map(&:organization_id)
+    locked_child_ids  = Organization.authorized_child_organizations(locked_org_ids).map(&:id)
+
+    results = Service.
+                where("(name LIKE ? OR abbreviation LIKE ? OR cpt_code LIKE ?) AND is_available = 1", "%#{term}%", "%#{term}%", "%#{term}%").
+                where.not(organization_id: locked_org_ids + locked_child_ids).
+                reject { |s| (s.current_pricing_map rescue false) == false } # Why is this here?
+
     unless @sub_service_request.nil?
-      results = results.reject{|s| s.parents.exclude? @sub_service_request.organization}
+      results.reject!{ |s| s.parents.exclude?(@sub_service_request.organization) }
     end
 
-    service_request = ServiceRequest.find(session[:service_request_id])
-    first_service = service_request.line_items.count == 0
-    
-    results = results.map { |s|
+    results.map! { |s|
       {
-        :parents      => s.parents.map(&:abbreviation).join(' | '),
-        :label        => s.name,
-        :value        => s.id,
-        :description  => s.description,
-        :sr_id        => session[:service_request_id],
-        :from_portal  => session[:from_portal],
-        :first_service => first_service
+        institution:    s.institution.name,
+        inst_css_class: s.institution.css_class + '-text', 
+        parents:        ' | ' + s.parents.reject{ |p| p.type == 'Institution' }.map(&:abbreviation).join(' | '),
+        label:          s.name,
+        value:          s.id,
+        description:    (s.description.nil? || s.description.blank?) ? t(:proper)[:catalog][:no_description] : s.description,
+        sr_id:          @service_request.id,
+        abbreviation:   s.abbreviation,
+        cpt_code:       s.cpt_code,
+        term:           params[:term]
       }
     }
 
-    results = [{:label => 'No Results'}] if results.empty?
-
-    render :json => results.to_json
-  end
-
-  def identities
-    term = params[:term].strip
-    results = Identity.search(term).map do |i| 
-      {
-       :label              => i.display_name,
-       :value              => i.id,
-       :email              => i.email,
-       :institution        => i.institution,
-       :phone              => i.phone,
-       :era_commons_name   => i.era_commons_name,
-       :college            => i.college,
-       :department         => i.department,
-       :credentials        => i.credentials,
-       :credentials_other  => i.credentials_other
-      }
-    end
-    results = [{:label => 'No Results'}] if results.empty?
-    render :json => results.to_json
+    render json: results.to_json
   end
 end

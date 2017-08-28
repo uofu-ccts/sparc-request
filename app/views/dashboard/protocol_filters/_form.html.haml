@@ -1,4 +1,4 @@
--# Copyright © 2011 MUSC Foundation for Research Development
+-# Copyright © 2011-2017 MUSC Foundation for Research Development
 -# All rights reserved.
 
 -# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -33,13 +33,14 @@
           .col-md-12
             = form.hidden_field :identity_id
             = form.hidden_field :show_archived
-            = form.hidden_field :for_admin
-            = form.hidden_field :for_identity_id
+            = form.hidden_field :admin_filter
             = form.hidden_field :search_query
             - protocol_filter.with_organization.each do |core_id|
               = form.hidden_field :with_organization, multiple: true, value: core_id
             - protocol_filter.with_status.each do |status|
               = form.hidden_field :with_status, multiple: true, value: status
+            - protocol_filter.with_owner.each do |owner|
+              = form.hidden_field :with_owner, multiple: true, value: owner
             .form-group
               = form.label :search_name, t(:dashboard)[:protocol_filters][:saved_filters][:modal][:name], class: "col-sm-4 control-label"
               .col-sm-7

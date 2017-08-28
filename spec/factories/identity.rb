@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -19,15 +19,19 @@
 # TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 FactoryGirl.define do
+  sequence :ldap_uid do |n|
+    "ldap_uid#{n}@email.com"
+  end
+
+  sequence :email do |n|
+    "email#{n}@email.com"
+  end
 
   factory :identity do
-    ldap_uid              { Faker::Internet.user_name }
+    ldap_uid
     last_name             { Faker::Name.last_name }
     first_name            { Faker::Name.first_name }
-    email                 { Faker::Internet.email }
-    institution           { Faker::Company.name }
-    college               { Faker::Company.name }
-    department            { Faker::Company.name }
+    email
     era_commons_name      { Faker::Internet.user_name }
     credentials           { Faker::Name.suffix }
     subspecialty          { Faker::Lorem.word }
@@ -45,6 +49,18 @@ FactoryGirl.define do
       approval_count 0
       project_role_count 0
       service_provider_count 0
+      protocol_filter_count 0
+    end
+
+    trait :without_validations do
+      after(:build) do |user|
+        begin
+          user.class.skip_callback(:create, :after, :send_admin_mail)
+        rescue ArgumentError
+          # Do nothing. Callback has already been skipped.
+        end
+      end
+      to_create { |instance| instance.save(validate: false) }
     end
 
     after(:build) do |identity, evaluator|
@@ -62,6 +78,9 @@ FactoryGirl.define do
 
       create_list(:service_provider,
        evaluator.service_provider_count, identity: identity)
+
+      create_list(:protocol_filter,
+        evaluator.protocol_filter_count, identity: identity)
     end
   end
 end

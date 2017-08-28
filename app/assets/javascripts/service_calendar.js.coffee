@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -21,345 +21,299 @@
 #= require navigation
 
 $(document).ready ->
-  $(document).on 'click', '.page_change_arrow', ->
+  freezeHeader = (arm_container) ->
+    $(arm_container).each ->
+      $(this).find('table').addClass('scrolling-table')
+      $(this).find('table').removeClass('non-scrolling-table')
+      $(this).find('thead').addClass('scrolling-thead')
+      $(this).find('tbody').addClass('scrolling-div')
+      $(this).find('.freeze-header-button').find('.freeze-header').hide()
+      $(this).find('.freeze-header-button').find('.unfreeze-header').show()
+      $(this).find('.freeze-header-button').removeClass('freeze')
+      $(this).find('.freeze-header-button').addClass('unfreeze')
+
+  $(document).on 'click', '.custom-tab a', ->
+    if $(this).is('#billing-strategy-tab')
+      $('.billing-info ul').removeClass('hidden')
+    else
+      $('.billing-info ul').addClass('hidden')
+
+    # Hold freeze header upon tab change
+    $(document).ajaxComplete ->
+      arm_ids_with_frozen_header = []
+      frozen_headers = $('.unfreeze')
+      frozen_headers.each (index, arm) ->
+        if $(arm).data('arm-id') != undefined
+          arm_ids_with_frozen_header.push( $(arm).data('arm-id') )
+
+      $(jQuery.unique(arm_ids_with_frozen_header)).each (index, arm) ->
+        if arm == 'otf-calendar'
+          arm_container = $(".#{arm}")
+        else
+          arm_container = $(".arm-calendar-container-#{arm}")
+
+        freezeHeader(arm_container)  
+
+  $(document).on 'click', '.page-change-arrow', ->
+    scroll = $(this).parents('.scrolling-thead').length > 0
     unless $(this).attr('disabled')
       $.ajax
         type: 'GET'
-        url:  $(this).data('url')
+        url: $(this).data('url')
+        data:
+          scroll: scroll
 
-  $('.visit_number a, .service_calendar_row').live 'click', ->
-    $('.service_calendar_spinner').show()
-
-  $('.line_item_visit_template').live 'change', ->
-    $('.service_calendar_spinner').show()
-    obj = $(this)
+  $(document).on 'click', '.edit-visit-group', ->
     $.ajax
-      type: 'PUT'
-      url: $(this).attr('update') + "&checked=#{$(this).is(':checked')}"
-      error: (jqXHR, textStatus, errorThrown) ->
-        if jqXHR.status == 500 and jqXHR.getResponseHeader('Content-Type').split(';')[0] == 'text/javascript'
-          errors = JSON.parse(jqXHR.responseText)
-        else
-          errors = [textStatus]
-        for error in errors
-          alert(error)
-          obj.prop('checked', false)
-    .complete =>
-      $('.service_calendar_spinner').hide()
-      arm_id = $(this).data("arm_id")
-      calculate_max_rates(arm_id)
+      type: 'GET'
+      url: "/visit_groups/#{$(this).data('id')}/edit.js"
+      data:
+        service_request_id:     getSRId()
+        sub_service_request_id: getSSRId()
+        tab:                    $(this).data('tab')
+        pages:                  $(this).data('pages')
+        page:                   $(this).data('page')
+        review:                 $(this).data('review')
+        portal:                 $(this).data('portal')
+        admin:                  $(this).data('admin')
+        merged:                 $(this).data('merged')
+        consolidated:           $(this).data('consolidated')
+        statuses_hidden:        $(this).data('statuses-hidden')
 
-  $('.line_item_visit_quantity').live 'change', ->
-    $('.service_calendar_spinner').show()
-    $.ajax
-      type: 'PUT'
-      url: $(this).attr('update') + "&qty=#{$(this).val()}"
-    .complete =>
-      $('.service_calendar_spinner').hide()
-
-  $('.line_item_visit_billing').live 'change', ->
-    intRegex = /^\d+$/
-
-    my_qty = parseInt($(this).val(), 10)
-    sibling_qty = 0
-
-    $(this).siblings().each (i, element) ->
-      sibling_qty += parseInt($(this).val(), 10)
-
-    qty = my_qty + sibling_qty
-
-    if intRegex.test qty
-      unit_minimum = $(this).attr('data-unit-minimum')
-
-      if qty > 0 and qty < unit_minimum
-        alert "Quantity of #{qty} is less than the unit minimum of #{unit_minimum}.\nTotal quantity is being set to the unit minimum"
-        my_qty = unit_minimum - sibling_qty
-        $(this).val(my_qty)
-
-      obj = $(this)
-      original_val = obj.attr('previous_quantity')
-
-      $('.service_calendar_spinner').show()
+  $(document).on 'click', '.service-calendar-row', ->
+    return false if $(this).attr('disabled')
+    if confirm(I18n['calendars']['pppv']['editable_fields']['row_select']['confirm'])
       $.ajax
-        type: 'PUT'
-        url: $(this).attr('update') + "&qty=#{my_qty}"
-        success: ->
-          $(obj).attr('previous_quantity', $(obj).val())
-        error: (jqXHR, textStatus, errorThrown) ->
-          if jqXHR.status == 500 and jqXHR.getResponseHeader('Content-Type').split(';')[0] == 'text/javascript'
-            errors = JSON.parse(jqXHR.responseText)
-          else
-            errors = [textStatus]
-          for error in errors
-            # May need to include something to allow error.humanize like we do elsewhere
-            # if this gets weird looking.
-            alert(error)
-            $(obj).val(original_val)
-            $(obj).attr('current_quantity', original_val)
-      .complete =>
-        $('.service_calendar_spinner').hide()
-        arm_id = $(this).data("arm_id")
-        calculate_max_rates(arm_id)
-    else
-      alert "Quantity must be a whole number"
-      $('.service_calendar_spinner').hide()
-      $(this).val(0)
+        type: 'post'
+        url: $(this).data('url')
 
-  $('.line_items_visit_subject_count').live 'change', ->
-    $('.service_calendar_spinner').show()
-    $.ajax
-      type: 'PUT'
-      url: $(this).attr('update') + "&qty=#{$(this).val()}"
-    .complete ->
-      $('.service_calendar_spinner').hide()
+  $(document).on 'click', '.service-calendar-column', ->
+    return false if $(this).attr('disabled')
+    if confirm(I18n['calendars']['pppv']['editable_fields']['column_select']['confirm'])
+      $.ajax
+        type: 'post'
+        url: $(this).data('url')
 
-  $(document).on('change', '.visit_day', ->
-    # Grab the day
-    position = $(this).data('position')
-    day_val = $(this).val()
-    original_val = $(this).data('day')
-    $('.service_calendar_spinner').show()
-    $.ajax
-      type: 'PUT'
-      url: $(this).attr('update')
-      data: {day: day_val, position: position}
-      success: =>
-        $(this).data('day', day_val)
-    .error (event, request, test) =>
-      alertText = stack_errors_for_alert(JSON.parse(event.responseText))
-      alert(alertText)
-      $(this).val(original_val)
-    .complete ->
-      $('.service_calendar_spinner').hide()
-  )
-
-  $(document).on('change', '.visit_name', ->
-    $('.service_calendar_spinner').show()
-    visit_position = $(this).data('visit_position')
-    arm_id = $(this).data('arm_id')
-    service_request_id = $(this).data('service_request_id')
-    name = $(this).val()
-    data = {}
-    data['visit_position'] = visit_position
-    data['arm_id']         = arm_id
-    data['name']           = name
-    $.ajax
-      type: 'PUT'
-      url: "/service_requests/#{service_request_id}/service_calendars/rename_visit"
-      data: data
-    .complete ->
-      $('.service_calendar_spinner').hide()
-  )
-
-  $('.visit_window_before').live 'change', ->
-    # Grab the window_before
-    position = $(this).data('position')
-    window_before_val = $(this).val()
-    original_val = $(this).data('window_before')
-    $('.service_calendar_spinner').show()
-    $.ajax
-      type: 'PUT'
-      url: $(this).attr('update')
-      data: {window_before: window_before_val, position: position}
-      success: =>
-        $(this).data('window_before', window_before_val)
-    .error (event, request, test) =>
-      alertText = stack_errors_for_alert(JSON.parse(event.responseText))
-      alert(alertText)
-      $(this).val(original_val)
-    .complete ->
-      $('.service_calendar_spinner').hide()
-
-  $('.visit_window_after').live 'change', ->
-    # Grab the window_after
-    position = $(this).data('position')
-    window_after_val = $(this).val()
-    original_val = $(this).data('window_after')
-    $('.service_calendar_spinner').show()
-    $.ajax
-      type: 'PUT'
-      url: $(this).attr('update')
-      data: {window_after: window_after_val, position: position}
-      success: =>
-        $(this).data('window_after', window_after_val)
-    .error (event, request, test) =>
-      alertText = stack_errors_for_alert(JSON.parse(event.responseText))
-      alert(alertText)
-      $(this).val(original_val)
-    .complete ->
-      $('.service_calendar_spinner').hide()
-
-# Triggers for changing attributes on one time fee line items
-  $('.units_per_quantity').live 'change', ->
-    intRegex = /^\d+$/
-    max = parseInt($(this).attr('data-qty_max'), 10)
-    prev_qty = $(this).attr('current_units_per_quantity')
-    user_input = parseInt($(this).val(), 10)
-
-    # Handle errors
-    unless intRegex.test user_input
-      $(this).css({'border': '2px solid red'})
-      $('#nan_error').fadeIn('fast').delay(5000).fadeOut(5000, => $(this).css('border', ''))
-      $(this).val(prev_qty)
-    else
-      if user_input > max
-        $(this).css({'border': '2px solid red'})
-        $('#unit_quantity').html(user_input)
-        $('#unit_max').html(max + ".")
-        $('#unit_max_error').fadeIn('fast').delay(5000).fadeOut(5000, => $(this).css('border', ''))
-        $(this).val(max)
-      else
-        $(this).attr('current_units_per_quantity', user_input)
-        $('#unit_max_error').hide()
-        $(this).css('border', '')
-        # If it passes validation and is within study tracker, save by ajax
-        if $(this).data('study_tracker') == true
-          save_line_item_by_ajax(this)
-        else
-          update_otf_line_item this
-    recalculate_one_time_fee_totals()
-    return false
-
-  $(document).on('change', '.line_item_quantity', ->
-    update_otf_line_item(this)
-    # If new val is greater than units_per_qty_max, do not recalculate totals 
-    new_val = $(this).val()
-    max_val = $(this).attr('units_per_qty_max')
-    min_val = $(this).attr('unit_minimum')
-    if (parseInt(new_val) <= parseInt(max_val)) && (parseInt(new_val) >= parseInt(min_val))
-      recalculate_one_time_fee_totals()
-        
-    return false
-  )
-
-  $(document).on('click', '.move_visits', ->
-    sr_id = $(this).data('sr-id')
-    data =
-      'arm_id': $(this).data('arm-id')
-      'tab': $(this).data('tab')
-      'portal': $(this).data('portal')
-    $.ajax
-      type: 'PUT'
-      url: "/service_requests/#{sr_id}/service_calendars/show_move_visits"
-      data: JSON.stringify(data)
-      dataType: 'script'
-      contentType: 'application/json; charset=utf-8'
-  )
-
-  $(document).on 'change', '.jump_to_visit', ->
-    $('.service_calendar_spinner').show()
-
-    page = $(this).find('option:selected').attr('parent_page')
-
-    if page == undefined || page == false
-      page = $(this).val()
+  $(document).on 'change', '.visit-group-select .selectpicker', ->
+    scroll = $(this).parents('.scrolling-thead').length > 0
+    page = $(this).find('option:selected').attr('page')
 
     $.ajax
       type: 'GET'
-      url: $(this).attr('url')
-      data: {"page": page}
-      dataType: 'script'
-      success: ->
-        $('.service_calendar_spinner').hide()
+      url: $(this).data('url')
+      data:
+        page: page
+        scroll: scroll
 
-  update_otf_line_item = (obj) ->
-    original_val = $(obj).attr('previous_quantity')
-    $('.service_calendar_spinner').show()
+  $(document).on 'click', '.move-visit-button', ->
+    $.ajax
+      type: 'GET'
+      url: '/service_calendars/show_move_visits'
+      data:
+        arm_id:                 $(this).data('arm-id')
+        service_request_id:     getSRId()
+        sub_service_request_id: getSSRId()
+        tab:                    $(this).data('tab')
+        pages:                  $(this).data('pages')
+        page:                   $(this).data('page')
+        review:                 $(this).data('review')
+        portal:                 $(this).data('portal')
+        admin:                  $(this).data('admin')
+        merged:                 $(this).data('merged')
+        consolidated:           $(this).data('consolidated')
+        statuses_hidden:        $(this).data('statuses-hidden')
+    return false
+
+  $(document).on 'click', '.freeze-header-button', ->
+
+    arm = $(this).data('arm-id')
+
+    if arm == 'otf-calendar'
+      arm_container = $(".#{arm}")
+    else
+      arm_container = $(".arm-calendar-container-#{arm}")
+
+    if $(this).hasClass('freeze')
+      freezeHeader(arm_container)
+    else
+      $(arm_container).each ->
+        $(this).find('table').removeClass('scrolling-table')
+        $(this).find('table').addClass('non-scrolling-table')
+        $(this).find('thead').removeClass('scrolling-thead')
+        $(this).find('tbody').removeClass('scrolling-div')
+        $(this).find('.freeze-header-button').find('.unfreeze-header').hide()
+        $(this).find('.freeze-header-button').find('.freeze-header').show()
+        $(this).find('.freeze-header-button').removeClass('unfreeze')
+        $(this).find('.freeze-header-button').addClass('freeze')
+
+  $(document).on 'change', '.visit-quantity', ->
     $.ajax
       type: 'PUT'
-      url: $(obj).attr('update') + "&val=#{$(obj).val()}"
-      success: ->
-        $(obj).attr('previous_quantity', $(obj).val())
-      error: (jqXHR, textStatus, errorThrown) ->
-        if jqXHR.status == 500 and jqXHR.getResponseHeader('Content-Type').split(';')[0] == 'text/javascript'
-          errors = JSON.parse(jqXHR.responseText)
-        else
-          errors = [textStatus]
-        for error in errors
-          # May need to include something to allow error.humanize like we do elsewhere
-          # if this gets weird looking.
-          alert(error)
-          $(obj).val(original_val)
-          $(obj).attr('current_quantity', original_val)
-    .complete =>
-      $('.service_calendar_spinner').hide()
+      data:
+        visit:
+          quantity:               $(this).data('quantity')
+          research_billing_qty:   $(this).data('research-billing-qty')
+          insurance_billing_qty:  $(this).data('insurance-billing-qty')
+          effort_billing_qty:     $(this).data('effort-billing-qty')
+        service_request_id:       getSRId()
+        sub_service_request_id:   getSSRId()
+        admin:                    $(this).data('admin')
+        tab:                      $(this).data('tab')
+        page:                     $(this).data('page')
+      url: "/visits/#{$(this).data('visit-id')}"
 
-
-# methods for saving one time fee attributes
-  save_line_item_by_ajax = (obj) ->
-    object_id = $(obj).data("line_item_id")
-    name = $(obj).attr('name')
-    key = name.replace("line_item_", '')
-    data = {}
-    data[key] = $(obj).val()
-    put_attribute(object_id, data)
-
-
-  put_attribute = (id, data) ->
+  $(document).on 'click', '.edit-billing-qty', ->
     $.ajax
-      type: 'PUT'
-      url:  "/dashboard/line_items/#{id}/update_from_cwf"
-      data: JSON.stringify(data)
-      dataType: "script"
-      contentType: 'application/json; charset=utf-8'
-      success: ->
-        $().toastmessage('showSuccessToast', I18n["service_request_success"])
-      error: (jqXHR, textStatus, errorThrown) ->
-        if jqXHR.status == 500 and jqXHR.getResponseHeader('Content-Type').split(';')[0] == 'text/javascript'
-          errors = JSON.parse(jqXHR.responseText)
-        else
-          errors = [textStatus]
-        for error in errors
-          $().toastmessage('showErrorToast', "#{error.humanize()}.")
+      type: 'GET'
+      data:
+        service_request_id:     getSRId()
+        sub_service_request_id: getSSRId()
+        admin:                  $(this).data('admin')
+        page:                   $(this).data('page')
+      url: "/visits/#{$(this).data('visit-id')}/edit"
 
-recalculate_one_time_fee_totals = ->
-  grand_total = 0
-  otfs = $('.otfs:visible')
+  $(document).on 'change', '#visit_group', ->
+    arm_id = $('#arm_id').val()
+    move_visit_button = $(".arm-calendar-container-#{arm_id}").find('.move-visit-button')
+    $.ajax
+      type: 'GET'
+      url: '/service_calendars/show_move_visits'
+      data:
+        arm_id:                   arm_id
+        visit_group_id:           $(this).val()
+        service_request_id:       getSRId()
+        sub_service_request_id:   getSSRId()
+        tab:                      $(move_visit_button).data('tab')
+        pages:                    $(move_visit_button).data('pages')
+        page:                     $(move_visit_button).data('page')
+        review:                   $(move_visit_button).data('review')
+        portal:                   $(move_visit_button).data('portal')
+        admin:                    $(move_visit_button).data('admin')
+        merged:                   $(move_visit_button).data('merged')
+        consolidated:             $(move_visit_button).data('consolidated')
+        statuses_hidden:          $(move_visit_button).data('statuses-hidden')
 
-  otfs.each (index, otf) =>
-    your_cost = $(otf).children('.your_cost').data('your_cost')
-    qty = $(otf).find('.line_item_quantity').val()
-    units_per_qty = $(otf).find('.units_per_quantity').val()
-    if units_per_qty == undefined
-      units_per_qty = 1
-    unit_factor = $(otf).data('unit_factor')
+  # NOTES LISTENERS BEGIN
+  $(document).on 'click', 'button.btn-link.notes',  ->
+    id = $(this).data('notable-id')
+    type = $(this).data('notable-type')
+    in_dashboard = $(this).data('in-dashboard')
+    data = 
+      note:
+        notable_id: id
+        notable_type: type
+      in_dashboard: in_dashboard
+    $.ajax
+      type: 'GET'
+      url: '/notes.js'
+      data: data
 
-    number_of_kits = (qty * units_per_qty) / unit_factor
-    number_of_kits = Math.ceil(number_of_kits)
-    new_otf_total = (number_of_kits * your_cost) / 100.0
-    grand_total += new_otf_total
+  $(document).on 'click', 'button.note.new',  ->
+    id = $(this).data('notable-id')
+    type = $(this).data('notable-type')
+    in_dashboard = $(this).data('in-dashboard')
+    data = 
+      note:
+        notable_id: id
+        notable_type: type
+      in_dashboard : in_dashboard
+    $.ajax
+      type: 'GET'
+      url: '/notes/new'
+      data: data
 
-    $(otf).find('.otf_total').html('$' + commaSeparateNumber(new_otf_total.toFixed(2)))
+  $(document).on 'click', 'button.notes.cancel',  ->
+    id = $(this).data('notable-id')
+    type = $(this).data('notable-type')
+    data = note:
+      notable_id: id
+      notable_type: type
+    $.ajax
+      type: 'GET'
+      url: '/notes'
+      data: data
+  # NOTES LISTENERS END
 
-  $('.otf_total_direct_cost').html('$' + commaSeparateNumber(grand_total.toFixed(2)))
+(exports ? this).setup_xeditable_fields = (scroll) ->
+  # Override x-editable defaults
+  $.fn.editable.defaults.send = 'always'
+  $.fn.editable.defaults.ajaxOptions =
+    type: "PUT",
+    dataType: "json"
+  $.fn.editable.defaults.error = (response, newValue) ->
+    error_msgs = []
+    $.each JSON.parse(response.responseText), (attr, errors) ->
+      for err in errors
+        error_msgs.push(humanize_string(attr)+err)
+    return error_msgs.join("\n")
 
-commaSeparateNumber = (val) ->
-  while (/(\d+)(\d{3})/.test(val.toString()))
-    val = val.toString().replace(/(\d+)(\d{3})/, '$1'+','+'$2')
-  return val
+  $('.edit-your-cost').editable
+    display: (value) ->
+      # display field as currency, edit as quantity
+      $(this).text("$" + parseFloat(value).toFixed(2))
+    params: (params) ->
+      {
+        line_item:
+          displayed_cost: params.value
+        service_request_id: getSRId()
+      }
+    success: (data) ->
+      $('#sub_service_request_header').html(data['header'])
+      $('.selectpicker').selectpicker()
 
-stack_errors_for_alert = (errors) ->
-  compiled = ''
-  for error in errors
-    compiled += error + '\n'
-  return compiled
+  $('.edit-subject-count').editable
+    params: (params) ->
+      {
+        line_items_visit:
+          subject_count: params.value
+        service_request_id: getSRId()
+        sub_service_request_id: getSSRId()
+      }
+    success: (data) ->
+      arm_id = $(this).data('arm-id')
+      
+      # Replace Per Patient / Study Totals
+      $(this).parent().siblings('.pppv-per-patient-line-item-total').replaceWith(data['total_per_patient'])
+      $(this).parent().siblings('.pppv-per-study-line-item-total').replaceWith(data['total_per_study'])
+      
+      # Replace Totals
+      $(".arm-#{arm_id}.maximum-total-direct-cost-per-patient").replaceWith(data['max_total_direct'])
+      $(".arm-#{arm_id}.maximum-total-per-patient").replaceWith(data['max_total_per_patient'])
+      $(".arm-#{arm_id}.total-per-patient-per-visit-cost-per-study").replaceWith(data['total_costs'])
 
-(exports ? this).calculate_max_rates = (arm_id) ->
-  for num in [1..5]
-    column = '.visit_column_' + num
-    visits = $(column + '.visit' + '.arm_' + arm_id)
-    direct_total = 0
-    $(visits).each (index, visit) =>
-      if $(visit).is(':hidden') == false && $(visit).data('cents')
-        direct_total += Math.floor($(visit).data('cents')) / 100.0
-    indirect_rate = parseFloat($("#indirect_rate").val()) / 100.0
-    indirect_total = 0
-    max_total = direct_total + indirect_total
+      if data['ssr_header']
+        # Replace Admin Dashboard SSR header
+        $('#sub_service_request_header').html(data['ssr_header'])
+        $('.selectpicker').selectpicker()
 
-    direct_total_display = '$' + (direct_total).toFixed(2)
-    indirect_total_display = '$' + (Math.floor(indirect_total * 100) / 100).toFixed(2)
-    max_total_display = '$' + (Math.floor(max_total * 100) / 100).toFixed(2)
+  $('.edit-qty').editable
+    params: (params) ->
+      {
+        line_item:
+          quantity: params.value
+        service_request_id: getSRId()
+        sub_service_request_id: getSSRId()
+      }
+    success: (data) ->
+      # Replace Study Total
+      $(this).parent().siblings('.total-per-study').replaceWith(data['total_per_study'])
 
-    $(column + '.max_direct_per_patient' + '.arm_' + arm_id).html(direct_total_display)
-    $(column + '.max_indirect_per_patient' + '.arm_' + arm_id).html(indirect_total_display)
-    $(column + '.max_total_per_patient' + '.arm_' + arm_id).html(max_total_display)
+      # Replace Totals
+      $('.total-direct-one-time-fee-cost-per-study').replaceWith(data['max_total_direct'])
+      $('.total-one-time-fee-cost-per-study').replaceWith(data['total_costs'])
+
+  $('.edit-units-per-qty').editable
+    params: (params) ->
+      {
+        line_item:
+          units_per_quantity: params.value
+        service_request_id: getSRId()
+        sub_service_request_id: getSSRId()
+      }
+    success: (data) ->
+      # Replace Study Total
+      $(this).parent().siblings('.total-per-study').replaceWith(data['total_per_study'])
+
+      # Replace Totals
+      $('.total-direct-one-time-fee-cost-per-study').replaceWith(data['max_total_direct'])
+      $('.total-one-time-fee-cost-per-study').replaceWith(data['total_costs'])

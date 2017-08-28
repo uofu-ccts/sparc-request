@@ -1,4 +1,4 @@
-# Copyright © 2011 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -144,7 +144,7 @@ class EpicInterface
   def send_study_creation(study)
     message = study_creation_message(study)
     call('RetrieveProtocolDefResponse', message)
-    
+
 
     # TODO: handle response from the server
   end
@@ -178,6 +178,7 @@ class EpicInterface
         emit_category_grouper(xml, study)
         emit_study_type(xml, study)
         emit_ide_number(xml, study)
+        emit_rmid(xml, study)
         emit_cofc(xml, study)
         emit_visits(xml, study)
         emit_procedures_and_encounters(xml, study)
@@ -207,7 +208,8 @@ class EpicInterface
         emit_study_type(xml, study)
         emit_ide_number(xml, study)
         emit_cofc(xml, study)
-   
+        emit_rmid(xml, study)
+
       }
     }
     return xml.target!
@@ -284,11 +286,10 @@ class EpicInterface
   end
 
   def emit_cofc(xml, study)
-    if study.active?
-      cofc = study.study_type_answers.where(study_type_question_id: StudyTypeQuestion.where(study_type_question_group_id: StudyTypeQuestionGroup.where(active:true).pluck(:id)).where(order:1).first.id).first.answer == true ? 'YES_COFC' : 'NO_COFC'
-    else
-      cofc = study.study_type_answers.where(study_type_question_id: StudyTypeQuestion.where(study_type_question_group_id: StudyTypeQuestionGroup.where(active:false).pluck(:id)).where(order:2).first.id).first.answer == true ? 'YES_COFC' : 'NO_COFC'
-    end
+    # Certificate of confidentiality question is the first question for 
+    # versions 2 and 3, but the second question for version 1
+    order = study.version_type == 3 || 2 ? 1 : 2
+    cofc = study.study_type_answers.where(study_type_question_id: StudyTypeQuestion.where(study_type_question_group_id: StudyTypeQuestionGroup.where(version: study.version_type).pluck(:id)).where(order:order).first.id).first.answer == true ? 'YES_COFC' : 'NO_COFC'
 
     xml.subjectOf(typeCode: 'SUBJ') {
       xml.studyCharacteristic(classCode: 'OBS', moodCode: 'EVN') {
@@ -299,10 +300,9 @@ class EpicInterface
   end
 
   def emit_study_type(xml, study)
+    study_type = StudyTypeFinder.new(study).study_type
 
-    study_type = Portal::StudyTypeFinder.new(study).study_type
-
-    if study_type 
+    if study_type
       xml.subjectOf(typeCode: 'SUBJ') {
         xml.studyCharacteristic(classCode: 'OBS', moodCode: 'EVN') {
           xml.code(code: 'STUDYTYPE')
@@ -311,15 +311,28 @@ class EpicInterface
       }
     end
   end
-  
-  def emit_ide_number(xml, study)
-    ide_number = study.investigational_products_info.try(:ide_number)
 
-    if study.investigational_products_info && !ide_number.blank? then
+  def emit_rmid(xml, study)
+    rmid = study.research_master_id
+
+    if rmid
+      xml.subjectOf(typeCode: 'SUBJ') {
+        xml.studyCharacteristic(classCode: 'OBS', moodCode: 'EVN') {
+          xml.code(code: 'RGFT3')
+          xml.value(value: rmid)
+        }
+      }
+    end
+  end
+
+  def emit_ide_number(xml, study)
+    inv_device_number = study.investigational_products_info.try(:inv_device_number)
+
+    if study.investigational_products_info && !inv_device_number.blank? then
       xml.subjectOf(typeCode: 'SUBJ') {
         xml.studyCharacteristic(classCode: 'OBS', moodCode: 'EVN') {
           xml.code(code: 'RGFT2')
-          xml.value(value: ide_number)
+          xml.value(value: inv_device_number)
         }
       }
     end
@@ -436,13 +449,13 @@ class EpicInterface
       if not service.cpt_code.blank? then
         service_code = service.cpt_code
         service_code_system = "SPARCCPT"
-      elsif not service.charge_code.blank? then
-        service_code = service.charge_code
+      elsif not service.eap_id.blank? then
+        service_code = service.eap_id
         service_code_system = "SPARCCPT"
       else
         # Skip this service, since it has neither a CPT code nor a Charge
         # code and add to an error list to warn the user
-        error_string = "#{service.name} does not have a CPT or a Charge code."
+        error_string = "#{service.name} does not have a CPT code or an EAP Id."
         @errors[:no_code] = [] unless @errors[:no_code]
         @errors[:no_code] << error_string unless @errors[:no_code].include?(error_string)
         next
