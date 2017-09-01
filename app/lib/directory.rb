@@ -136,7 +136,7 @@ class Directory
 
     ldap_results.each do |r|
       begin
-        uid = self.get_cn_from_dn("#{ldap_result[:dn]}")
+        uid = self.get_cn_from_dn("#{r[:dn]}")
         email       = r[LDAP_EMAIL].try(:first)
         first_name  = r[LDAP_FIRST_NAME].try(:first)
         last_name   = r[LDAP_LAST_NAME].try(:first)
