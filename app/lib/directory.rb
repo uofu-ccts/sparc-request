@@ -136,7 +136,7 @@ class Directory
 
     ldap_results.each do |r|
       begin
-        uid         = "#{r[LDAP_UID].try(:first).try(:downcase)}@#{DOMAIN}"
+        uid = self.get_cn_from_dn("#{ldap_result[:dn]}")
         email       = r[LDAP_EMAIL].try(:first)
         first_name  = r[LDAP_FIRST_NAME].try(:first)
         last_name   = r[LDAP_LAST_NAME].try(:first)
@@ -168,7 +168,7 @@ class Directory
               first_name: first_name,
               last_name:  last_name,
               email:      email,
-              ldap_uid:   uid,
+              ldap_uid:   "#{uid}@#{DOMAIN}",
               password:   Devise.friendly_token[0,20],
               approved:   true)
         end
