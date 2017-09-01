@@ -55,11 +55,11 @@ common: &default_settings
   # application and reports this data to the New Relic service at
   # newrelic.com. This global switch is normally overridden for each
   # environment below. (formerly called 'enabled')
-  monitor_mode: true
+  monitor_mode: false
 
   # Developer mode should be off in every environment but
   # development as it has very high overhead in memory.
-  developer_mode: true
+  developer_mode: false
 
   # The newrelic agent generates its own log file to keep its logging
   # information separate from that of your application. Specify its
