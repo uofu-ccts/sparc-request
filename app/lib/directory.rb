@@ -21,27 +21,6 @@
 require 'net/ldap'
 
 class Directory
-  # Only initialize LDAP if it is enabled
-  if USE_LDAP
-    # Load the YAML file for ldap configuration and set constants
-    begin
-      ldap_config   ||= YAML.load_file(Rails.root.join('config', 'ldap.yml'))[Rails.env]
-      LDAP_HOST       = ldap_config['ldap_host']
-      LDAP_PORT       = ldap_config['ldap_port']
-      LDAP_BASE       = ldap_config['ldap_base']
-      LDAP_ENCRYPTION = ldap_config['ldap_encryption'].to_sym
-      DOMAIN          = ldap_config['ldap_domain']
-      LDAP_UID        = ldap_config['ldap_uid']
-      LDAP_LAST_NAME  = ldap_config['ldap_last_name']
-      LDAP_FIRST_NAME = ldap_config['ldap_first_name']
-      LDAP_EMAIL      = ldap_config['ldap_email']
-      LDAP_AUTH_USERNAME      = ldap_config['ldap_auth_username']
-      LDAP_AUTH_PASSWORD      = ldap_config['ldap_auth_password']
-      LDAP_FILTER      = ldap_config['ldap_filter']
-    rescue
-      raise "ldap.yml not found, see config/ldap.yml.example"
-    end
-  end
 
   # Searches LDAP and the database for a given search string (can be
   # ldap_uid, last_name, first_name, email).  If an identity is found in
@@ -222,13 +201,13 @@ class Directory
     end
     ldap_results = Directory.search_ldap(term)
     ldap_results.each do |ldap_result|
-      uid = self.get_cn_from_dn("#{ldap_result[LDAP_UID].try(:first).try(:downcase)}@#{DOMAIN}")
+      uid = self.get_cn_from_dn("#{ldap_result[:dn]}")
       if identities[uid]
         results << identities[uid]
       else
         email = ldap_result[LDAP_EMAIL].try(:first)
         if email && email.strip.length > 0 # all SPARC users must have an email, this filters out some of the inactive LDAP users.
-          results << Identity.new(ldap_uid: uid, first_name: ldap_result[LDAP_FIRST_NAME].try(:first), last_name: ldap_result[LDAP_LAST_NAME].try(:first), email: email)
+          results << Identity.new(ldap_uid: "#{uid}@#{DOMAIN}", first_name: ldap_result[LDAP_FIRST_NAME].try(:first), last_name: ldap_result[LDAP_LAST_NAME].try(:first), email: email)
         end
       end
     end
