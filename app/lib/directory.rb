@@ -136,7 +136,7 @@ class Directory
 
     ldap_results.each do |r|
       begin
-        ldap_uid = self.get_ldap_uid(ldap_result)
+        ldap_uid = self.get_ldap_uid(r)
         email       = r[LDAP_EMAIL].try(:first)
         first_name  = r[LDAP_FIRST_NAME].try(:first)
         last_name   = r[LDAP_LAST_NAME].try(:first)
@@ -195,7 +195,7 @@ class Directory
     Directory.create_or_update_database_from_ldap(ldap_results, [])
     Identity.find_by_ldap_uid(ldap_uid)
   end
-  
+
   # overwrite the get_ldap_uid method if necessary to get ldap_uid from ldap_result
   def self.get_ldap_uid(ldap_result)
     dn = "#{ldap_result[:dn]}"
