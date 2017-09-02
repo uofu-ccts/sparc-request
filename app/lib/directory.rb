@@ -136,13 +136,13 @@ class Directory
 
     ldap_results.each do |r|
       begin
-        uid = self.get_cn_from_dn("#{r[:dn]}")
+        ldap_uid = self.get_ldap_uid(ldap_result)
         email       = r[LDAP_EMAIL].try(:first)
         first_name  = r[LDAP_FIRST_NAME].try(:first)
         last_name   = r[LDAP_LAST_NAME].try(:first)
 
         # Check to see if the identity is already in the database
-        if (identity = identities[uid]) or (identity = Identity.find_by_ldap_uid uid) then
+        if (identity = identities[ldap_uid]) or (identity = Identity.find_by_ldap_uid ldap_uid) then
           # Do we need to update any of the fields?  Has someone's last
           # name changed due to getting married, etc.?
           if identity.email != email or
@@ -168,7 +168,7 @@ class Directory
               first_name: first_name,
               last_name:  last_name,
               email:      email,
-              ldap_uid:   "#{uid}@#{DOMAIN}",
+              ldap_uid:   ldap_uid,
               password:   Devise.friendly_token[0,20],
               approved:   true)
         end
@@ -185,8 +185,11 @@ class Directory
     end
   end
 
-  def self.get_cn_from_dn(dn)
-    dn.split(',')[0].split('=')[1]
+  # overwrite the get_ldap_uid method if necessary to get ldap_uid from ldap_result
+  def self.get_ldap_uid(ldap_result)
+    dn = "#{ldap_result[:dn]}"
+    uid = dn.split(',')[0].split('=')[1]
+    "#{uid}@#{DOMAIN}"
   end
 
   # search and merge results but don't change the database
@@ -201,13 +204,13 @@ class Directory
     end
     ldap_results = Directory.search_ldap(term)
     ldap_results.each do |ldap_result|
-      uid = self.get_cn_from_dn("#{ldap_result[:dn]}")
-      if identities[uid]
-        results << identities[uid]
+      ldap_uid = self.get_ldap_uid(ldap_result)
+      if identities[ldap_uid]
+        results << identities[ldap_uid]
       else
         email = ldap_result[LDAP_EMAIL].try(:first)
         if email && email.strip.length > 0 # all SPARC users must have an email, this filters out some of the inactive LDAP users.
-          results << Identity.new(ldap_uid: "#{uid}@#{DOMAIN}", first_name: ldap_result[LDAP_FIRST_NAME].try(:first), last_name: ldap_result[LDAP_LAST_NAME].try(:first), email: email)
+          results << Identity.new(ldap_uid: ldap_uid, first_name: ldap_result[LDAP_FIRST_NAME].try(:first), last_name: ldap_result[LDAP_LAST_NAME].try(:first), email: email)
         end
       end
     end
