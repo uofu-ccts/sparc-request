@@ -70,6 +70,23 @@ class Directory
     Identity.find_by_ldap_uid(ldap_uid)
   end
 
+  def self.get_ldap_filter_for_full_name(term)
+    search_terms = term.strip.split
+    givenName = search_terms[0]
+    sn = search_terms[1]
+    "(& (sn=#{sn}*) (givenName=#{givenName}*))"
+  end
+
+  def self.get_ldap_filter(term, fields)
+    search_terms = term.strip.split
+    if search_terms.length == 2
+      filter = self.get_ldap_filter_for_full_name(term)
+    else
+      filter = (LDAP_FILTER && LDAP_FILTER.gsub('#{term}', term)) || fields.map { |f| Net::LDAP::Filter.contains(f, term) }.inject(:|)
+    end
+    filter
+  end
+
   # Searches LDAP only for the given search string.  Returns an array of
   # Net::LDAP::Entry.
   def self.search_ldap(term)
@@ -84,9 +101,7 @@ class Directory
          base: LDAP_BASE,
          encryption: LDAP_ENCRYPTION)
       ldap.auth LDAP_AUTH_USERNAME, LDAP_AUTH_PASSWORD unless !LDAP_AUTH_USERNAME || !LDAP_AUTH_PASSWORD
-      # use LDAP_FILTER to override default filter with custom string
-      filter = (LDAP_FILTER && LDAP_FILTER.gsub('#{term}', term)) || fields.map { |f| Net::LDAP::Filter.contains(f, term) }.inject(:|)
-      res = ldap.search(:attributes => fields, :filter => filter)
+      res = ldap.search(:attributes => fields, :filter => self.get_ldap_filter(term, fields))
       Rails.logger.info ldap.get_operation_result unless res
     rescue => e
       Rails.logger.info '#'*100
@@ -195,7 +210,7 @@ class Directory
     Directory.create_or_update_database_from_ldap(ldap_results, [])
     Identity.find_by_ldap_uid(ldap_uid)
   end
-  
+
   # overwrite the get_ldap_uid method if necessary to get ldap_uid from ldap_result
   def self.get_ldap_uid(ldap_result)
     dn = "#{ldap_result[:dn]}"
