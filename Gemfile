@@ -74,6 +74,7 @@ gem 'whenever', require: false
 gem 'will_paginate'
 gem 'will_paginate-bootstrap'
 gem 'x-editable-rails'
+gem 'omniauth-cas'
 
 group :development, :test, :profile do
   gem 'addressable', '~> 2.3.6'
