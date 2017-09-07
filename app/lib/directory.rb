@@ -21,27 +21,6 @@
 require 'net/ldap'
 
 class Directory
-  # Only initialize LDAP if it is enabled
-  if USE_LDAP
-    # Load the YAML file for ldap configuration and set constants
-    begin
-      ldap_config   ||= YAML.load_file(Rails.root.join('config', 'ldap.yml'))[Rails.env]
-      LDAP_HOST       = ldap_config['ldap_host']
-      LDAP_PORT       = ldap_config['ldap_port']
-      LDAP_BASE       = ldap_config['ldap_base']
-      LDAP_ENCRYPTION = ldap_config['ldap_encryption'].to_sym
-      DOMAIN          = ldap_config['ldap_domain']
-      LDAP_UID        = ldap_config['ldap_uid']
-      LDAP_LAST_NAME  = ldap_config['ldap_last_name']
-      LDAP_FIRST_NAME = ldap_config['ldap_first_name']
-      LDAP_EMAIL      = ldap_config['ldap_email']
-      LDAP_AUTH_USERNAME      = ldap_config['ldap_auth_username']
-      LDAP_AUTH_PASSWORD      = ldap_config['ldap_auth_password']
-      LDAP_FILTER      = ldap_config['ldap_filter']
-    rescue
-      raise "ldap.yml not found, see config/ldap.yml.example"
-    end
-  end
 
   # Searches LDAP and the database for a given search string (can be
   # ldap_uid, last_name, first_name, email).  If an identity is found in
@@ -50,18 +29,27 @@ class Directory
   def self.search(term)
     # Search ldap (if enabled) and the database
     if USE_LDAP && !SUPPRESS_LDAP_FOR_USER_SEARCH
-      ldap_results = search_ldap(term)
-      db_results = search_database(term)
       # If there are any entries returned from ldap that were not in the
       # database, then create them
-      create_or_update_database_from_ldap(ldap_results, db_results)
-      # Finally, search the database a second time and return the results.
-      # If there were no new identities created, then this should return
-      # the same as the original call to search_database().
-      return search_database(term)
+      if LAZY_LOAD
+        return self.search_and_merge_ldap_and_database_results(term)
+      else
+        return self.search_and_merge_and_update_ldap_and_database_results(term)
+      end
+
     else # only search database once
       return search_database(term)
     end
+  end
+
+  def self.search_and_merge_and_update_ldap_and_database_results(term)
+    ldap_results = self.search_ldap(term)
+    db_results = self.search_database(term)
+    self.create_or_update_database_from_ldap(ldap_results, db_results)
+    # Finally, search the database a second time and return the results.
+    # If there were no new identities created, then this should return
+    # the same as the original call to search_database().
+    return self.search_database(term)
   end
 
   # Searches the database only for a given search string.  Returns an
@@ -70,6 +58,16 @@ class Directory
     search_query = query(term)
     identities = Identity.find_by_sql(search_query)
     return identities
+  end
+
+  def self.find_or_create(ldap_uid)
+    identity = Identity.find_by_ldap_uid(ldap_uid)
+    return identity if identity
+    # search the ldap using unid, create the record in database, and then return it
+    m = /(.*)@#{DOMAIN}/.match(ldap_uid)
+    ldap_results = self.search_ldap(m[1])
+    self.create_or_update_database_from_ldap(ldap_results, [])
+    Identity.find_by_ldap_uid(ldap_uid)
   end
 
   # Searches LDAP only for the given search string.  Returns an array of
@@ -138,13 +136,13 @@ class Directory
 
     ldap_results.each do |r|
       begin
-        uid         = "#{r[LDAP_UID].try(:first).try(:downcase)}@#{DOMAIN}"
+        ldap_uid = self.get_ldap_uid(r)
         email       = r[LDAP_EMAIL].try(:first)
         first_name  = r[LDAP_FIRST_NAME].try(:first)
         last_name   = r[LDAP_LAST_NAME].try(:first)
 
         # Check to see if the identity is already in the database
-        if (identity = identities[uid]) or (identity = Identity.find_by_ldap_uid uid) then
+        if (identity = identities[ldap_uid]) or (identity = Identity.find_by_ldap_uid ldap_uid) then
           # Do we need to update any of the fields?  Has someone's last
           # name changed due to getting married, etc.?
           if identity.email != email or
@@ -170,7 +168,7 @@ class Directory
               first_name: first_name,
               last_name:  last_name,
               email:      email,
-              ldap_uid:   uid,
+              ldap_uid:   ldap_uid,
               password:   Devise.friendly_token[0,20],
               approved:   true)
         end
@@ -197,6 +195,12 @@ class Directory
     Directory.create_or_update_database_from_ldap(ldap_results, [])
     Identity.find_by_ldap_uid(ldap_uid)
   end
+  # overwrite the get_ldap_uid method if necessary to get ldap_uid from ldap_result
+  def self.get_ldap_uid(ldap_result)
+    dn = "#{ldap_result[:dn]}"
+    uid = dn.split(',')[0].split('=')[1]
+    "#{uid}@#{DOMAIN}"
+  end
 
   # search and merge results but don't change the database
   # this assumes USE_LDAP = true, otherwise you wouldn't use this function
@@ -210,13 +214,13 @@ class Directory
     end
     ldap_results = Directory.search_ldap(term)
     ldap_results.each do |ldap_result|
-      uid = "#{ldap_result[LDAP_UID].try(:first).try(:downcase)}@#{DOMAIN}"
-      if identities[uid]
-        results << identities[uid]
+      ldap_uid = self.get_ldap_uid(ldap_result)
+      if identities[ldap_uid]
+        results << identities[ldap_uid]
       else
         email = ldap_result[LDAP_EMAIL].try(:first)
         if email && email.strip.length > 0 # all SPARC users must have an email, this filters out some of the inactive LDAP users.
-          results << Identity.new(ldap_uid: uid, first_name: ldap_result[LDAP_FIRST_NAME].try(:first), last_name: ldap_result[LDAP_LAST_NAME].try(:first), email: email)
+          results << Identity.new(ldap_uid: ldap_uid, first_name: ldap_result[LDAP_FIRST_NAME].try(:first), last_name: ldap_result[LDAP_LAST_NAME].try(:first), email: email)
         end
       end
     end
