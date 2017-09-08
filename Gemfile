@@ -76,6 +76,7 @@ gem 'will_paginate-bootstrap'
 gem 'x-editable-rails'
 gem 'omniauth-cas'
 gem 'dotenv-rails'
+gem 'colorize'
 
 group :development, :test, :profile do
   gem 'addressable', '~> 2.3.6'
