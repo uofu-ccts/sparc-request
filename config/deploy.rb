@@ -191,7 +191,7 @@ namespace :mysql do
 
   desc "performs a backup (using mysqldump) in app shared dir"
   task :backup do
-    if !(ENV['perform_db_backups'].empty? || ENV['perform_db_backups'].nil?)
+    if !(ENV['perform_db_backups'].nil? || ENV['perform_db_backups'].empty?)
       on roles(:app) do
         within current_path do
           with rails_env: fetch(:rails_env) do
