@@ -1,4 +1,4 @@
-# Copyright © 2011-2016 MUSC Foundation for Research Development
+# Copyright © 2011-2017 MUSC Foundation for Research Development
 # All rights reserved.
 
 # Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
@@ -41,7 +41,7 @@ SparcRails::Application.routes.draw do
     resources :sections, only: [:create, :destroy]
     resources :questions, only: [:create, :destroy]
     resources :options, only: [:create, :destroy]
-    resources :responses, only: [:show, :new, :create] do
+    resources :responses, only: [:show, :new, :edit, :create, :update] do
       get :complete
     end
     resources :survey_updater, only: [:update]
@@ -114,7 +114,7 @@ SparcRails::Application.routes.draw do
 
   resources :protocols, except: [:index, :destroy] do
     member do
-      patch :update_protocol_type
+      put :update_protocol_type
       get :approve_epic_rights
       get :push_to_epic
       get :push_to_epic_status
@@ -148,6 +148,7 @@ SparcRails::Application.routes.draw do
   end
 
   resources :line_items, only: [:update]
+  resources :line_items_visits, only: [:update, :destroy]
   resources :visit_groups, only: [:edit, :update]
   resources :visits, only: [:edit, :update, :destroy]
   
@@ -251,8 +252,6 @@ SparcRails::Application.routes.draw do
       end
     end
 
-    resources :line_items_visits, only: [:update, :destroy]
-
     resources :messages, only: [:index, :new, :create]
 
     resources :multiple_line_items, only: [] do
@@ -277,8 +276,10 @@ SparcRails::Application.routes.draw do
     resources :projects, controller: :protocols, except: [:destroy]
 
     resources :protocols, except: [:destroy] do
+      resource :milestones, only: [:update]
+      resource :study_type_answers, only: [:edit]
       member do
-        patch :update_protocol_type
+        put :update_protocol_type
         get :display_requests
         patch :archive
       end
@@ -292,7 +293,7 @@ SparcRails::Application.routes.draw do
       scope '/protocols', controller: :protocols, except: [:destroy] do
         resources :test, except: [:destroy] do
           member do
-            patch :update_protocol_type
+            put :update_protocol_type
             get :display_requests
             patch :archive
           end
@@ -315,6 +316,7 @@ SparcRails::Application.routes.draw do
     resources :sub_service_requests, except: [:new, :create, :edit]do
       member do
         put :push_to_epic
+        put :resend_surveys
         get :change_history_tab
         get :status_history
         get :approval_history
