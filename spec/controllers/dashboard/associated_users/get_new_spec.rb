@@ -41,7 +41,7 @@ RSpec.describe Dashboard::AssociatedUsersController do
         log_in_dashboard_identity(obj: identity)
 
         get :new, params: {
-          protocol_id: protocol.id, identity_id: identity.id
+          protocol_id: protocol.id, ldap_uid: identity.ldap_uid
         }, xhr: true
       end
 
@@ -88,7 +88,7 @@ RSpec.describe Dashboard::AssociatedUsersController do
           and_return(@new_project_role)
 
         get :new, params: {
-          protocol_id: protocol.id, identity_id: identity.id
+          protocol_id: protocol.id, ldap_uid: identity.ldap_uid
         }, xhr: true
       end
 
@@ -129,7 +129,7 @@ RSpec.describe Dashboard::AssociatedUsersController do
           and_return(@new_project_role)
 
         get :new, params: {
-          protocol_id: protocol.id, identity_id: identity.id
+          protocol_id: protocol.id, ldap_uid: identity.ldap_uid
         }, xhr: true
       end
 
