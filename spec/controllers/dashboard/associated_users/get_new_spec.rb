@@ -90,6 +90,8 @@ RSpec.describe Dashboard::AssociatedUsersController do
         get :new, params: {
           protocol_id: protocol.id, ldap_uid: identity.ldap_uid
         }, xhr: true
+
+        @new_identity = Identity.find_by_ldap_uid(identity.ldap_uid)
       end
 
       it "should build a ProjectRole for Protocol using params[:identity_id]" do
