@@ -41,7 +41,7 @@ RSpec.describe Dashboard::AssociatedUsersController do
         log_in_dashboard_identity(obj: identity)
 
         get :new, params: {
-          protocol_id: protocol.id, ldap_uid: identity.ldap_uid
+          protocol_id: protocol.id, ldap_uid: identity.id
         }, xhr: true
       end
 
