@@ -147,6 +147,7 @@ study_type_notes:             { '1' : 'De-identified Research Participant',
                                 '0': 'Full Epic Functionality:  notification, pink header, MyChart access.' }
 
 funding_statuses: { 'Pending Funding': 'pending_funding',
+                    'Undetermined': 'undetermined',
                     'Funded': 'funded' }
 available_statuses: { 'ctrc_approved': 'Active',
                       'administrative_review': 'Administrative Review',
