@@ -88,6 +88,8 @@ group :development, :test, :profile do
   gem 'puma', '~> 3.0'
   gem 'timecop'
   gem 'progress_bar'
+  gem 'seed_dump'
+  gem 'seed-fu'
 end
 
 group :development, :test do
