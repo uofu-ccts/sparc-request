@@ -7,9 +7,9 @@ GIT
 
 GIT
   remote: git://github.com/swanandp/acts_as_list.git
-  revision: b99a15baa34d41b1b087057b3a57dc658672a084
+  revision: 1be46d65d872ed9d3317b5a3a9e9482a6bd119fa
   specs:
-    acts_as_list (0.9.8)
+    acts_as_list (0.9.9)
       activerecord (>= 3.0)
 
 GIT
@@ -86,7 +86,7 @@ GEM
     arel (8.0.0)
     audited (4.5.0)
       activerecord (>= 4.0, < 5.2)
-    autoprefixer-rails (7.1.4.1)
+    autoprefixer-rails (7.1.5)
       execjs
     axiom-types (0.1.1)
       descendants_tracker (~> 0.0.4)
@@ -129,7 +129,7 @@ GEM
     capistrano-rvm (0.1.2)
       capistrano (~> 3.0)
       sshkit (~> 1.2)
-    capistrano3-delayed-job (1.7.3)
+    capistrano3-delayed-job (1.7.5)
       capistrano (~> 3.0, >= 3.0.0)
       daemons (~> 1.2.4)
     capybara (2.13.0)
@@ -209,7 +209,7 @@ GEM
     equalizer (0.0.11)
     equivalent-xml (0.6.0)
       nokogiri (>= 1.4.3)
-    erubi (1.6.1)
+    erubi (1.7.0)
     exception_notification (4.2.2)
       actionmailer (>= 4.0, < 6)
       activesupport (>= 4.0, < 6)
@@ -224,9 +224,8 @@ GEM
     ffi (1.9.18)
     globalid (0.4.0)
       activesupport (>= 4.2.0)
-    gon (6.1.0)
+    gon (6.2.0)
       actionpack (>= 3.0)
-      json
       multi_json
       request_store (>= 1.0)
     grape (0.7.0)
@@ -247,7 +246,7 @@ GEM
     haml (5.0.3)
       temple (>= 0.8.0)
       tilt
-    hashdiff (0.3.6)
+    hashdiff (0.3.7)
     hashery (2.1.2)
     hashie (3.5.6)
     hashie-forbidden_attributes (0.1.1)
@@ -305,6 +304,7 @@ GEM
       coffee-rails (>= 3.2.1)
       jquery-rails
       rails (>= 3.2.0)
+    net-http-digest_auth (1.4.1)
     net-ldap (0.16.0)
     net-scp (1.2.1)
       net-ssh (>= 2.6.5)
@@ -339,7 +339,7 @@ GEM
       mime-types
       mimemagic (= 0.3.0)
     parallel (1.12.0)
-    parallel_tests (2.16.1)
+    parallel_tests (2.17.0)
       parallel
     pdf-reader (2.0.0)
       Ascii85 (~> 1.0.0)
@@ -460,7 +460,7 @@ GEM
       capistrano (~> 3.0)
       sshkit (>= 1.2)
     safe_yaml (1.0.4)
-    sass (3.5.1)
+    sass (3.5.2)
       sass-listen (~> 4.0.0)
     sass-listen (4.0.0)
       rb-fsevent (~> 0.9, >= 0.9.4)
@@ -555,7 +555,7 @@ GEM
     wasabi (3.1.0)
       httpi (~> 2.0)
       nokogiri (>= 1.4.0)
-    webmock (3.0.1)
+    webmock (3.1.0)
       addressable (>= 2.3.6)
       crack (>= 0.3.2)
       hashdiff
@@ -636,6 +636,7 @@ DEPENDENCIES
   mysql2 (~> 0.3.18)
   nested_form
   nested_form_fields
+  net-http-digest_auth
   net-ldap (~> 0.16.0)
   newrelic_rpm
   nokogiri
