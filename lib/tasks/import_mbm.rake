@@ -52,10 +52,14 @@ def inspect_mbm_record object_hash
 end
 
 def get_department_affiliation object_hash
-  appointmentHistoryList = object_hash['facultyMemberAppointmentsCategory']['appointmentHistoryList']
-  appointmentHistoryList.find do | entry |
-    entry[1]['primaryflag'] == 'Y'
-  end[1]
+  begin
+    appointmentHistoryList = object_hash['facultyMemberAppointmentsCategory']['appointmentHistoryList']
+    appointmentHistoryList.find do | entry |
+      entry[1]['primaryflag'] == 'Y'
+    end[1]
+  rescue
+    return nil
+  end
 end
 
 desc 'import mbm records'
@@ -83,8 +87,9 @@ task :import_mbm_all => [:environment] do
     record = get_mbm_record uid
 
     department_affiliation = get_department_affiliation record
+    next if department_affiliation.nil?
 
-    identity = Identity.find_by_ldap_uid "#{args[:uid]}@utah.edu"
+    identity = Identity.find_by_ldap_uid "#{uid}@utah.edu"
 
     identity.department = department_affiliation['department']
     identity.institution = "University of Utah"
@@ -92,6 +97,8 @@ task :import_mbm_all => [:environment] do
     affiliation_set.add affiliation
     identity.college = affiliation
     identity.save
+
+    puts identity.inspect
   end
 
   File.open(Rails.root.join('tmp', "affiliation_set.json"), 'w') { |file| file.write(affiliation_set.to_json ) }
