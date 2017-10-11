@@ -35,8 +35,12 @@ def get_mbm_record uid
 
   res = h.request req
 
-  object_hash = Hash.from_xml(res.body)['mbmroot']['facultyMember']
-  object_hash
+  begin
+    object_hash = Hash.from_xml(res.body)['mbmroot']['facultyMember']
+    return object_hash
+  rescue
+    return nil
+  end
 end
 
 
@@ -85,11 +89,19 @@ desc 'import mbm records'
 task :import_mbm, [:uid] => [:environment] do |t, args|
   record = get_mbm_record args[:uid]
 
+  return if record.nil?
+
+  department_affiliation = get_department_affiliation record
+
+  return if department_affiliation.nil?
+
   department_affiliation = get_department_affiliation record
 
   identity = Identity.find_by_ldap_uid "#{args[:uid]}@utah.edu"
 
-  identity.department = department_affiliation['department']
+  po = create_professional_organization 'University of Utah', affiliation, department_affiliation['department']
+
+  identity.professional_organization = po
 
   identity.save
 end
@@ -110,6 +122,8 @@ task :import_mbm_all => [:environment] do
 
     record = get_mbm_record uid
 
+    next if record.nil?
+
     department_affiliation = get_department_affiliation record
     next if department_affiliation.nil?
 
@@ -120,7 +134,7 @@ task :import_mbm_all => [:environment] do
 
     po = create_professional_organization 'University of Utah', affiliation, department_affiliation['department']
     identity.professional_organization = po
-    
+
     identity.save
 
     puts identity.inspect
