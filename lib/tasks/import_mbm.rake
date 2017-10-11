@@ -99,6 +99,8 @@ task :import_mbm, [:uid] => [:environment] do |t, args|
 
   identity = Identity.find_by_ldap_uid "#{args[:uid]}@utah.edu"
 
+  affiliation = get_affiliation department_affiliation['affiliation']
+
   po = create_professional_organization 'University of Utah', affiliation, department_affiliation['department']
 
   identity.professional_organization = po
