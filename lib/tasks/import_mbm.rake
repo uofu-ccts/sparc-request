@@ -66,7 +66,7 @@ def get_department_affiliation object_hash
   end
 end
 
-def create_professional_organization institution_name, college_name, department_name
+def create_professional_organization institution_name, college_name, department_name, division_name
   institution = ProfessionalOrganization.where(name: institution_name, org_type: 'institution').first
   if institution.nil?
     institution = ProfessionalOrganization.new
@@ -74,15 +74,22 @@ def create_professional_organization institution_name, college_name, department_
     institution.org_type = "institution"
     institution.save
   end
+  return institution if college_name.blank?
   college = institution.children.where(name: college_name).first
   if college.nil?
     college = institution.children.create(:name => college_name, :org_type => 'college')
   end
+  return college if department_name.blank?
   department = college.children.where(name: department_name).first
   if department.nil?
     department = college.children.create(:name => department_name, :org_type => 'department')
   end
-  department
+  return department if division_name.blank?
+  division = department.children.where(name: division_name).first
+  if division.nil?
+    division = department.children.create(:name => division_name, :org_type => 'division')
+  end
+  division
 end
 
 desc 'import mbm records'
@@ -99,7 +106,7 @@ task :import_mbm, [:uid] => [:environment] do |t, args|
 
   affiliation = get_affiliation department_affiliation['affiliation']
 
-  po = create_professional_organization 'University of Utah', affiliation, department_affiliation['department']
+  po = create_professional_organization 'University of Utah', affiliation, department_affiliation['department'], department_affiliation['division']
 
   identity.professional_organization = po
 
@@ -107,8 +114,8 @@ task :import_mbm, [:uid] => [:environment] do |t, args|
 end
 
 desc 'create professional organizations'
-task :create_professional_organization, [:institution, :college, :department] => [:environment] do |t, args|
-  create_professional_organization args[:institution], args[:college], args[:department]
+task :create_professional_organization, [:institution, :college, :department, :division] => [:environment] do |t, args|
+  create_professional_organization args[:institution], args[:college], args[:department], args[:division]
 end
 
 desc 'import all mbm records'
@@ -132,7 +139,7 @@ task :import_mbm_all => [:environment] do
     affiliation = get_affiliation department_affiliation['affiliation']
     affiliation_set.add affiliation
 
-    po = create_professional_organization 'University of Utah', affiliation, department_affiliation['department']
+    po = create_professional_organization 'University of Utah', affiliation, department_affiliation['department'], department_affiliation['division']
     identity.professional_organization = po
 
     identity.save
