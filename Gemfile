@@ -90,6 +90,7 @@ group :development, :test, :profile do
   gem 'progress_bar'
   gem 'seed_dump'
   gem 'seed-fu'
+  gem 'net-http-digest_auth'
 end
 
 group :development, :test do

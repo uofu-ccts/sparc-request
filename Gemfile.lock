@@ -294,6 +294,7 @@ GEM
       coffee-rails (>= 3.2.1)
       jquery-rails
       rails (>= 3.2.0)
+    net-http-digest_auth (1.4.1)
     net-ldap (0.16.0)
     net-scp (1.2.1)
       net-ssh (>= 2.6.5)
@@ -600,6 +601,7 @@ DEPENDENCIES
   mysql2 (~> 0.3.18)
   nested_form
   nested_form_fields
+  net-http-digest_auth
   net-ldap (~> 0.16.0)
   newrelic_rpm
   nokogiri
