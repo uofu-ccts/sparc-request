@@ -95,8 +95,6 @@ task :import_mbm, [:uid] => [:environment] do |t, args|
 
   return if department_affiliation.nil?
 
-  department_affiliation = get_department_affiliation record
-
   identity = Identity.find_by_ldap_uid "#{args[:uid]}@utah.edu"
 
   affiliation = get_affiliation department_affiliation['affiliation']
