@@ -58,6 +58,25 @@ def get_department_affiliation object_hash
   end[1]
 end
 
+def create_professional_organization institution_name, college_name, department_name
+  institution = ProfessionalOrganization.where(name: institution_name, org_type: 'institution').first
+  if institution.nil?
+    institution = ProfessionalOrganization.new
+    institution.name = institution_name
+    institution.org_type = "institution"
+    institution.save
+  end
+  college = institution.children.where(name: college_name).first
+  if college.nil?
+    college = institution.children.create(:name => college_name, :org_type => 'college')
+  end
+  department = college.children.where(name: department_name).first
+  if department.nil?
+    department = college.children.create(:name => department_name, :org_type => 'department')
+  end
+  department
+end
+
 desc 'import mbm records'
 task :import_mbm, [:uid] => [:environment] do |t, args|
   record = get_mbm_record args[:uid]
@@ -69,6 +88,11 @@ task :import_mbm, [:uid] => [:environment] do |t, args|
   identity.department = department_affiliation['department']
 
   identity.save
+end
+
+desc 'create professional organizations'
+task :create_professional_organization, [:institution, :college, :department] => [:environment] do |t, args|
+  create_professional_organization args[:institution], args[:college], args[:department]
 end
 
 desc 'import all mbm records'
@@ -86,11 +110,12 @@ task :import_mbm_all => [:environment] do
 
     identity = Identity.find_by_ldap_uid "#{args[:uid]}@utah.edu"
 
-    identity.department = department_affiliation['department']
-    identity.institution = "University of Utah"
     affiliation = get_affiliation department_affiliation['affiliation']
     affiliation_set.add affiliation
-    identity.college = affiliation
+
+    po = create_professional_organization 'University of Utah', affiliation, department_affiliation['department']
+    identity.professional_organization = po
+    
     identity.save
   end
 
