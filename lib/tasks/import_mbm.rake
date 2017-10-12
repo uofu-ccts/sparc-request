@@ -84,7 +84,7 @@ def create_professional_organization institution_name, college_name, department_
   if department.nil?
     department = college.children.create(:name => department_name, :org_type => 'department')
   end
-  return department if division_name.blank?
+  return department if division_name.blank? || /Not Specified/.match(division_name)
   division = department.children.where(name: division_name).first
   if division.nil?
     division = department.children.create(:name => division_name, :org_type => 'division')
