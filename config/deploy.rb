@@ -27,7 +27,7 @@ set :days_to_keep_backups, 30
 set :linked_files, fetch(:linked_files, []).push('config/application.yml', 'config/database.yml', 'config/epic.yml', 'config/ldap.yml', 'config/cas.yml', 'config/secrets.yml', '.env')
 
 # Default value for linked_dirs is []
-set :linked_dirs, fetch(:linked_dirs, []).push('public/system')
+set :linked_dirs, fetch(:linked_dirs, []).push('public/system', 'public/assets', 'public/images')
 
 # Default value for default_env is {}
 # set :default_env, { path: "/opt/ruby/bin:$PATH" }
