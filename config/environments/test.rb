@@ -58,4 +58,7 @@ SparcRails::Application.configure do
 
   # Paperclip
   Paperclip::Attachment.default_options[:path] = "#{Rails.root}/spec/test_files/:class/:id_partition/:style.:extension"
+
+  config.logger = Logger.new(STDOUT)
+  config.logger.level = Logger::ERROR
 end
