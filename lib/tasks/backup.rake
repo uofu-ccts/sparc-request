@@ -1,5 +1,7 @@
 require 'zip'
 require 'colorize'
+require 'yaml'
+require 'hashdiff'
 
 namespace :backup do
 
@@ -7,6 +9,24 @@ namespace :backup do
   task :rspec => :environment do
     system('bundle exec rake assets:clobber')
     `RUBYOPT=W0 bundle exec rspec --color --format documentation --out tmp/#{Time.now.strftime("%Y-%m-%d-%H%M%S")}-test-results`
+  end
+
+  desc "sort application.yml"
+  task :sort_yml, [:file_path] => :environment do |t, args|
+    file_path = args[:file_path] ? args[:file_path] : File.join('config', "application.yml")
+    application_config = YAML.load_file(file_path)[Rails.env]
+    result_hash = Hash.new
+    result_hash[Rails.env.to_s] = Hash[application_config.sort]
+    File.open(Rails.root.join('config', 'application.yml.sorted'), 'w') { |file| file.write result_hash.to_yaml }
+  end
+
+  desc 'compare two yaml files'
+  task :compare_yml, [:file1, :file2] => :environment do |t, args|
+    filea = args[:file1]
+    fileb = args[:file2]
+    filea_config = YAML.load_file(filea)[Rails.env]
+    fileb_config = YAML.load_file(fileb)[Rails.env]
+    puts HashDiff.diff(filea_config, fileb_config)
   end
 
   desc "backup all config yml files"

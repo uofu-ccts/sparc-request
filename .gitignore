@@ -85,3 +85,4 @@ spec/examples.txt
 /vendor/bundle
 
 .env
+application.yml.sorted

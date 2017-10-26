@@ -622,6 +622,7 @@ DEPENDENCIES
   grouped_validations!
   gyoku
   haml
+  hashdiff
   hashie-forbidden_attributes
   highline
   httparty (~> 0.13.7)

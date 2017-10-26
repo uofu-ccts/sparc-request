@@ -97,6 +97,7 @@ group :development, :test, :profile do
   gem 'timecop'
   gem 'progress_bar'
   gem 'net-http-digest_auth'
+  gem 'hashdiff'
 end
 
 group :development, :test do
