@@ -24,8 +24,10 @@ namespace :backup do
   task :compare_yml, [:file1, :file2] => :environment do |t, args|
     filea = args[:file1]
     fileb = args[:file2]
-    filea_config = YAML.load_file(filea)[Rails.env]
-    fileb_config = YAML.load_file(fileb)[Rails.env]
+    enva = args[:enva] || Rails.env
+    envb = args[:envb] || Rails.env
+    filea_config = YAML.load_file(filea)[enva]
+    fileb_config = YAML.load_file(fileb)[envb]
     puts HashDiff.diff(filea_config, fileb_config)
   end
 
