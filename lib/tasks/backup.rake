@@ -21,7 +21,7 @@ namespace :backup do
   end
 
   desc 'compare two yaml files'
-  task :compare_yml, [:file1, :file2] => :environment do |t, args|
+  task :compare_yml, [:file1, :file2, :enva, :envb] => :environment do |t, args|
     filea = args[:file1]
     fileb = args[:file2]
     enva = args[:enva] || Rails.env
