@@ -103,8 +103,11 @@ class Dashboard::ProtocolsController < Dashboard::BaseController
 
   def create
     protocol_class                          = protocol_params[:type].capitalize.constantize
+    attrs                                   = fix_date_params
     ### if lazy load enabled, we need create the identiy if necessary here
-    attrs                                   = Setting.find_by_key("use_ldap").value && Setting.find_by_key("lazy_load_ldap").value ? fix_identity : fix_date_params
+    if Setting.find_by_key("use_ldap").value && Setting.find_by_key("lazy_load_ldap").value
+      attrs = fix_identity
+    end
     @protocol                               = protocol_class.new(attrs)
     @protocol.study_type_question_group_id  = StudyTypeQuestionGroup.active_id
 
@@ -201,7 +204,7 @@ class Dashboard::ProtocolsController < Dashboard::BaseController
     if @protocol_type == "Study" && @protocol.sponsor_name.nil? && @protocol.selected_for_epic.nil?
       flash[:alert] = t(:protocols)[:change_type][:new_study_warning]
     end
-    
+
     rmid_server_status(@protocol)
   end
 
