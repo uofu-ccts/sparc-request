@@ -1,0 +1,98 @@
+#!/usr/bin/env ruby
+
+require File.expand_path('../../config/environment',  __FILE__)
+
+require 'active_record'
+require 'mysql2'
+require 'highline'
+require 'highline/import'
+
+require 'colorize'
+
+def true?(obj)
+  obj.to_s == "true"
+end
+
+if ARGV[1].nil?
+  institution = Institution.first
+else
+  institution = Institution.find_by_name ARGV[1].chomp
+end
+
+
+
+puts "Using #{institution.name.green}"
+
+def associate_super_user(oe, identity)
+  if not oe.super_users or (oe.super_users and not oe.super_users.map(&:identity_id).include? identity.id)
+    puts "assign super user #{identity.ldap_uid.green} to #{oe.name.green}"
+    # we have a new relationship to create
+    #identity.create_relationship_to oe.id, 'super_user_organizational_unit'
+    super_user = oe.super_users.new
+    super_user.identity = identity
+    super_user.save
+  end
+end
+
+def associate_catalog_manager(oe, identity)
+  if not oe.catalog_managers or (oe.catalog_managers and not oe.catalog_managers.map(&:identity_id).include? identity.id)
+    puts "assign catalog manager #{identity.ldap_uid.green} to #{oe.name.green}"
+    # we have a new relationship to create
+    #identity.create_relationship_to oe.id, 'catalog_manager_organizational_unit'
+    catalog_manager = oe.catalog_managers.new
+    catalog_manager.identity = identity
+    catalog_manager.save
+  end
+end
+
+
+def verify_catalog_manager(identity, oe)
+  oe.reload
+  if oe.catalog_managers and oe.catalog_managers.map(&:identity_id).include? identity.id
+    puts "Verfied #{identity.ldap_uid} is catalog_manager for #{oe.name}"
+  end
+end
+
+def verify_super_user(identity, oe)
+  oe.reload
+  if oe.super_users and oe.super_users.map(&:identity_id).include? identity.id
+    puts "Verfied #{identity.ldap_uid} is super_user for #{oe.name}"
+  end
+end
+
+CSV.foreach(File.expand_path('../../tmp/users.csv',  __FILE__), headers: true) do |row|
+  args = { catalog_overlord: true, approved: true }
+  args[:ldap_uid]   = row['username'].chomp
+  args[:email]      = row['email'].chomp
+  args[:first_name] = row['firstname'].chomp
+  args[:last_name]  = row['lastname'].chomp
+  args[:password]   = row['password'].chomp
+  args[:password_confirmation] = row['password'].chomp
+
+  if identity = Identity.find_by_ldap_uid(args[:ldap_uid]) then
+    identity.update_attributes(args)
+    puts "#{identity.ldap_uid.green} updated"
+
+  else
+    identity = Identity.create(args)
+    puts "#{identity.ldap_uid.green} created"
+
+  end
+
+  if true? row['catalog_managers'].chomp
+    associate_catalog_manager(institution, identity)
+
+    verify_catalog_manager(identity, institution)
+
+
+  end
+
+  if true? row['super_users'].chomp
+    associate_super_user(institution, identity)
+
+    verify_super_user(identity, institution)
+
+  end
+
+
+end
