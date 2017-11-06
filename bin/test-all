@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+require 'parallel'
+require 'open3'
+require 'colorize'
+folders = ['models','controllers','extensions', 'lib', 'api', 'mailers', 'jobs', 'helpers']
+folders.each do |folder|
+  cmd = "RAILS_ENV=test RUBYOPT=W0 bundle exec rspec spec/#{folder} --color --format documentation --out tmp/rspec/#{folder} 2>&1 > tmp/rspec/#{folder}-warning"
+  puts cmd.green
+  system(cmd)
+end
