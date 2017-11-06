@@ -155,6 +155,7 @@ GEM
       coffee-script-source
       execjs
     coffee-script-source (1.12.2)
+    colorize (0.8.1)
     concurrent-ruby (1.0.5)
     connection_pool (2.2.1)
     countries (2.1.2)
@@ -296,6 +297,7 @@ GEM
       coffee-rails (>= 3.2.1)
       jquery-rails
       rails (>= 3.2.0)
+    net-http-digest_auth (1.4.1)
     net-ldap (0.16.0)
     net-scp (1.2.1)
       net-ssh (>= 2.6.5)
@@ -460,6 +462,12 @@ GEM
       nokogiri (>= 1.4.0)
       nori (~> 2.1.0)
       wasabi (~> 3.1.0)
+    seed-fu (2.3.6)
+      activerecord (>= 3.1)
+      activesupport (>= 3.1)
+    seed_dump (3.2.4)
+      activerecord (>= 4)
+      activesupport (>= 4)
     shoulda-callback-matchers (1.1.4)
       activesupport (>= 3)
     shoulda-matchers (3.1.2)
@@ -567,6 +575,7 @@ DEPENDENCIES
   capistrano3-delayed-job (~> 1.0)
   capybara-webkit
   coffee-rails
+  colorize
   connection_pool
   country_select
   curb (~> 0.9.3)
@@ -602,6 +611,7 @@ DEPENDENCIES
   mysql2 (~> 0.3.18)
   nested_form
   nested_form_fields
+  net-http-digest_auth
   net-ldap (~> 0.16.0)
   newrelic_rpm
   nokogiri
@@ -634,6 +644,8 @@ DEPENDENCIES
   sass
   sass-rails
   savon (~> 2.2.0)
+  seed-fu
+  seed_dump
   shoulda-callback-matchers
   shoulda-matchers
   simplecov

@@ -87,6 +87,10 @@ group :development, :test, :profile do
   gem 'puma', '~> 3.0'
   gem 'timecop'
   gem 'progress_bar'
+  gem 'colorize'
+  gem 'seed_dump'
+  gem 'seed-fu'
+  gem 'net-http-digest_auth'
 end
 
 group :development, :test do
