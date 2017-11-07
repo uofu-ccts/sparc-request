@@ -19,6 +19,8 @@
 # TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 SparcRails::Application.routes.draw do
+  match "/delayed_job" => DelayedJobWeb, :anchor => false, via: [:get, :post]
+  
   post 'study_type/determine_study_type_note'
 
   resources :services
