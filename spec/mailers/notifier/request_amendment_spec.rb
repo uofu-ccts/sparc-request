@@ -43,19 +43,19 @@ RSpec.describe Notifier do
             @service_request      = create(:service_request_without_validations, protocol: @protocol, submitted_at: Time.now.yesterday, status: 'submitted')
             @sub_service_request  = create(:sub_service_request_without_validations, service_request: @service_request, protocol: @protocol, organization: @organization)
             @line_item            = create(:line_item_without_validations, sub_service_request: @sub_service_request, service_request: @service_request, service: @service)
-  
+
 
             @service_request.reload
             deleted_and_created_line_item_audit_trail(@service_request, @service, identity)
 
-            @report               = @sub_service_request.audit_report(identity, Time.now.yesterday - 4.hours, Time.now)
+            @report               = @sub_service_request.audit_report(identity, Time.now.yesterday.utc - 4.hours, Time.now.utc)
             @mail                 = Notifier.notify_service_provider(@service_provider, @service_request, identity, @sub_service_request, @report, false, true)
           end
 
           it 'should display correct subject' do
             expect(@mail).to have_subject("SPARCRequest Amendment Submitted (Protocol #{@protocol.id})")
           end
-          
+
           # Expected service provider message is defined under request_amendment_intro
           it 'should display service provider intro message, conclusion, link, and should not display acknowledgments' do
             request_amendment_intro(@mail)
@@ -83,7 +83,7 @@ RSpec.describe Notifier do
             @service_request      = create(:service_request_without_validations, protocol: @protocol, submitted_at: Time.now.yesterday, status: 'submitted')
             @sub_service_request  = create(:sub_service_request_without_validations, service_request: @service_request, protocol: @protocol, organization: @organization)
             @line_item            = create(:line_item_without_validations, sub_service_request: @sub_service_request, service_request: @service_request, service: @service)
-  
+
 
             @service_request.reload
             deleted_and_created_line_item_audit_trail(@service_request, @service, identity)
@@ -111,12 +111,12 @@ RSpec.describe Notifier do
             @service_request      = create(:service_request_without_validations, protocol: @protocol, submitted_at: Time.now.yesterday, status: 'submitted')
             @sub_service_request  = create(:sub_service_request_without_validations, service_request: @service_request, protocol: @protocol, organization: @organization)
             @line_item            = create(:line_item_without_validations, sub_service_request: @sub_service_request, service_request: @service_request, service: @service)
-  
+
 
             @service_request.reload
             created_line_item_audit_trail(@service_request, @service, identity)
 
-            @report               = @sub_service_request.audit_report(identity, Time.now.yesterday - 4.hours, Time.now)
+            @report               = @sub_service_request.audit_report(identity, Time.now.yesterday.utc - 4.hours, Time.now.utc)
             @mail                 = Notifier.notify_service_provider(@service_provider, @service_request, identity, @sub_service_request, @report, false, true)
           end
 
@@ -146,7 +146,7 @@ RSpec.describe Notifier do
             @service_request      = create(:service_request_without_validations, protocol: @protocol, submitted_at: Time.now.yesterday, status: 'submitted')
             @sub_service_request  = create(:sub_service_request_without_validations, service_request: @service_request, protocol: @protocol, organization: @organization)
             @line_item            = create(:line_item_without_validations, sub_service_request: @sub_service_request, service_request: @service_request, service: @service)
-  
+
 
             @service_request.reload
             created_line_item_audit_trail(@service_request, @service, identity)
@@ -173,7 +173,7 @@ RSpec.describe Notifier do
             @sub_service_request  = create(:sub_service_request_without_validations, service_request: @service_request, protocol: @protocol, organization: @organization)
             @line_item            = create(:line_item_without_validations, sub_service_request: @sub_service_request, service_request: @service_request, service: @service)
             @approval             = create(:approval, service_request: @service_request)
-  
+
 
             @service_request.reload
             created_line_item_audit_trail(@service_request, @service, identity)
@@ -209,7 +209,7 @@ RSpec.describe Notifier do
             @sub_service_request  = create(:sub_service_request_without_validations, service_request: @service_request, protocol: @protocol, organization: @organization)
             @line_item            = create(:line_item_without_validations, sub_service_request: @sub_service_request, service_request: @service_request, service: @service)
             @approval             = create(:approval, service_request: @service_request)
-  
+
 
             @service_request.reload
             created_line_item_audit_trail(@service_request, @service, identity)
@@ -267,12 +267,12 @@ RSpec.describe Notifier do
             @service_request      = create(:service_request_without_validations, protocol: @protocol, submitted_at: Time.now.yesterday, status: 'submitted')
             @sub_service_request  = create(:sub_service_request_without_validations, service_request: @service_request, protocol: @protocol, organization: @organization)
             @line_item            = create(:line_item_without_validations, sub_service_request: @sub_service_request, service_request: @service_request, service: @service)
-  
+
 
             @service_request.reload
             deleted_line_item_audit_trail(@service_request, @service, identity)
 
-            @report               = @sub_service_request.audit_report(identity, Time.now.yesterday - 4.hours, Time.now)
+            @report               = @sub_service_request.audit_report(identity, Time.now.yesterday.utc - 4.hours, Time.now.utc)
             @mail                 = Notifier.notify_service_provider(@service_provider, @service_request, identity, @sub_service_request, @report, false, true)
           end
 
@@ -302,7 +302,7 @@ RSpec.describe Notifier do
             @service_request      = create(:service_request_without_validations, protocol: @protocol, submitted_at: Time.now.yesterday, status: 'submitted')
             @sub_service_request  = create(:sub_service_request_without_validations, service_request: @service_request, protocol: @protocol, organization: @organization)
             @line_item            = create(:line_item_without_validations, sub_service_request: @sub_service_request, service_request: @service_request, service: @service)
-  
+
 
             @service_request.reload
             deleted_line_item_audit_trail(@service_request, @service, identity)
@@ -329,7 +329,7 @@ RSpec.describe Notifier do
             @sub_service_request  = create(:sub_service_request_without_validations, service_request: @service_request, protocol: @protocol, organization: @organization)
             @line_item            = create(:line_item_without_validations, sub_service_request: @sub_service_request, service_request: @service_request, service: @service)
             @approval             = create(:approval, service_request: @service_request)
-  
+
 
             @service_request.reload
             deleted_line_item_audit_trail(@service_request, @service, identity)
@@ -365,7 +365,7 @@ RSpec.describe Notifier do
             @sub_service_request  = create(:sub_service_request_without_validations, service_request: @service_request, protocol: @protocol, organization: @organization)
             @line_item            = create(:line_item_without_validations, sub_service_request: @sub_service_request, service_request: @service_request, service: @service)
             @approval             = create(:approval, service_request: @service_request)
-  
+
 
             @service_request.reload
             deleted_line_item_audit_trail(@service_request, @service, identity)
@@ -379,7 +379,7 @@ RSpec.describe Notifier do
           end
         end
       end
-      
+
       context 'admin' do
         before do
           @organization         = create(:organization)
@@ -429,7 +429,7 @@ RSpec.describe Notifier do
         @service_request.reload
         deleted_and_created_line_item_audit_trail(@service_request, @service, identity)
 
-        @report               = @sub_service_request.audit_report(identity, Time.now.yesterday - 4.hours, Time.now)
+        @report               = @sub_service_request.audit_report(identity, Time.now.yesterday.utc - 4.hours, Time.now.utc)
         @mail                 = Notifier.notify_service_provider(@service_provider, @service_request, identity, @sub_service_request, @report, false, true)
       end
 
