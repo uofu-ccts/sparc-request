@@ -86,7 +86,7 @@ RSpec.describe ServiceRequest, type: :model do
         @audit2.first.update_attribute(:created_at, Time.now - 5.hours)
         @audit2.first.update_attribute(:user_id, @identity.id)
 
-        @report = service_request.audit_report(@identity, Time.now.yesterday - 4.hours, Time.now)
+        @report = service_request.audit_report(@identity, Time.now.yesterday.utc - 4.hours, Time.now.utc)
       end
 
       it "should return a audit report" do
