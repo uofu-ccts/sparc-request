@@ -17,6 +17,7 @@
 # DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS~
 # INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR~
 # TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.~
+set :output, '/dev/null'
 
 # https://github.com/javan/whenever
 every 1.week, at: '12:00am' do
@@ -29,4 +30,10 @@ end
 
 every 1.day, :at => '5:00 pm' do
   rake 'send_to_epic'
+end
+
+# run this task only on servers with the :app role in Capistrano
+# see Capistrano roles section below
+every :day, :at => '4:30 am', :roles => [:app] do
+  rake "mysql:dump"
 end
