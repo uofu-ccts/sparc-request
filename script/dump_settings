@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+
+require File.expand_path('../../config/environment',  __FILE__)
+
+require 'active_record'
+require 'json'
+require 'uri'
+require 'colorize'
+
+File.open('tmp/settings.json', 'w') { |file| file.write(Setting.all.to_json) }
