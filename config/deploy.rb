@@ -1,6 +1,6 @@
 # lock '3.4.0'
 
-set :rvm_ruby_version, '2.4.1'
+set :rvm_ruby_version, '2.4.2'
 
 set :application, 'sparc-request'
 set :repo_url, 'https://github.com/uofu-ccts/sparc-request.git'
