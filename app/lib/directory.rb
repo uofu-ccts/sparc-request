@@ -241,7 +241,7 @@ class Directory
   end
 
   def self.get_ldap_uid(ldap_result)
-    return "#{ldap_result[LDAP_UID].try(:first).try(:downcase)}@#{DOMAIN}" if ldap_result[LDAP_UID]
+    # return "#{ldap_result[LDAP_UID].try(:first).try(:downcase)}@#{DOMAIN}" if ldap_result[LDAP_UID]
     dn = "#{ldap_result[:dn]}"
     uid = dn.split(',')[0].split('=')[1]
     "#{uid}@#{DOMAIN}"
