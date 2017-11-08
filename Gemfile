@@ -92,6 +92,7 @@ group :development, :test, :profile do
   gem 'seed_dump'
   gem 'seed-fu'
   gem 'net-http-digest_auth'
+  gem 'hashdiff'
 end
 
 group :development, :test do
