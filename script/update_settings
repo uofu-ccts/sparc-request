@@ -9,7 +9,17 @@ require 'colorize'
 
 include DataTypeValidator
 
+def is_boolean(some_var)
+  (some_var.is_a?(TrueClass) || some_var.is_a?(FalseClass))
+end
+
+def is_json(value)
+  value.is_a?(Array) || value.is_a?(Hash)
+end
+
 def get_type(value)
+  return 'json' if is_json(value)
+  return 'boolean' if is_boolean(value)
   if is_boolean?(value)
     'boolean'
   elsif is_json?(value)
