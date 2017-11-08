@@ -41,7 +41,7 @@ set :pty, true
 set :days_to_keep_backups, 30
 
 # Default value for :linked_files is []
-set :linked_files, fetch(:linked_files, []).push('config/database.yml', 'config/setup_load_paths.rb', 'config/application.yml', 'config/ldap.yml', 'config/epic.yml', 'config/cas.yml', 'config/secrets.yml', '.env')
+set :linked_files, fetch(:linked_files, []).push('config/database.yml', 'config/application.yml', 'config/ldap.yml', 'config/epic.yml', 'config/cas.yml', 'config/secrets.yml', '.env')
 
 # Default value for linked_dirs is []
 set :linked_dirs, fetch(:linked_dirs, []).push('log', 'tmp/pids', 'tmp/cache', 'tmp/sockets', 'public/system', 'public/assets', 'public/images')
