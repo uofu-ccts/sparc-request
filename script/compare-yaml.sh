@@ -14,11 +14,11 @@ require 'rubygems'
 require 'bundler/setup'
 
 require 'yaml'
-
+require 'hashdiff'
 require 'colorize'
 
 def usage
-  puts "bin/check-config <ENV>"
+  puts "script/compare-yaml <yaml_file>"
   abort
 end
 
@@ -33,7 +33,15 @@ application_config_keys = application_config.keys
 
 example_config_keys = example_config.keys
 
-example_config_keys.each do |key|
-  next if application_config_keys.include? key
-  puts "#{key}: #{example_config[key]}"
+hash = Hash.new
+application_config_keys.each do |key|
+  if example_config_keys.include? key
+    hash[key] = example_config[key]
+  else
+    hash[key] = application_config[key]
+  end
 end
+
+File.open('tmp/my-constants.yml', 'w') { |file| file.write(hash.to_yaml) }
+
+puts HashDiff.diff(application_config, hash)

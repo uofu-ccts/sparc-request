@@ -1,261 +1,1643 @@
-# Copyright © 2011 MUSC Foundation for Research Development
-# All rights reserved.
-
-# Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
-
-# 1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
-
-# 2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following
-# disclaimer in the documentation and/or other materials provided with the distribution.
-
-# 3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote products
-# derived from this software without specific prior written permission.
-
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING,
-# BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT
-# SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
-# TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-accordion_color_options: { "blue": 'blue-provider',
-                           "light-blue": 'light-blue-provider',
-                           "orange": 'orange-provider',
-                           "red": 'red-provider',
-                           "green": 'green-provider' }
-
-additional_detail_question_types: {
-  'Text': 'text',
-  'Text Area': 'textarea',
-  'Radio Button': 'radio_button',
-  'Likert Scale': 'likert',
-  'Checkbox': 'checkbox',
-  'Yes/No': 'yes_no',
-  'Email': 'email',
-  'Date': 'date',
-  'Number': 'number',
-  'Zipcode': 'zipcode',
-  'State': 'state',
-  'Country': 'country',
-  'Time': 'time',
-  'Phone': 'phone',
-  'Dropdown': 'dropdown',
-  'Multiple Dropdown': 'multiple_dropdown'
-}
-
-alert_statuses: { 'active': 'active',
-                  'clear': 'clear' }
-
-alert_types: { 'google_calendar': 'google_calendar',
-               'news_feed': 'news_feed' }
-
-audit_actions: { 'create': 'Added',
-                 'destroy': 'Deleted'}
-
-colleges: { "Administration": "administration",
-            "College of Dental Medicine": "college_of_dental_medicine",
-            "College of Graduate Studies": "college_of_graduate_studies",
-            "College of Health Professions": "college_of_health_professions",
-            "College of Medicine": "college_of_medicine",
-            "College of Nursing": "college_of_nursing",
-            "College of Pharmacy": "college_of_pharmacy",
-            "Other": "other",
-            "Not MUSC Personnel": "not_musc_personnel" }
-
-departments: { "Academic Affairs/Provost": "academic_affairs_provost",
-               "Assoc. Provost for Research": "assoc_provost_for_research",
-               "Business Services": "business_services",
-               "Information Services": "information_services",
-               "Library Science and Informatics": "library_science_and_informatics",
-               "Physical Plant": "physical_plant",
-               "Presidents Office": "presidents_office",
-               "Public Safety": "public_safety",
-               "Risk Management": "risk_management",
-               "SC AHEC": "sc_ahec",
-               "Student Programs": "student_programs",
-               "VP for Finance and Administration": "vp_for_finance_and_administration",
-               "Biochemistry and Molecular Biology": "biochemistry_and_molecular_biology",
-               "Cell and Molecular Pharmacology": "cell_and_molecular_pharmacology",
-               "Cell Biology and Anatomy": "cell_biology_and_anatomy",
-               "Craniofacial Biology": "craniofacial_biology",
-               "Dental Medicine": "dental_medicine",
-               "Materials Science": "materials_science",
-               "Microbiology and Immunology": "microbiology_and_immunology",
-               "Neurosciences": "neurosciences",
-               "Oral and Maxillofacial Surgery": "oral_and_maxillofacial_surgery",
-               "Pediatric Dentistry and Orthodontics": "pediatric_dentistry_and_orthodontics",
-               "Restorative Dentistry": "restorative_dentistry",
-               "Stomatology": "stomatology",
-               "Graduate Studies": "graduate_studies",
-               "Health Professions": "health_professions",
-               "Health Sciences and Research": "health_sciences_and_research",
-               "Anesthesia and Perioperative Medicine": "anesthesia_and_perioperative_medicine",
-               "Cell Biology and Anatomy": "cell_biology_and_anatomy",
-               "Comparative Medicine": "comparative_medicine",
-               "Deans Office - COM": "deans_office_com",
-               "Dermatology": "dermatology",
-               "Division of Basic Sciences": "division_of_basic_sciences",
-               "Family Medicine": "family_medicine",
-               "Medicine": "medicine",
-               "Obstetrics and Gynecology": "obstetrics_and_gynecology",
-               "Ophthalmology": "ophthalmology",
-               "Orthopaedic Surgery": "orthopaedic_surgery",
-               "Otolaryngology": "otolaryngology",
-               "Pathology and Laboratory Medicine": "pathology_and_laboratory_medicine",
-               "Pediatrics": "pediatrics",
-               "Psychiatry and Behavioral Sciences": "psychiatry_and_behavioral_sciences",
-               "Radiation Oncology": "radiation_oncology",
-               "Radiology": "radiology",
-               "Surgery": "surgery",
-               "Urology": "urology",
-               "Nursing": "nursing",
-               "Deans Office - COP": "deans_office_cop",
-               "Pharmaceutical and Biomedical Sciences": "pharmaceutical_and_biomedical_sciences",
-               "Pharmacy and Clinical Sciences": "pharmacy_and_clinical_sciences",
-               "Other": "other",
-               "Not MUSC Personnel": "not_musc_personnel" }
-
-epic_push_status_text: { 'started': '',
-                         'sent_study': '',
-                         'complete': 'Study has been sent to Epic.',
-                         'failed': 'Unable to send study to Epic.',
-                         'awaiting_approval': 'Awaiting approval before sending to Epic',
-                         'awaiting_final_review': 'Awaiting final review before sending to Epic' }
-
-epic_rights: { 'view_rights': 'View Research Studies',
-               'enter_data': 'Access to input/edit data at patient/encounter level',
-               'schedule_research': 'Schedule research-related encounters - additional training required',
-               'enter_orders': 'Place Orders - valid medical license required',
-               'process_orders': 'Process standing orders for research protocols - additional training required',
-               'approve': 'Review and approve research-related patient charges',
-               'complete': 'Activate and Complete studies'}
-
-epic_rights_info: 'Once the study is "completed" in Epic, it cannot be moved back to "Active or Inactive" Completing the study will inhibit new participants to be enrolled and associated with the study. Please select only one member of your study team that will be authorized to change a study status to Active/Complete.'
-
-funding_statuses: { 'Pending Funding': 'pending_funding',
-                    'Funded': 'funded' }
-
-institutions: { "University of South Carolina": "university_of_south_carolina",
-                "Health Sciences South Carolina": "health_sciences_south_carolina",
-                "Clemson University": "clemson_university",
-                "South Carolina State University": "south_carolina_state_university",
-                "Claflin University": "claflin_university",
-                "Greenwood Genetic Center": "greenwood_genetic_center",
-                "South Carolina Research Authority": "south_carolina_research_authority",
-                "VA Medical Centers": "va_medical_centers",
-                "Other": "other",
-                "Medical University of South Carolina": "medical_university_of_south_carolina" }
-
-study_type_answers: {  '1' : [true, true,   ~,     ~,     ~,     ~],
-                       '2' : [true, false, true,   ~,     ~,     ~],
-                       '3' : [true, false, false, false, true, true],
-                       '4' : [true, false, false, false, false, true],
-                       '5' : [true, false, false, false, true, false],
-                       '6' : [true, false, false, false, false, false],
-                       '7' :[true, false, false, true, true, true],
-                       '8' : [true, false, false, true, false, true],
-                       '9' : [true, false, false, true, true, false],
-                       '10' : [true, false, false, true, false, false],
-                       '11' : [false, ~,     ~,    false, true, true],
-                       '12' : [false, ~,     ~,    false, false, true],
-                       '13' : [false, ~,     ~,    false, true, false],
-                       '14' : [false, ~,     ~,    false, false, false],
-                       '15' : [false, ~,     ~,    true, true, true],
-                       '16' : [false, ~,     ~,    true, false, true],
-                       '17' : [false, ~,     ~,    true, true, false],
-                       '0' : [false, ~,     ~,    true, false, false] }
-
-study_type_answers_version_2: { '1' : [true, ~,    ~,    ~,    ~,    ~],
-                                '2' : [false, true, true,   ~,    ~,    ~],
-                                '3' : [false, true, false, false, true, true],
-                                '4' : [false, true, false, false, false, true],
-                                '5' : [false, true, false, false, true, false],
-                                '6' : [false, true, false, false, false, false],
-                                '7' : [false, true, false, true, true, true],
-                                '8' : [false, true, false, true, false, true],
-                                '9' : [false, true, false, true, true, false],
-                                '10': [false, true, false, true, false, false],
-                                '11': [false, false, ~,    false, true, true],
-                                '12': [false, false, ~,    false, false, true],
-                                '13': [false, false, ~,    false, true, false],
-                                '14': [false, false, ~,    false, false, false],
-                                '15': [false, false, ~,    true, true, true],
-                                '16': [false, false, ~,    true, false, true],
-                                '17': [false, false, ~,    true, true, false],
-                                '0': [false, false, ~,    true, false, false] }
-
-study_type_answers_version_3: { '1' : [true,    ~,    ~,    ~,    ~,    ~,    ~],
-                                '3' : [false, true, false, false, false,    ~,    ~],
-                                '4' : [false, true, false, true, false,    ~,    ~],
-                                '5' : [false, true, false, false, true,    ~,    ~],
-                                '6' : [false, true, false, true, true,    ~,    ~],
-                                '7' : [false, true, true, false, false,    ~,    ~],
-                                '8' : [false, true, true, true, false,    ~,    ~],
-                                '9' : [false, true, true, false, true,    ~,    ~],
-                                '10': [false, true, true, true, true,    ~,    ~],
-                                '11': [false, false, false, false, false,    ~,    ~],
-                                '12': [false, false, false, true, false,    ~,    ~],
-                                '13': [false, false, false, false, true,    ~,    ~],
-                                '14': [false, false, false, true, true,    ~,    ~],
-                                '15': [false, false, true, false, false,    ~,    ~],
-                                '16': [false, false, true, true, false,    ~,    ~],
-                                '17': [false, false, true, false, true,    ~,    ~],
-                                '0': [false, false, true, true, true,    ~,    ~ ] }
-
-study_type_notes:             { '1' : 'De-identified Research Participant',
-                                '3' : 'Break-The-Glass for research associated encounters',
-                                '4' : 'Break-The-Glass for research associated encounters: no notification, pink header, no MyChart access.',
-                                '5' : 'Break-The-Glass for research associated encounters: no notification, no pink header, MyChart access.',
-                                '6' : 'Break-The-Glass for research associated encounters: no notification, pink header, MyChart access.',
-                                '7' : 'Break-The-Glass for research associated encounters: notification, no pink header, no MyChart access.',
-                                '8' : 'Break-The-Glass for research associated encounters: notification, pink header, no MyChart access.',
-                                '9' : 'Break-The-Glass for research associated encounters: notification, no pink header, MyChart access.',
-                                '10': 'Break-The-Glass for research associated encounters: notification, pink header, MyChart access.',
-                                '11': 'Full Epic Functionality:  no notification, no pink header, no MyChart access.',
-                                '12': 'Full Epic Functionality:  no notification, pink header, no MyChart access.',
-                                '13': 'Full Epic Functionality:  no notification, no pink header, MyChart access.',
-                                '14': 'Full Epic Functionality:  no notification, pink header, MyChart access.',
-                                '15': 'Full Epic Functionality:  notification, no pink header, no MyChart access.',
-                                '16': 'Full Epic Functionality:  notification, pink header, no MyChart access.',
-                                '17': 'Full Epic Functionality:  notification, no pink header, MyChart access.',
-                                '0': 'Full Epic Functionality:  notification, pink header, MyChart access.' }
-
-study_type_questions: ["1a. Does your study require a higher level of privacy for the participants?",   
-                         "1b. Does your study have a Certificate of Confidentiality?",   
-                         "1c. Do participants enrolled in your study require a second DEIDENTIFIED Medical Record that is not connected to their primary record in Epic?",   
-                         "2. Do you wish to receive a notification via Epic InBasket when your research participants are admitted to the hospital or ED?",   
-                         "3. Do you wish to remove the 'Research: Active' indicator in the Patient Header for your study participants?",   
-                         "4. Do you need to restrict the sending of study related results, such as laboratory and radiology results, to a participants MyChart?"]     
-
-study_type_questions_version_2: ["1. Does your study have a Certificate of Confidentiality?*",
-                                 "2. Does your study require a higher level of privacy for the participants?*",
-                                 "2b. Do participants enrolled in your study require a second DEIDENTIFIED Medical Record that is not connected to their primary record in Epic?*",
-                                 "3. Do you wish to receive a notification via Epic InBasket when your research participants are admitted to the hospital or ED?*",
-                                 "4. Do you wish to remove the 'Research: Active' indicator in the Patient Header for your study participants?*",
-                                 "5. Do you need to restrict the sending of study related results, such as laboratory and radiology results, to a participants MyChart?*"]
-
-study_type_questions_version_3: ["1. Does your Informed Consent provide information to the participant specifically stating their study participation will be kept private from anyone outside the research team? (i.e. your study has a Certificate of Confidentiality or involves sensitive data collection which requires de-identification of the research participant in Epic.)",
-                               '2. Does your study require a higher level of privacy protection for the participants? (Your study needs "break the glass" functionality in Epic because it is collection sensitive data, such as HIV/sexually transmitted disease, sexual practice/attitudes, illegal substance, etc., which needs higher privacy protection, yet not complete de-identification of the study participant.)',
-                               "3. Is it appropriate for study team members to receive Epic InBasket notifications if research participants in this study are hospitalized or admitted to the Emergency Department?",
-                               '4. Is it appropriate to display the pink "Research: Active" indicator in the Patient Header for all study participants?',
-                               "5. Is it appropriate for all study participants to receive associated test results, such as labs and/or imaging findings, via MyChart?",
-                               "1. Does your Informed Consent provide information to the participant specifically stating their study participation will be kept private from anyone outside the research team? (i.e. your study has a Certificate of Confidentiality or involves sensitive data collection which requires de-identification of the research participant.)",
-                               '2. Does your study require a higher level of privacy protection for the participants? (Your study needs "break the glass" functionality because it is collection sensitive data, such as HIV/sexually transmitted disease, sexual practice/attitudes, illegal substance, etc., which needs higher privacy protection, yet not complete de-identification of the study participant.)']
-
-subject_ethnicities: { 'Caucasian': 'caucasian',
-                      'African American/Black': 'black',
-                      'Asian': 'asian',
-                      'Middle Eastern': 'middle_eastern',
-                      'Pacific Islander': 'pacific_islander',
-                      'Native American/Alaskan': 'native_american/alaskan',
-                      'Other': 'other' }
-
-subject_genders: { 'Male': 'male',
-                  'Female': 'female',
-                  'Other': 'other' }
-
-browser_versions: {
-  'Internet Explorer': '1',
-  'Mozilla Firefox': '2',
-  'Google Chrome': '3',
-  'Safari': '4'
-}
+---
+accordion_color_options:
+  blue: blue-provider
+  light-blue: light-blue-provider
+  orange: orange-provider
+  red: red-provider
+  green: green-provider
+additional_detail_question_types:
+  Text: text
+  Text Area: textarea
+  Radio Button: radio_button
+  Yes/No: yes_no
+  Email: email
+  Date: date
+  Number: number
+  Zipcode: zipcode
+  State: state
+  Country: country
+  Time: time
+  Phone: phone
+  Dropdown: dropdown
+  Multiple Dropdown: multiple_dropdown
+alert_statuses:
+  active: active
+  clear: clear
+alert_types:
+  google_calendar: google_calendar
+  news_feed: news_feed
+audit_actions:
+  create: Added
+  destroy: Deleted
+colleges:
+  College of Education: college_of_education
+  College of Engineering: college_of_engineering
+  College of Humanities: college_of_humanities
+  College of Law: college_of_law
+  College of Mines and Earth Sciences: college_of_mines_and_earth_science
+  College of Science: college_of_science
+  College of Social and Behavioral Science: college_of_social_and_behavioral_science
+  College of Social Work: college_of_social_work
+  Graduate School: graduate_school
+  College of Architecture: college_of_health
+  College of Health: college_of_health
+  College of Nursing: college_of_nursing
+  College of Pharmacy: college_of_pharmacy
+  School of Business: school_of_business
+  School of Medicine: school_of_medicine
+  School of Dentistry: school_of_dentistry
+  Other: other
+departments:
+  Academic Computing: academic_computing
+  Academic District: academic_district
+  Academic Senate: academic_senate
+  Access Program: access_program
+  Accounting Department: accounting_department
+  Accounts Payable: accounts_payable
+  ADD Program: add_program
+  Admissions: admissions
+  Adult Orthopaedic Surg Ops: adult_orthopaedic_surg_ops
+  Adult Urology: adult_urology
+  Advanced Heart Failure Program: advanced_heart_failure_program
+  Advising (Sch Of Business): advising_(sch_of_business)
+  Aerospace Studies Department: aerospace_studies_department
+  Air Quality Program: air_quality_program
+  Alumni Affairs (Sch Of Bus): alumni_affairs_(sch_of_bus)
+  Alumni Association: alumni_association
+  Alzheimer's Center: alzheimer's_center
+  American West Center: american_west_center
+  American/Alaskan Indian Teach: american_alaskan_indian_teach
+  Anatomic Pathology: anatomic_pathology
+  Andrology: andrology
+  Anesthesiology - Clinical: anesthesiology_clinical
+  Anesthesiology - Education: anesthesiology_education
+  Anesthesiology - Research: anesthesiology_research
+  Anthropology Department: anthropology_department
+  Archeology Center: archeology_center
+  Arrhythmia Research Center: arrhythmia_research_center
+  Art/Art History Department: art_art_history_department
+  Asian Studies Program: asian_studies_program
+  Assessment, Evaluation & Resrc: assessment,_evaluation_and_resrc
+  Assistant Vp, Administration: assistant_vp,_administration
+  Assoc Dean-Acad Grad Program: assoc_dean-acad_grad_program
+  Assoc Vp Enrollment Mgmt: assoc_vp_enrollment_mgmt
+  Assoc Vp,  Facilities Mgt: assoc_vp,__facilities_mgt
+  Assoc Vp, Chief Invest Officer: assoc_vp,_chief_invest_officer
+  Assoc. Vp Research Integrity: assoc._vp_research_integrity
+  Associate Vp Arts: associate_vp_arts
+  Associate Vp For Diversity: associate_vp_for_diversity
+  Asst Vp For Audit & Risk Srvcs: asst_vp_for_audit_and_risk_srvcs
+  Asst Vp/Student Affairs: asst_vp_student_affairs
+  Athletic Department: athletic_department
+  Athletic Training Program: athletic_training_program
+  Athletics Department: athletics_department
+  Atmospheric Sciences: atmospheric_sciences
+  Auxiliary Business Development: auxiliary_business_development
+  Auxiliary Services - Campus: auxiliary_services_campus
+  Avp For Clinical Research: avp_for_clinical_research
+  Benefits-Early Retirement: benefits-early_retirement
+  Benefits-Long Term Disability: benefits-long_term_disability
+  Benefits-Retirees: benefits-retirees
+  Benefits-Surviving Spouses: benefits-surviving_spouses
+  Bennion Community Center: bennion_community_center
+  Biochemistry Administration: biochemistry_administration
+  Biochemistry Research: biochemistry_research
+  Bioengineering: bioengineering
+  Biology: biology
+  Biology/Ehleringer Lab: biology_ehleringer_lab
+  Biomed Informatics Core Ccts: biomed_informatics_core_ccts
+  Biomedical Informatics: biomedical_informatics
+  Biomedical Informatics Admin: biomedical_informatics_admin
+  Biomedical Informatics Resrch: biomedical_informatics_resrch
+  Biomedical Informatics-Non Adm: biomedical_informatics-non_adm
+  Biostatistics Facility: biostatistics_facility
+  Board Of Trustees: board_of_trustees
+  Brain Institute: brain_institute
+  Budget And Analysis: budget_and_analysis
+  Building Operations: building_operations
+  Bureau Of Econ & Bus Research: bureau_of_econ_and_bus_research
+  Business Process Office: business_process_office
+  Business Scholars: business_scholars
+  Business-Asc Dean Fac Dev: business-asc_dean_fac_dev
+  Business-Student Services: business-student_services
+  Campus Planning: campus_planning
+  Campus Rec - Fitness Program: campus_rec_fitness_program
+  Campus Recreation: campus_recreation
+  Campus Recreation - Marketing: campus_recreation_marketing
+  Campus Recreation Services: campus_recreation_services
+  Campus Support Services: campus_support_services
+  Campus Utility Services: campus_utility_services
+  Cardio Adult Cme: cardio_adult_cme
+  Cardio Adult Pymnts Reserves: cardio_adult_pymnts_reserves
+  Cardio Adult Research: cardio_adult_research
+  Cardio Adult Section: cardio_adult_section
+  Cardio Peds Cme: cardio_peds_cme
+  Cardio Peds Pymnts Reserves: cardio_peds_pymnts_reserves
+  Cardio Peds Research: cardio_peds_research
+  Cardio Peds Section: cardio_peds_section
+  Cardiothoracic Adult: cardiothoracic_adult
+  Cardiothoracic Pediatric: cardiothoracic_pediatric
+  Cardiovascular Genetics: cardiovascular_genetics
+  Career Services: career_services
+  Carpenter And Roofing Shop: carpenter_and_roofing_shop
+  CCTS - Clinical Trials Support: ccts_clinical_trials_support
+  CCTS - Cmty Outreach & Engagem: ccts_cmty_outreach_and_engagem
+  CCTS - Population Health: ccts_population_health
+  CCTS - Precision Medicine: ccts_precision_medicine
+  CCTS - Workforce Development: ccts_workforce_development
+  Cell Imaging Facility: cell_imaging_facility
+  Cell Therapy/Regenerative Med: cell_therapy_regenerative_med
+  Center For Clinical Studies: center_for_clinical_studies
+  Center For Human Toxicology: center_for_human_toxicology
+  Center For Medical Innovations: center_for_medical_innovations
+  Center For Nuclear Eng Prog: center_for_nuclear_eng_prog
+  Center For Science & Math Educ: center_for_science_and_math_educ
+  Center For Student Wellness: center_for_student_wellness
+  Central Hsc Marketing: central_hsc_marketing
+  Central Mail: central_mail
+  Central Plant: central_plant
+  Central Services - Campus: central_services_campus
+  Central Svcs - Data Systems: central_svcs_data_systems
+  Check Distribution: check_distribution
+  Chemical Engineering: chemical_engineering
+  Chemistry: chemistry
+  Chief Human Resource Office: chief_human_resource_office
+  Chief Information Officer: chief_information_officer
+  Chief Medical Info Officer: chief_medical_info_officer
+  Chief Strategy Office: chief_strategy_office
+  Chief Wellness Officer: chief_wellness_officer
+  Child Care & Family Resources: child_care_and_family_resources
+  Children's Health Research Ctr: children's_health_research_ctr
+  Childrens Contract Research: childrens_contract_research
+  City & Metropolitan Planning: city_and_metropolitan_planning
+  Civil And Environmental Engin: civil_and_environmental_engin
+  Clinical Marketing: clinical_marketing
+  Clinical Pathology: clinical_pathology
+  Clinical Res Compliance & Edu: clinical_res_compliance_and_edu
+  Clinical Trials Office: clinical_trials_office
+  Colorow Bldg. Administration: colorow_bldg._administration
+  Combined Program: combined_program
+  Communication: communication
+  Communication Institute: communication_institute
+  Communication Sci & Disorders: communication_sci_and_disorders
+  Communications: communications
+  Community Clinics Provider Gp: community_clinics_provider_gp
+  Community Of Caring: community_of_caring
+  Commuter Services: commuter_services
+  Commuter Services - Operations: commuter_services_operations
+  Comp Facil & Aml Service Ctr: comp_facil_and_aml_service_ctr
+  Compliance Office-Health Sc: compliance_office-health_sc
+  Compliance Oversight Reporting: compliance_oversight_reporting
+  Compliance Services: compliance_services
+  Computational Engin & Science: computational_engin_and_science
+  Computer Support Services: computer_support_services
+  Computer Systems-Engineering: computer_systems-engineering
+  Con Academic Programs: con_academic_programs
+  Con Advancement: con_advancement
+  Con Clinical Affairs &Fac Prac: con_clinical_affairs_andfac_prac
+  Con Control: con_control
+  Con Endowments: con_endowments
+  Con External Prog Scholarships: con_external_prog_scholarships
+  Con Faculty: con_faculty
+  Con Information Technology Svc: con_information_technology_svc
+  Con Intermountain Hlth Sim Ctr: con_intermountain_hlth_sim_ctr
+  Con Nursing: con_nursing
+  Con Nursing Division: con_nursing_division
+  Con Simulation Center: con_simulation_center
+  Con Student Expendable Funds: con_student_expendable_funds
+  Con Student Services: con_student_services
+  Conference Services: conference_services
+  Construction: construction
+  Construction Project Delivery: construction_project_delivery
+  Continuing Ed & Comunty Engmnt: continuing_ed_and_comunty_engmnt
+  Continuing Ed Administration: continuing_ed_administration
+  Continuing Medical Education: continuing_medical_education
+  Contract Administration: contract_administration
+  Controller/Financial Managemnt: controller_financial_managemnt
+  Copier Fleet: copier_fleet
+  Core  Support: core__support
+  Core Building Systems: core_building_systems
+  Cost Accounting & Analysis: cost_accounting_and_analysis
+  Cr-Intramural: cr-intramural
+  Crs - Member Services: crs_member_services
+  Csbs Computing: csbs_computing
+  Csme-Informal Science Ed: csme-informal_science_ed
+  Csw Social Research Institute: csw_social_research_institute
+  Csw Translational Research: csw_translational_research
+  Ctle Ctr Teach & Learning Ed: ctle_ctr_teach_and_learning_ed
+  Ctr - Clinical & Translational: ctr_clinical_and_translational
+  Ctr Clin & Translational Sc.: ctr_clin_and_translational_sc.
+  Ctr For Computer Graphics: ctr_for_computer_graphics
+  Ctr For Controlled Chem Deliv: ctr_for_controlled_chem_deliv
+  Ctr For Environ & Resource Law: ctr_for_environ_and_resource_law
+  Ctr For Intraocular Lens Study: ctr_for_intraocular_lens_study
+  Ctr For Public Policy & Admin: ctr_for_public_policy_and_admin
+  Ctr Prevent Distracted Drivers: ctr_prevent_distracted_drivers
+  Custodial - Area 1: custodial_area_1
+  Custodial - Area 3: custodial_area_3
+  Custodial - Specialty Crews: custodial_specialty_crews
+  Cvrti: cvrti
+  Cvrti Administrative Operation: cvrti_administrative_operation
+  Daniels Fund Ethics Initiative: daniels_fund_ethics_initiative
+  Data Communications: data_communications
+  Data Resource Center: data_resource_center
+  Dean Of Students: dean_of_students
+  Decipher Data Driven Resrch: decipher_data_driven_resrch
+  Deferred Maintenance: deferred_maintenance
+  Department Of Anesthesiology: department_of_anesthesiology
+  Department Of Biochemistry: department_of_biochemistry
+  Department Of Surgery Chairman: department_of_surgery_chairman
+  Department Of Surgery-Clearing: department_of_surgery-clearing
+  Dept Of Ped Research Pilots: dept_of_ped_research_pilots
+  Dept Of Writing And Rhetoric: dept_of_writing_and_rhetoric
+  Derm Billing / Call Center: derm_billing___call_center
+  Derm Clinical: derm_clinical
+  Derm Education: derm_education
+  Derm Labs: derm_labs
+  Derm Midvalley: derm_midvalley
+  Derm Other Clinical: derm_other_clinical
+  Derm Pcmc: derm_pcmc
+  Derm Ppi's: derm_ppi's
+  Derm Research: derm_research
+  Dermatology: dermatology
+  Dermatology Clinical Group: dermatology_clinical_group
+  Dermatology Clinical Hpp: dermatology_clinical_hpp
+  Desb Undergrad Career Mgt: desb_undergrad_career_mgt
+  Design: design
+  Development: development
+  Development Health Science: development_health_science
+  Development Services: development_services
+  Developmental Assessment Ctr: developmental_assessment_ctr
+  Dfpm-Administration: dfpm-administration
+  Dfpm-Ctrs Comm Hlth (Cchio): dfpm-ctrs_comm_hlth_(cchio)
+  Dfpm-Div Of Occup&Environ Hlth: dfpm-div_of_occupandenviron_hlth
+  Dfpm-Div. Of Family Medicine: dfpm-div._of_family_medicine
+  Dfpm-Division Of Public Health: dfpm-division_of_public_health
+  Dfpm-Physician Assistant Prgm: dfpm-physician_assistant_prgm
+  Dfpm-Pre-Doc Program: dfpm-pre-doc_program
+  Dfpm-Primary Care Research: dfpm-primary_care_research
+  Dialysis-Idaho: dialysis-idaho
+  Dialysis-Nevada: dialysis-nevada
+  Dialysis-Utah: dialysis-utah
+  Digit Lab: digit_lab
+  Director Student Leadership: director_student_leadership
+  Disability Services: disability_services
+  District Administration: district_administration
+  Div Of Cardiovascular Medicine: div_of_cardiovascular_medicine
+  Division Of Epidemiology: division_of_epidemiology
+  Dna Peptide Facility: dna_peptide_facility
+  Dna Sequencing Facility: dna_sequencing_facility
+  Drug Regimen And Review Center: drug_regimen_and_review_center
+  Dvsn Of Allergy & Immunology: dvsn_of_allergy_and_immunology
+  Eccles Corporate Outreach: eccles_corporate_outreach
+  Eccles Health Science Library: eccles_health_science_library
+  Eccles Hlth Sci Library Oper: eccles_hlth_sci_library_oper
+  Economics Department: economics_department
+  Education, Culture & Society: education,_culture_and_society
+  Educational Leadership&Policy: educational_leadershipandpolicy
+  Educational Psychology: educational_psychology
+  Egi: egi
+  Elect & Computer Engineering: elect_and_computer_engineering
+  Electric Shop: electric_shop
+  Electron Microscopy Facility: electron_microscopy_facility
+  Electronics Shop: electronics_shop
+  Elevator Service: elevator_service
+  Emergency Medical Physicians: emergency_medical_physicians
+  Emergency Medicine - Fortis: emergency_medicine_fortis
+  Emergency Medicine - So.Jordan: emergency_medicine_so.jordan
+  Emergency Medicine Cme: emergency_medicine_cme
+  Emergency Medicine Division: emergency_medicine_division
+  Emergency Medicine Research: emergency_medicine_research
+  Emergency Medicine-Rock Sprngs: emergency_medicine-rock_sprngs
+  Emergy Med Payments Reserves: emergy_med_payments_reserves
+  Endocrinology/Diabetes Researc: endocrinology_diabetes_researc
+  Energy & Geoscience Institute: energy_and_geoscience_institute
+  Energy Management: energy_management
+  Engineering District: engineering_district
+  English: english
+  Entertainment Arts Engineering: entertainment_arts_engineering
+  Entrepreneurship & Strategy: entrepreneurship_and_strategy
+  Environmental & Sustainability: environmental_and_sustainability
+  Environmental Health & Safety: environmental_health_and_safety
+  Environmental Humanities Grad: environmental_humanities_grad
+  Epidemiology Sdbc: epidemiology_sdbc
+  Equal Opport - Affirm Action: equal_opport_affirm_action
+  Er Medicine - Madison Memorial: er_medicine_madison_memorial
+  Ethnic Studies: ethnic_studies
+  Executive Education: executive_education
+  Exercise And Sport Science: exercise_and_sport_science
+  Expenditure Control: expenditure_control
+  External Relations: external_relations
+  Facilities: facilities
+  Facility & Construction Ops: facility_and_construction_ops
+  Facility Mgmt Business Svc: facility_mgmt_business_svc
+  Facility Operations: facility_operations
+  Facility Operations - R&R: facility_operations_randr
+  Facility Support Services: facility_support_services
+  Faculty Awards/Endowments: faculty_awards_endowments
+  Family And Consumer Studies: family_and_consumer_studies
+  Family And Preventive Medicine: family_and_preventive_medicine
+  Family Medicine: family_medicine
+  Family Medicine Administration: family_medicine_administration
+  Family Medicine Residency: family_medicine_residency
+  Fbs Communications: fbs_communications
+  Film & Media Arts Department: film_and_media_arts_department
+  Finance Department: finance_department
+  Financial & Business Services: financial_and_business_services
+  Financial Aid Office: financial_aid_office
+  Financial Solutions: financial_solutions
+  Fire Prevention: fire_prevention
+  Fleet Services: fleet_services
+  Flow Cytometry Facility: flow_cytometry_facility
+  Fund-Raising Programs: fund-raising_programs
+  Gastroenterology: gastroenterology
+  Gender Studies: gender_studies
+  General Accounting - Campus: general_accounting_campus
+  General Counsel: general_counsel
+  General Internal Medicine: general_internal_medicine
+  General Pediatrics: general_pediatrics
+  General Stores: general_stores
+  General Surgery: general_surgery
+  General Surgery Cme: general_surgery_cme
+  General Surgery Division: general_surgery_division
+  General Surgery Pymnts Reserve: general_surgery_pymnts_reserve
+  General Surgery Research: general_surgery_research
+  Generic Mineral Technology Ctr: generic_mineral_technology_ctr
+  Genetic Counseling Ed Prog: genetic_counseling_ed_prog
+  Genetic Epidemiology: genetic_epidemiology
+  Genetic Science Learning Ctr: genetic_science_learning_ctr
+  Genomics Facility: genomics_facility
+  Geography Department: geography_department
+  Geology & Geophysics: geology_and_geophysics
+  Geriatrics: geriatrics
+  Gerontology Center: gerontology_center
+  Global Business Programs: global_business_programs
+  Global Change & Sustain Center: global_change_and_sustain_center
+  Global Health: global_health
+  Global Knowledge Mgt Center: global_knowledge_mgt_center
+  Global Surgery: global_surgery
+  Global Surgery Admistration: global_surgery_admistration
+  Global Surgery Research: global_surgery_research
+  Government Affairs Programs: government_affairs_programs
+  Graduate Diversity: graduate_diversity
+  Graduate Fellowships: graduate_fellowships
+  Grants & Contracts Accounting: grants_and_contracts_accounting
+  Guest House: guest_house
+  Hcf Centrally-Held Gift Funds: hcf_centrally-held_gift_funds
+  HCI Adam Cohen Research Prog: hci_adam_cohen_research_prog
+  HCI Alana Welm Lab: hci_alana_welm_lab
+  HCI Ana Lopez Research Program: hci_ana_lopez_research_program
+  HCI Andrea Bild Research Prog: hci_andrea_bild_research_prog
+  HCI Anne Kirchhoff Program: hci_anne_kirchhoff_program
+  HCI Anupam Verma Research Prog: hci_anupam_verma_research_prog
+  HCI Barbara Graves Lab: hci_barbara_graves_lab
+  HCI Benjamin Spike Lab: hci_benjamin_spike_lab
+  HCI Bioinformatics: hci_bioinformatics
+  HCI Biorepository: hci_biorepository
+  HCI Brad Cairns Lab: hci_brad_cairns_lab
+  HCI Bruce Edgar Lab: hci_bruce_edgar_lab
+  HCI Bryan Welm Lab: hci_bryan_welm_lab
+  HCI Cancer Biostatistics: hci_cancer_biostatistics
+  HCI Catherine Lee Resrch Prog: hci_catherine_lee_resrch_prog
+  HCI Cc Ccsg Program: hci_cc_ccsg_program
+  HCI Ccps Ccsg Program: hci_ccps_ccsg_program
+  HCI Ccsg Research Programs: hci_ccsg_research_programs
+  HCI Center For Children: hci_center_for_children
+  HCI Centrally-Held Gift Funds: hci_centrally-held_gift_funds
+  HCI Centrally-Held Op Funds: hci_centrally-held_op_funds
+  HCI Clinical Resrch Compliance: hci_clinical_resrch_compliance
+  HCI Clinical Trials: hci_clinical_trials
+  HCI Clinical Trials Operations: hci_clinical_trials_operations
+  HCI Clinical/Translational: hci_clinical_translational
+  HCI Colon Cancer Dot: hci_colon_cancer_dot
+  HCI Communications: hci_communications
+  HCI Community Affairs: hci_community_affairs
+  HCI Computational Drug Design: hci_computational_drug_design
+  HCI Computing & Tech Group: hci_computing_and_tech_group
+  HCI Computing & Tech Operation: hci_computing_and_tech_operation
+  HCI Cornelia Ulrich Res Prog: hci_cornelia_ulrich_res_prog
+  HCI Cqci Operations: hci_cqci_operations
+  HCI Crr Ccsg Program: hci_crr_ccsg_program
+  HCI Ctr For Quantit Cancer Img: hci_ctr_for_quantit_cancer_img
+  HCI Daniel Couriel Resrch Prog: hci_daniel_couriel_resrch_prog
+  HCI David Goldgar Program: hci_david_goldgar_program
+  HCI David Jones Lab: hci_david_jones_lab
+  HCI Deanna Kepka Research Prog: hci_deanna_kepka_research_prog
+  HCI Deborah Stephens Res Prog: hci_deborah_stephens_res_prog
+  HCI Dennis Shrieve Resrch Prog: hci_dennis_shrieve_resrch_prog
+  HCI Development: hci_development
+  HCI Discovery Recruit/Retain: hci_discovery_recruit_retain
+  HCI Discovery Research: hci_discovery_research
+  HCI Disease Oriented Teams: hci_disease_oriented_teams
+  HCI Djordje Atanackovic Lab: hci_djordje_atanackovic_lab
+  HCI Don Ayer Lab: hci_don_ayer_lab
+  HCI Douglas Grossman Lab: hci_douglas_grossman_lab
+  HCI Early Phase Clinic Res Spt: hci_early_phase_clinic_res_spt
+  HCI Elizabeth Raetz Res Prog: hci_elizabeth_raetz_res_prog
+  HCI Eric Snyder Lab: hci_eric_snyder_lab
+  HCI Et Ccsg Program: hci_et_ccsg_program
+  HCI Facilities: hci_facilities
+  HCI Facilities Department: hci_facilities_department
+  HCI Finance: hci_finance
+  HCI Gen Resrch Equip/Supplies: hci_gen_resrch_equip_supplies
+  HCI General & Administrative: hci_general_and_administrative
+  HCI General Admin Department: hci_general_admin_department
+  HCI General Administration: hci_general_administration
+  HCI General Research: hci_general_research
+  HCI Genetic Counselors: hci_genetic_counselors
+  HCI Genome Science Recruitment: hci_genome_science_recruitment
+  HCI Gi/Pancreatic Mdg: hci_gi_pancreatic_mdg
+  HCI Glasswash: hci_glasswash
+  HCI Glynn Gilcrease Res Prog: hci_glynn_gilcrease_res_prog
+  HCI Gu Dot: hci_gu_dot
+  HCI Health Sciences Resources: hci_health_sciences_resources
+  HCI Hematologic Dot: hci_hematologic_dot
+  HCI High Risk Cancer Research: hci_high_risk_cancer_research
+  HCI High Risk Clinical Resrch: hci_high_risk_clinical_resrch
+  HCI High-Throughput Genomics: hci_high-throughput_genomics
+  HCI Howard Colman Lab: hci_howard_colman_lab
+  HCI Human Resources: hci_human_resources
+  HCI Hung Khong Research Prog: hci_hung_khong_research_prog
+  HCI I. Garrido-Laguna Res Prog: hci_i._garrido-laguna_res_prog
+  HCI Ihc Cancer Care Program: hci_ihc_cancer_care_program
+  HCI Jan Christian Lab: hci_jan_christian_lab
+  HCI Jared Rutter Research Prog: hci_jared_rutter_research_prog
+  HCI Jason Gertz Lab: hci_jason_gertz_lab
+  HCI Jewel Samadder Resrch Prog: hci_jewel_samadder_resrch_prog
+  HCI Jody Rosenblatt Lab: hci_jody_rosenblatt_lab
+  HCI Jorge Contreras Res Prog: hci_jorge_contreras_res_prog
+  HCI Joshua Schiffman Lab: hci_joshua_schiffman_lab
+  HCI Katharine Ullman Lab: hci_katharine_ullman_lab
+  HCI Katherine Varley Lab: hci_katherine_varley_lab
+  HCI Kevin Jones Lab: hci_kevin_jones_lab
+  HCI Kim Kaphingst Resrch Prog: hci_kim_kaphingst_resrch_prog
+  HCI Kimberley Evason Lab: hci_kimberley_evason_lab
+  HCI Labs-Discovery Research: hci_labs-discovery_research
+  HCI Labs-Translational Resrch: hci_labs-translational_resrch
+  HCI Lor Randall Lab: hci_lor_randall_lab
+  HCI Mahesh Chandrasekharan Lab: hci_mahesh_chandrasekharan_lab
+  HCI Martin Mcmahon Lab: hci_martin_mcmahon_lab
+  HCI Marty Slattery Resrch Prog: hci_marty_slattery_resrch_prog
+  HCI Mary Beckerle Lab: hci_mary_beckerle_lab
+  HCI Matt Vanbrocklin Lab: hci_matt_vanbrocklin_lab
+  HCI Melanoma Dot: hci_melanoma_dot
+  HCI Melinda Angus-Hill Lab: hci_melinda_angus-hill_lab
+  HCI Mia Hashibe Program: hci_mia_hashibe_program
+  HCI Michael Deininger Lab: hci_michael_deininger_lab
+  HCI Michael Engel Lab: hci_michael_engel_lab
+  HCI Michelle Mendoza Lab: hci_michelle_mendoza_lab
+  HCI Molecular Diagnostics: hci_molecular_diagnostics
+  HCI Multidisc Groups Admin: hci_multidisc_groups_admin
+  HCI Nc Ccsg Program: hci_nc_ccsg_program
+  HCI Neeraj Agarwal Resrch Prog: hci_neeraj_agarwal_resrch_prog
+  HCI Neuro Onc Dot: hci_neuro_onc_dot
+  HCI Nicki Camp Research Prog: hci_nicki_camp_research_prog
+  HCI Off-Site Facilities: hci_off-site_facilities
+  HCI Orien Collaboration: hci_orien_collaboration
+  HCI Other Clinical/Translatnl: hci_other_clinical_translatnl
+  HCI Other General Research: hci_other_general_research
+  HCI Pancreatic Dot: hci_pancreatic_dot
+  HCI Parking Terrace: hci_parking_terrace
+  HCI Patient & Public Educ Dept: hci_patient_and_public_educ_dept
+  HCI Patient & Public Education: hci_patient_and_public_education
+  HCI Paul Tumeh Lab: hci_paul_tumeh_lab
+  HCI Phase Iv Facility: hci_phase_iv_facility
+  HCI Philip Bernard Lab: hci_philip_bernard_lab
+  HCI Population Sci Recruitment: hci_population_sci_recruitment
+  HCI Population Sci Research: hci_population_sci_research
+  HCI Population Sci Study Suprt: hci_population_sci_study_suprt
+  HCI Population Sciences: hci_population_sciences
+  HCI Population Sciences Prog: hci_population_sciences_prog
+  HCI Preclinical Rsrch Resource: hci_preclinical_rsrch_resource
+  HCI Pub Affairs/Communications: hci_pub_affairs_communications
+  HCI Public Affairs: hci_public_affairs
+  HCI Randall Burt Research Prog: hci_randall_burt_research_prog
+  HCI Randy Jensen Lab: hci_randy_jensen_lab
+  HCI Raphael Franzini Lab: hci_raphael_franzini_lab
+  HCI Research Admin Dept: hci_research_admin_dept
+  HCI Research Administration: hci_research_administration
+  HCI Research Communication: hci_research_communication
+  HCI Research Informatics: hci_research_informatics
+  HCI Research Informatics Dept: hci_research_informatics_dept
+  HCI Research/Clinical Training: hci_research_clinical_training
+  HCI Rodney Stewart Lab: hci_rodney_stewart_lab
+  HCI Sancy Leachman Lab: hci_sancy_leachman_lab
+  HCI Sarcoma Dot: hci_sarcoma_dot
+  HCI Sean Tavtigian Lab: hci_sean_tavtigian_lab
+  HCI Senior Leadership: hci_senior_leadership
+  HCI Shared Resource Recruit: hci_shared_resource_recruit
+  HCI Shared Resources: hci_shared_resources
+  HCI Sheri Holmen Lab: hci_sheri_holmen_lab
+  HCI Special Populations: hci_special_populations
+  HCI Srividya Bhaskara Lab: hci_srividya_bhaskara_lab
+  HCI Stephen Lessnick Lab: hci_stephen_lessnick_lab
+  HCI Sumati Gupta Research Prog: hci_sumati_gupta_research_prog
+  HCI Sunil Sharma Lab: hci_sunil_sharma_lab
+  HCI Tibor Kovacsovics Res Prog: hci_tibor_kovacsovics_res_prog
+  HCI Topham/Stafforini Lab: hci_topham_stafforini_lab
+  HCI Translational Rsrch (Dtri): hci_translational_rsrch_(dtri)
+  HCI Translatnl Recruit/Retain: hci_translatnl_recruit_retain
+  HCI Trudy Oliver Lab: hci_trudy_oliver_lab
+  HCI Updb Resource: hci_updb_resource
+  HCI Upper Aero Digestive Dot: hci_upper_aero_digestive_dot
+  HCI Utah Cancer Registry: hci_utah_cancer_registry
+  HCI Utah Population Database: hci_utah_population_database
+  HCI Wally Akerley Resrch Prog: hci_wally_akerley_resrch_prog
+  HCI Web Administration: hci_web_administration
+  HCI Wellness & Survivorship: hci_wellness_and_survivorship
+  HCI Women's Dot: hci_women's_dot
+  HCI Yelena Wu Research Program: hci_yelena_wu_research_program
+  Health Equity And Inclusion: health_equity_and_inclusion
+  Health Promotion And Education: health_promotion_and_education
+  Health Science Education: health_science_education
+  Health Sciences Development: health_sciences_development
+  Health Sciences District: health_sciences_district
+  Health System Quality Office: health_system_quality_office
+  Health-Kinesiology-Recreation: health-kinesiology-recreation
+  Healthcare Transformation: healthcare_transformation
+  Heating And Ventilation: heating_and_ventilation
+  Heavy Equipment: heavy_equipment
+  Hematology: hematology
+  Hinckley Institute Of Politics: hinckley_institute_of_politics
+  History: history
+  Honors: honors
+  Honors College: honors_college
+  Hope Fox Eccles Health Library: hope_fox_eccles_health_library
+  Housing & Residential Educ.: housing_and_residential_educ.
+  Howard Hughes Medical Inst: howard_hughes_medical_inst
+  HS Marketing Office: hs_marketing_office
+  HS Planning Office: hs_planning_office
+  HSC Acad Aff & Faculty Dev: hsc_acad_aff_and_faculty_dev
+  HSC Children's Center: hsc_children's_center
+  HSC Core Facilities: hsc_core_facilities
+  HSC Core Research Admin: hsc_core_research_admin
+  HSC Core Research Facilities: hsc_core_research_facilities
+  HSC Core Resrch Facility Oper: hsc_core_resrch_facility_oper
+  HSC Data Warehouse: hsc_data_warehouse
+  HSC Drug Discovery Core: hsc_drug_discovery_core
+  HSC Nuclear Engineering: hsc_nuclear_engineering
+  HSC Strategic Initiatives: hsc_strategic_initiatives
+  HSC Web Resource Center: hsc_web_resource_center
+  Hseb Clinical Skills: hseb_clinical_skills
+  Htw Plant: htw_plant
+  Human Genetics: human_genetics
+  Human Genetics - C. Chow: human_genetics_c._chow
+  Human Genetics Administration: human_genetics_administration
+  Human Genetics Operations: human_genetics_operations
+  Human Genetics Research: human_genetics_research
+  Human Genetics-A.Quinlan: human_genetics-a.quinlan
+  Human Genetics-Anthea Letsou: human_genetics-anthea_letsou
+  Human Genetics-C. Feschotte: human_genetics-c._feschotte
+  Human Genetics-C. Murtaugh: human_genetics-c._murtaugh
+  Human Genetics-C. Thummel: human_genetics-c._thummel
+  Human Genetics-D. Grunwald: human_genetics-d._grunwald
+  Human Genetics-E. Pritham: human_genetics-e._pritham
+  Human Genetics-G. Kardon: human_genetics-g._kardon
+  Human Genetics-G. Stanfield: human_genetics-g._stanfield
+  Human Genetics-Gabor Marth: human_genetics-gabor_marth
+  Human Genetics-J. Metherall: human_genetics-j._metherall
+  Human Genetics-John Atkins: human_genetics-john_atkins
+  Human Genetics-Kristen Kwan: human_genetics-kristen_kwan
+  Human Genetics-Lynn Jorde: human_genetics-lynn_jorde
+  Human Genetics-M. Capecchi: human_genetics-m._capecchi
+  Human Genetics-M. Metzstein: human_genetics-m._metzstein
+  Human Genetics-Mark Leppert: human_genetics-mark_leppert
+  Human Genetics-Mark Yandell: human_genetics-mark_yandell
+  Human Genetics-Michael Howard: human_genetics-michael_howard
+  Human Genetics-Nels Elde: human_genetics-nels_elde
+  Human Genetics-R. Cawthon: human_genetics-r._cawthon
+  Human Genetics-Robert Weiss: human_genetics-robert_weiss
+  Human Genetics-S. Hasstedt: human_genetics-s._hasstedt
+  Human Genetics-S. Mansour: human_genetics-s._mansour
+  Human Genetics-S. Sakonju: human_genetics-s._sakonju
+  Human Molecular Biol & Genetic: human_molecular_biol_and_genetic
+  Human Resources Management: human_resources_management
+  Humanities Center: humanities_center
+  Huntsman Cancer Institute: huntsman_cancer_institute
+  Huntsman Foundation: huntsman_foundation
+  Icse: icse
+  Income Accounting: income_accounting
+  Infectious Disease: infectious_disease
+  Info Tech Group (Sch Of Bus): info_tech_group_(sch_of_bus)
+  Information Management: information_management
+  Information Security & Privacy: information_security_and_privacy
+  Information Systems Develop: information_systems_develop
+  Inst Animal Care Committee: inst_animal_care_committee
+  Inst Data Mgt & Visualization: inst_data_mgt_and_visualization
+  Inst For Hi Enrgy Astrophysics: inst_for_hi_enrgy_astrophysics
+  Inst. Clean&Secure Energy: inst._cleanandsecure_energy
+  Inst. Of Public & Intern. Aff.: inst._of_public_and_intern._aff.
+  Institutional Analysis: institutional_analysis
+  Institutional Review Board: institutional_review_board
+  Interactive Marketing & Web: interactive_marketing_and_web
+  Internal Audit: internal_audit
+  Internal Medicine: internal_medicine
+  Internal Medicine Admin: internal_medicine_admin
+  International Center: international_center
+  International Ophthalmology: international_ophthalmology
+  International Studies: international_studies
+  Interprofessional Simulation: interprofessional_simulation
+  Ireco Fragmentation Laboratory: ireco_fragmentation_laboratory
+  Ireland Research Group: ireland_research_group
+  Iron And Heme Core: iron_and_heme_core
+  Ivory Boyer Real Estate Center: ivory_boyer_real_estate_center
+  James E. Faust Law Library: james_e._faust_law_library
+  John R Park Chair: john_r_park_chair
+  John R. Park Debate Society: john_r._park_debate_society
+  Jon Huntsman Center: jon_huntsman_center
+  Journal Of Organic Chemistry: journal_of_organic_chemistry
+  Key Shop Campus: key_shop_campus
+  Kingsbury Hall: kingsbury_hall
+  Knowledge Mgt & Mobilization: knowledge_mgt_and_mobilization
+  Korenberg Research: korenberg_research
+  KUED: kued
+  KUEN/Utah Education Network: kuen_utah_education_network
+  KUER: kuer
+  Landscape Maintenance: landscape_maintenance
+  Languages And Literature: languages_and_literature
+  Lassonde: lassonde
+  Lassonde Office: lassonde_office
+  Latin American Studies: latin_american_studies
+  Law And Society Association: law_and_society_association
+  Learning Abroad Office: learning_abroad_office
+  Lgbt Resource Center: lgbt_resource_center
+  Library-Public Services: library-public_services
+  Life Skills Clinic: life_skills_clinic
+  Linguistics: linguistics
+  Liver Tx & Adv Hepat Cme: liver_tx_and_adv_hepat_cme
+  Liver Tx & Adv Hepat Division: liver_tx_and_adv_hepat_division
+  Liver Tx & Adv Hepat Research: liver_tx_and_adv_hepat_research
+  Liver Tx & Adv Hepat Reserves: liver_tx_and_adv_hepat_reserves
+  Ltd Health Waiver: ltd_health_waiver
+  Lung Health Study: lung_health_study
+  Macc Program: macc_program
+  Machine Shop - School Of Med: machine_shop_school_of_med
+  Machine Shop Operations - Som: machine_shop_operations_som
+  Management Department: management_department
+  Marching Band: marching_band
+  Marketing & Communications: marketing_and_communications
+  Marketing Department: marketing_department
+  Marriott Library: marriott_library
+  Marriott Library - Operations: marriott_library_operations
+  Mass Spectometry Group: mass_spectometry_group
+  Mass Spectrometry Facility: mass_spectrometry_facility
+  Master Intern Aff & Global Ent: master_intern_aff_and_global_ent
+  Master Of Public Admin: master_of_public_admin
+  Master Of Public Policy: master_of_public_policy
+  Master Of Science & Tech: master_of_science_and_tech
+  Master Of Statistics: master_of_statistics
+  Master's Program (Sch Of Bus): master's_program_(sch_of_bus)
+  Material Science And Engineer: material_science_and_engineer
+  Materials Shop: materials_shop
+  Mathematics: mathematics
+  Matheson Ctr Health Care Stds: matheson_ctr_health_care_stds
+  Mba Program: mba_program
+  Md/Phd Program: md_phd_program
+  Meaningful Use And Ser Project: meaningful_use_and_ser_project
+  Mechanical Engineering: mechanical_engineering
+  Med Student Research Program: med_student_research_program
+  Medical Ethics: medical_ethics
+  Medical Graphics & Photography: medical_graphics_and_photography
+  Medical Lab Science Division: medical_lab_science_division
+  Medicinal Chemistry: medicinal_chemistry
+  Metabolic Phenotyping: metabolic_phenotyping
+  Metabolomics: metabolomics
+  Metallurgical Engineering: metallurgical_engineering
+  Metals & Machine Shop: metals_and_machine_shop
+  Mha Program: mha_program
+  Microbiology & Immunology: microbiology_and_immunology
+  Middle East Center: middle_east_center
+  Military Science Department: military_science_department
+  Mines And Earth Sciences-Dean: mines_and_earth_sciences-dean
+  Mining & Mineral Resource Inst: mining_and_mineral_resource_inst
+  Mining Engineering: mining_engineering
+  Mission Based Management-Hs: mission_based_management-hs
+  Mktng & Communications Primary: mktng_and_communications_primary
+  Modern Dance Department: modern_dance_department
+  Molecular Medicine Program: molecular_medicine_program
+  Mred Program: mred_program
+  Msf Program: msf_program
+  Msis Program: msis_program
+  Muse My U Signature Experience: muse_my_u_signature_experience
+  Mutation Generation & Detect: mutation_generation_and_detect
+  Nano Institute: nano_institute
+  National Children's Study: national_children's_study
+  National Ctr For Voice Speech: national_ctr_for_voice_speech
+  Natural History Museum Of Utah: natural_history_museum_of_utah
+  Naval Science Department: naval_science_department
+  Nephrology: nephrology
+  Neurobehavior Clinical Prgm: neurobehavior_clinical_prgm
+  Neurobiology & Anatomy Labs: neurobiology_and_anatomy_labs
+  Neurobiology And Anatomy: neurobiology_and_anatomy
+  Neurobiology And Anatomy Admin: neurobiology_and_anatomy_admin
+  Neurology: neurology
+  Neuromuscular: neuromuscular
+  Neuromuscular Research: neuromuscular_research
+  Neuroscience Program: neuroscience_program
+  Neurosciences Center: neurosciences_center
+  Neurosurgery: neurosurgery
+  Neurosurgery-Pcmc: neurosurgery-pcmc
+  Neurosurgery-Physiology: neurosurgery-physiology
+  Neurosurgery-Uumc: neurosurgery-uumc
+  New Student & Family Programs: new_student_and_family_programs
+  Nmr Facility: nmr_facility
+  Nmr-Facility Gauss Haus: nmr-facility_gauss_haus
+  Non-Employee Benefits Only: non-employee_benefits_only
+  Nutrition: nutrition
+  Ob/Gyn Adjunct Faculty: ob_gyn_adjunct_faculty
+  Ob/Gyn Administration: ob_gyn_administration
+  Ob/Gyn Clinical: ob_gyn_clinical
+  Ob/Gyn Community Physician Div: ob_gyn_community_physician_div
+  Ob/Gyn Education: ob_gyn_education
+  Ob/Gyn Family Planning: ob_gyn_family_planning
+  Ob/Gyn Gen Obstetric & Gyn Div: ob_gyn_gen_obstetric_and_gyn_div
+  Ob/Gyn Gynecologic Oncology Di: ob_gyn_gynecologic_oncology_di
+  Ob/Gyn Maternal-Fetal Med Div: ob_gyn_maternal-fetal_med_div
+  Ob/Gyn Repro Endocrinology Div: ob_gyn_repro_endocrinology_div
+  Ob/Gyn Research: ob_gyn_research
+  Ob/Gyn Slrmc: ob_gyn_slrmc
+  Ob/Gyn Specialty Based Clinics: ob_gyn_specialty_based_clinics
+  Ob/Gyn Urogynecology Division: ob_gyn_urogynecology_division
+  Ob/Gyn Ut Ctr Reproductive Med: ob_gyn_ut_ctr_reproductive_med
+  Ob/Gyn Woman & Child Institute: ob_gyn_woman_and_child_institute
+  Obstetrics And Gynecology: obstetrics_and_gynecology
+  Occupational Therapy: occupational_therapy
+  Office For Global Engagement: office_for_global_engagement
+  Office Of Admissions: office_of_admissions
+  Office Of Comparative Medicine: office_of_comparative_medicine
+  Office Of Development: office_of_development
+  Office Of Fraternity/Sorority: office_of_fraternity_sorority
+  Office Of Software Licensing: office_of_software_licensing
+  Office Of Sponsored Projects: office_of_sponsored_projects
+  Office Of Sr Vp Health Sci: office_of_sr_vp_health_sci
+  Office Of The President: office_of_the_president
+  Ois Operations & Info Systems: ois_operations_and_info_systems
+  Oncological Sciences: oncological_sciences
+  Oncology: oncology
+  Oph-Division Of Oculoplastics: oph-division_of_oculoplastics
+  Ophthalmology & Visual Science: ophthalmology_and_visual_science
+  Ophthalmology Clinical Practic: ophthalmology_clinical_practic
+  Ophthalmology-Clinical Studies: ophthalmology-clinical_studies
+  Ophthalmology-Research: ophthalmology-research
+  Ophthalmology-Services: ophthalmology-services
+  Orthopaedic Basic Science Res: orthopaedic_basic_science_res
+  Orthopaedic Clin Research Ops: orthopaedic_clin_research_ops
+  Orthopaedic Clinic: orthopaedic_clinic
+  Orthopaedic Dept Administr: orthopaedic_dept_administr
+  Orthopaedic Dept Dev Ops: orthopaedic_dept_dev_ops
+  Orthopaedic Dept Research Ops: orthopaedic_dept_research_ops
+  Orthopaedic Surg Clinical Ops: orthopaedic_surg_clinical_ops
+  Orthopaedic Surg Dept Acad: orthopaedic_surg_dept_acad
+  Orthopaedic Surgery: orthopaedic_surgery
+  Orthopaedic Surgery Anc Ops: orthopaedic_surgery_anc_ops
+  Orthopaedic Surgery Operations: orthopaedic_surgery_operations
+  Otolaryngology: otolaryngology
+  Otolaryngology Cme: otolaryngology_cme
+  Otolaryngology Division: otolaryngology_division
+  Otolaryngology Research: otolaryngology_research
+  Outdoor Adventures: outdoor_adventures
+  Outreach And Engagement: outreach_and_engagement
+  Pain Research Center: pain_research_center
+  Parks Recreation And Tourism: parks_recreation_and_tourism
+  Parks, Rec And Tourism Lab: parks,_rec_and_tourism_lab
+  Pathology: pathology
+  Pathology Administration: pathology_administration
+  Pathology Residents: pathology_residents
+  Payables Production: payables_production
+  Payroll Services - Campus: payroll_services_campus
+  Peak Health & Fitness: peak_health_and_fitness
+  Ped Phys Medicine And Rehab: ped_phys_medicine_and_rehab
+  Ped Surgery Payments Reserves: ped_surgery_payments_reserves
+  Pediatric Administration: pediatric_administration
+  Pediatric Behavioral Health: pediatric_behavioral_health
+  Pediatric Cardiology: pediatric_cardiology
+  Pediatric Clinical Enterprise: pediatric_clinical_enterprise
+  Pediatric Critical Care: pediatric_critical_care
+  Pediatric Education: pediatric_education
+  Pediatric Emergency Medicine: pediatric_emergency_medicine
+  Pediatric Endocrinology: pediatric_endocrinology
+  Pediatric Gastroenterology: pediatric_gastroenterology
+  Pediatric Genetics: pediatric_genetics
+  Pediatric Hematology/Oncology: pediatric_hematology_oncology
+  Pediatric Immunology/Rheumatol: pediatric_immunology_rheumatol
+  Pediatric Infectious Diseases: pediatric_infectious_diseases
+  Pediatric Inpatient Medicine: pediatric_inpatient_medicine
+  Pediatric Neonatology: pediatric_neonatology
+  Pediatric Nephrology: pediatric_nephrology
+  Pediatric Neurology: pediatric_neurology
+  Pediatric Nutrition: pediatric_nutrition
+  Pediatric Orthopaedic Surg Op: pediatric_orthopaedic_surg_op
+  Pediatric Pathology: pediatric_pathology
+  Pediatric Pulmonology: pediatric_pulmonology
+  Pediatric Research Enterprise: pediatric_research_enterprise
+  Pediatric S & H Families: pediatric_s_and_h_families
+  Pediatric Surgery: pediatric_surgery
+  Pediatric Surgery Cme: pediatric_surgery_cme
+  Pediatric Surgery Division: pediatric_surgery_division
+  Pediatric Surgery Research: pediatric_surgery_research
+  Pediatric Urology: pediatric_urology
+  Pediatrics: pediatrics
+  Pediatrics Adolescent Medicine: pediatrics_adolescent_medicine
+  Pediatrics Medical Ethics: pediatrics_medical_ethics
+  Pediatrics Woman & Child Inst.: pediatrics_woman_and_child_inst.
+  Peds Cancer Research: peds_cancer_research
+  Peds Clinical Pharmacology: peds_clinical_pharmacology
+  Peoplesoft Development: peoplesoft_development
+  Personal Money Management: personal_money_management
+  Personalized Health: personalized_health
+  Personalized Health Care: personalized_health_care
+  Pharmaceutical Chemistry: pharmaceutical_chemistry
+  Pharmacology And Toxicology: pharmacology_and_toxicology
+  Pharmacotherapy: pharmacotherapy
+  Pharmacotherapy Cont. Ed.: pharmacotherapy_cont._ed.
+  Pharmacotherapy Outcome Resctr: pharmacotherapy_outcome_resctr
+  Pharmacy Practice: pharmacy_practice
+  Phd Program (Sch Of Bus): phd_program_(sch_of_bus)
+  Philosophy: philosophy
+  Phs-Adjunct Faculty: phs-adjunct_faculty
+  Phs-Biostatistics: phs-biostatistics
+  Phs-Cancer Population Sciences: phs-cancer_population_sciences
+  Phs-Health Sys Inno & Rsrch: phs-health_sys_inno_and_rsrch
+  Physical Med & Rehab - Oper: physical_med_and_rehab_oper
+  Physical Therapy - Coh: physical_therapy_coh
+  Physics And Astronomy: physics_and_astronomy
+  Physiology: physiology
+  Pioneer Theatre Company: pioneer_theatre_company
+  Plant Growth Facility: plant_growth_facility
+  Plastic Surgery: plastic_surgery
+  Plastic Surgery Cme: plastic_surgery_cme
+  Plastic Surgery Division: plastic_surgery_division
+  Plastic Surgery Pymnt Reserves: plastic_surgery_pymnt_reserves
+  Plastic Surgery Research: plastic_surgery_research
+  Plumbing Shop: plumbing_shop
+  Policy Innovation Lab: policy_innovation_lab
+  Political Science Department: political_science_department
+  Population Health Clinical Svs: population_health_clinical_svs
+  Population Health Sciences: population_health_sciences
+  Postdoctoral Affairs: postdoctoral_affairs
+  Preclinical Drug Eval Facility: preclinical_drug_eval_facility
+  Preparatory Division: preparatory_division
+  Presenter's Office-Asuu: presenter's_office-asuu
+  President: president
+  President's District: president's_district
+  Prestwich Research Group: prestwich_research_group
+  Procurement & Supply Mgt.: procurement_and_supply_mgt.
+  Professional Billing It: professional_billing_it
+  Property Accounting: property_accounting
+  Protein Interactions Core: protein_interactions_core
+  Psychiatry: psychiatry
+  Psychiatry - Administration: psychiatry_administration
+  Psychiatry - Brain Institute: psychiatry_brain_institute
+  Psychiatry - Child Clinical: psychiatry_child_clinical
+  Psychiatry - Education: psychiatry_education
+  Psychiatry - Gift Funding: psychiatry_gift_funding
+  Psychiatry - Provid Devel Fund: psychiatry_provid_devel_fund
+  Psychiatry - Research: psychiatry_research
+  Psychiatry- Adult Clinical: psychiatry-_adult_clinical
+  Psychology Department: psychology_department
+  Public Affairs: public_affairs
+  Public Affairs-Health Science: public_affairs-health_science
+  Public Safety: public_safety
+  Public Safety Administration: public_safety_administration
+  Public Srvs. Education & Rsch: public_srvs._education_and_rsch
+  Public Tv & Radio: public_tv_and_radio
+  Publishing: publishing
+  Pulmonary: pulmonary
+  Purchasing - Campus: purchasing_campus
+  Radiation Oncology Som: radiation_oncology_som
+  Radiobiology: radiobiology
+  Radiological Health: radiological_health
+  Radiology Clinical: radiology_clinical
+  Radiology Research: radiology_research
+  Radiology Som: radiology_som
+  Real Estate Administration: real_estate_administration
+  Real Estate Administration Ops: real_estate_administration_ops
+  Receiving: receiving
+  Recombinant Protein Core: recombinant_protein_core
+  Recycled Waste: recycled_waste
+  Red Butte Garden & Arboretum: red_butte_garden_and_arboretum
+  Red Butte Payroll Shell: red_butte_payroll_shell
+  Refrigeration: refrigeration
+  Registrar's Office: registrar's_office
+  Rehab Psychology: rehab_psychology
+  Rehabilitation Psychology: rehabilitation_psychology
+  Research Genetic Epidemiology: research_genetic_epidemiology
+  Research Mgt. & Compliance: research_mgt._and_compliance
+  Residents/General Surgery: residents_general_surgery
+  Rheumatology: rheumatology
+  Rice-Eccles Stadium: rice-eccles_stadium
+  Risk And Insurance Management: risk_and_insurance_management
+  Rmcds: rmcds
+  Rml/Nto: rml_nto
+  Sarcoma Orthopaedic Surg Ops: sarcoma_orthopaedic_surg_ops
+  School Of Alcohol/Drugs: school_of_alcohol_drugs
+  School Of Computing: school_of_computing
+  School Of Dance: school_of_dance
+  School Of Music: school_of_music
+  Science District: science_district
+  Scient Comp & Imag Instit-Oper: scient_comp_and_imag_instit-oper
+  Scientific Comput & Imag Insti: scientific_comput_and_imag_insti
+  Seismograph Stations: seismograph_stations
+  Senior Vp For Academic Affairs: senior_vp_for_academic_affairs
+  Senior Vp Health Science Ops: senior_vp_health_science_ops
+  Senior Vp Health Sciences: senior_vp_health_sciences
+  Sex & Marriage Clinic: sex_and_marriage_clinic
+  Small Animal Core Facility: small_animal_core_facility
+  Small Animal Ultrasound: small_animal_ultrasound
+  Social & Behav Science-Dean: social_and_behav_science-dean
+  Social Work (Hr Rollup): social_work_(hr_rollup)
+  Sociology Department: sociology_department
+  SOD - Education: sod_education
+  SOD - Faculty Practice: sod_faculty_practice
+  SOD - Research: sod_research
+  SOD - Residency: sod_residency
+  SOM Administration: som_administration
+  SOM Admissions: som_admissions
+  SOM Alumni Relations: som_alumni_relations
+  SOM Computer Support: som_computer_support
+  SOM Curriculum/Med Ed: som_curriculum_med_ed
+  SOM Dean's Office: som_dean's_office
+  SOM Finance: som_finance
+  SOM Global Health Education: som_global_health_education
+  SOM Idaho Affairs: som_idaho_affairs
+  SOM Inclusion/Outreach: som_inclusion_outreach
+  SOM Machine Shop: som_machine_shop
+  SOM Professional Eval&Learning: som_professional_evalandlearning
+  SOM Student Affairs: som_student_affairs
+  Sorenson Discovery&Innovation: sorenson_discoveryandinnovation
+  Sorenson Impact Investing: sorenson_impact_investing
+  Sorenson Molecular Biotech: sorenson_molecular_biotech
+  Space Planning & Management: space_planning_and_management
+  Special Education: special_education
+  Special Services: special_services
+  Sports Medicine Fellowship: sports_medicine_fellowship
+  Sr Chief Admin Officer & Cfo: sr_chief_admin_officer_and_cfo
+  Sr Vp Academic Affairs - Oper: sr_vp_academic_affairs_oper
+  Sr Vp Of Academic Affairs-Off: sr_vp_of_academic_affairs-off
+  St. Marks Pathology: st._marks_pathology
+  Stadium & Arena Event Services: stadium_and_arena_event_services
+  Steele Ctr For Trans Medicine: steele_ctr_for_trans_medicine
+  Stewardship Programs: stewardship_programs
+  Student Assistantships: student_assistantships
+  Student Development/Research: student_development_research
+  Student Equity And Diversity: student_equity_and_diversity
+  Student Health: student_health
+  Student Involvement Admin: student_involvement_admin
+  Student Media Council: student_media_council
+  Support Services: support_services
+  Surgery: surgery
+  Surgery Administration: surgery_administration
+  Surgery Research: surgery_research
+  Surgery Research HCI: surgery_research_hci
+  Sustainability Office: sustainability_office
+  Svphs Research Unit: svphs_research_unit
+  Taft-Nicholson Center: taft-nicholson_center
+  Tanner Non-Violence Center: tanner_non-violence_center
+  Tax Services: tax_services
+  Tech Venture Commercialization: tech_venture_commercialization
+  Technical Resources: technical_resources
+  Technical Services: technical_services
+  Testing Center: testing_center
+  The Policy Institute: the_policy_institute
+  Theatre Department: theatre_department
+  Transgenic Mouse Core Facility: transgenic_mouse_core_facility
+  Transplant & Adv Hepatob Surg: transplant_and_adv_hepatob_surg
+  Travel: travel
+  Trio - Gov. Educ. Grants: trio_gov._educ._grants
+  U Of U Medical Group Ops: u_of_u_medical_group_ops
+  U Of U Reading Clinic: u_of_u_reading_clinic
+  Ucard: ucard
+  Ucat Administration: ucat_administration
+  UIT - Unified Comm (Netcom): uit_unified_comm_(netcom)
+  UIT Ctr High Perf Computing: uit_ctr_high_perf_computing
+  UIT Equipment: uit_equipment
+  UIT Information Security: uit_information_security
+  UIT Infrastructure & Ops: uit_infrastructure_and_ops
+  UIT Service Mgt Platform: uit_service_mgt_platform
+  UIT Strategic Planning & Comm: uit_strategic_planning_and_comm
+  UIT Teaching & Learning Tech: uit_teaching_and_learning_tech
+  UIT Univ Information Tech: uit_univ_information_tech
+  UIT Univ Support Services: uit_univ_support_services
+  UMFA Education: umfa_education
+  UMFA Nonoperating: umfa_nonoperating
+  Undergrad Stu Prg (Sch Of Bus): undergrad_stu_prg_(sch_of_bus)
+  Undergraduate Studies: undergraduate_studies
+  Univ Counseling Training Ctr: univ_counseling_training_ctr
+  Univ Counseling Tutoring: univ_counseling_tutoring
+  Univ Counselng Supplement Inst: univ_counselng_supplement_inst
+  Univ Faculty Info & Support: univ_faculty_info_and_support
+  Univ Medical Billing - Oper: univ_medical_billing_oper
+  Univ Neighborhood Partners: univ_neighborhood_partners
+  Univ Of Utah Medical Group: univ_of_utah_medical_group
+  Univ Print & Copy Services: univ_print_and_copy_services
+  University Asia Campus: university_asia_campus
+  University Campus Store: university_campus_store
+  University College: university_college
+  University Counseling Center: university_counseling_center
+  University Financial Functions: university_financial_functions
+  University Medical Billing: university_medical_billing
+  University Neighborhood Ptr: university_neighborhood_ptr
+  University Press: university_press
+  University Print & Mail Srvs.: university_print_and_mail_srvs.
+  University Scholarship  Office: university_scholarship__office
+  University Student Apartments: university_student_apartments
+  University Surplus And Salvage: university_surplus_and_salvage
+  University Union (Day Staff): university_union_(day_staff)
+  Uonline: uonline
+  Upin Neuromuscular Disorders: upin_neuromuscular_disorders
+  Urban Inst. For Teacher Ed: urban_inst._for_teacher_ed
+  Urology Adult Cme: urology_adult_cme
+  Urology Adult Pymnt Reserves: urology_adult_pymnt_reserves
+  Urology Adult Research: urology_adult_research
+  Urology Adult Section: urology_adult_section
+  Urology Andro Pymnt Reserves: urology_andro_pymnt_reserves
+  Urology Andrology Cme: urology_andrology_cme
+  Urology Andrology Research: urology_andrology_research
+  Urology Andrology Section: urology_andrology_section
+  Urology Ped Pymnt Reserves: urology_ped_pymnt_reserves
+  Urology Pediatric Cme: urology_pediatric_cme
+  Urology Pediatric Research: urology_pediatric_research
+  Urology Pediatric Section: urology_pediatric_section
+  USHE - Uesp Admin: ushe_uesp_admin
+  USHE - Uheaa Lgp: ushe_uheaa_lgp
+  USHE - Uheaa Lpp: ushe_uheaa_lpp
+  USHE Academic Affairs: ushe_academic_affairs
+  USHE Administration: ushe_administration
+  USHE Commissioner: ushe_commissioner
+  USHE Economic Dev. Misc.: ushe_economic_dev._misc.
+  USHE Economic Development: ushe_economic_development
+  USHE Finance & Facilities: ushe_finance_and_facilities
+  USHE Public Affairs: ushe_public_affairs
+  USHE Student Assistance: ushe_student_assistance
+  USHE Student Support: ushe_student_support
+  USHE Technology: ushe_technology
+  Ushop Operations: ushop_operations
+  USTAR & Corporate Relations: ustar_and_corporate_relations
+  USTAR Genetic Discovery: ustar_genetic_discovery
+  UT Academic Library Consortium: ut_academic_library_consortium
+  UT Col Of Applied Technologies: ut_col_of_applied_technologies
+  Utah Addiction Center: utah_addiction_center
+  Utah Campus Compact: utah_campus_compact
+  Utah Cancer Registry: utah_cancer_registry
+  Utah Criminal Justice Center: utah_criminal_justice_center
+  Utah Diabetes Center: utah_diabetes_center
+  Utah Distribution Center: utah_distribution_center
+  Utah Education Policy Center: utah_education_policy_center
+  Utah Engin Experiment Station: utah_engin_experiment_station
+  Utah Genome Project: utah_genome_project
+  Utah Lions Eye Bank: utah_lions_eye_bank
+  Utah Museum Of Fine Arts: utah_museum_of_fine_arts
+  Utah Museum Of Natural History: utah_museum_of_natural_history
+  Utah Poison Control Center: utah_poison_control_center
+  Utah Sys Of Higher Edu-Oper: utah_sys_of_higher_edu-oper
+  Utah System Of Higher Edu: utah_system_of_higher_edu
+  Utah Telehealth Network: utah_telehealth_network
+  Utemps - Human Resources: utemps_human_resources
+  Utilities: utilities
+  UU Imaging Joint Venture: uu_imaging_joint_venture
+  UUHC Midvalley Buildings: uuhc_midvalley_buildings
+  UUHSC Compliance Services: uuhsc_compliance_services
+  UUHSC Privacy Office: uuhsc_privacy_office
+  UUMG Funds Flow: uumg_funds_flow
+  UUMG Medicaid Supplement: uumg_medicaid_supplement
+  UUMG Reserves: uumg_reserves
+  Value Driven Outcomes: value_driven_outcomes
+  Vascular Surgery: vascular_surgery
+  Vascular Surgery Cme: vascular_surgery_cme
+  Vascular Surgery Division: vascular_surgery_division
+  Vascular Surgery Pymnt Reserve: vascular_surgery_pymnt_reserve
+  Vascular Surgery Research: vascular_surgery_research
+  Venues District: venues_district
+  Veteran Support Center: veteran_support_center
+  Viral Immunology Research Lab: viral_immunology_research_lab
+  Virginia Tanner Creative Dance: virginia_tanner_creative_dance
+  Vp For Administrative Services: vp_for_administrative_services
+  Vp For Budget And Planning: vp_for_budget_and_planning
+  Vp For Research: vp_for_research
+  Vp For Student Affairs: vp_for_student_affairs
+  Vp Government Relations: vp_government_relations
+  Vp Institutional Advancement: vp_institutional_advancement
+  Vp Research - Tech Venture: vp_research_tech_venture
+  Waste Management: waste_management
+  Wci - South Main Clinic: wci_south_main_clinic
+  Western Am Lang Research: western_am_lang_research
+  Woman & Child Institute: woman_and_child_institute
+  Woman & Child Institute-Admin: woman_and_child_institute-admin
+  Women's Resource Center: women's_resource_center
+  Workplace Services: workplace_services
+  Worm Facility: worm_facility
+  Youth Theatre At The U: youth_theatre_at_the_u
+  Zebrafish Facility: zebrafish_facility
+  Other: other
+epic_push_status_text:
+  started: ''
+  sent_study: ''
+  complete: Study has been sent to Epic.
+  failed: Unable to send study to Epic.
+  awaiting_approval: Awaiting approval before sending to Epic
+  awaiting_final_review: Awaiting final review before sending to Epic
+epic_rights:
+  view_rights: View Research Studies
+  enter_data: Access to input/edit data at patient/encounter level
+  schedule_research: Schedule research-related encounters - additional training required
+  enter_orders: Place Orders - valid medical license required
+  process_orders: Process standing orders for research protocols - additional training
+    required
+  approve: Review and approve research-related patient charges
+  complete: Activate and Complete studies
+epic_rights_info: Once the study is "completed" in Epic, it cannot be moved back to
+  "Active or Inactive" Completing the study will inhibit new participants to be enrolled
+  and associated with the study. Please select only one member of your study team
+  that will be authorized to change a study status to Active/Complete.
+funding_statuses:
+  Pending Funding: pending_funding
+  Undetermined: undetermined
+  Funded: funded
+institutions:
+  University of Utah: university_of_utah
+  Intermountain Healthcare: intermountain_healthcare
+  VA Medical Centers: va_medical_centers
+  Utah Department of Health: utah_department_of_health
+  Other: other
+study_type_answers:
+  '1':
+  - true
+  - true
+  - 
+  - 
+  - 
+  - 
+  '2':
+  - true
+  - false
+  - true
+  - 
+  - 
+  - 
+  '3':
+  - true
+  - false
+  - false
+  - false
+  - true
+  - true
+  '4':
+  - true
+  - false
+  - false
+  - false
+  - false
+  - true
+  '5':
+  - true
+  - false
+  - false
+  - false
+  - true
+  - false
+  '6':
+  - true
+  - false
+  - false
+  - false
+  - false
+  - false
+  '7':
+  - true
+  - false
+  - false
+  - true
+  - true
+  - true
+  '8':
+  - true
+  - false
+  - false
+  - true
+  - false
+  - true
+  '9':
+  - true
+  - false
+  - false
+  - true
+  - true
+  - false
+  '10':
+  - true
+  - false
+  - false
+  - true
+  - false
+  - false
+  '11':
+  - false
+  - 
+  - 
+  - false
+  - true
+  - true
+  '12':
+  - false
+  - 
+  - 
+  - false
+  - false
+  - true
+  '13':
+  - false
+  - 
+  - 
+  - false
+  - true
+  - false
+  '14':
+  - false
+  - 
+  - 
+  - false
+  - false
+  - false
+  '15':
+  - false
+  - 
+  - 
+  - true
+  - true
+  - true
+  '16':
+  - false
+  - 
+  - 
+  - true
+  - false
+  - true
+  '17':
+  - false
+  - 
+  - 
+  - true
+  - true
+  - false
+  '0':
+  - false
+  - 
+  - 
+  - true
+  - false
+  - false
+study_type_answers_version_2:
+  '1':
+  - true
+  - 
+  - 
+  - 
+  - 
+  - 
+  '2':
+  - false
+  - true
+  - true
+  - 
+  - 
+  - 
+  '3':
+  - false
+  - true
+  - false
+  - false
+  - true
+  - true
+  '4':
+  - false
+  - true
+  - false
+  - false
+  - false
+  - true
+  '5':
+  - false
+  - true
+  - false
+  - false
+  - true
+  - false
+  '6':
+  - false
+  - true
+  - false
+  - false
+  - false
+  - false
+  '7':
+  - false
+  - true
+  - false
+  - true
+  - true
+  - true
+  '8':
+  - false
+  - true
+  - false
+  - true
+  - false
+  - true
+  '9':
+  - false
+  - true
+  - false
+  - true
+  - true
+  - false
+  '10':
+  - false
+  - true
+  - false
+  - true
+  - false
+  - false
+  '11':
+  - false
+  - false
+  - 
+  - false
+  - true
+  - true
+  '12':
+  - false
+  - false
+  - 
+  - false
+  - false
+  - true
+  '13':
+  - false
+  - false
+  - 
+  - false
+  - true
+  - false
+  '14':
+  - false
+  - false
+  - 
+  - false
+  - false
+  - false
+  '15':
+  - false
+  - false
+  - 
+  - true
+  - true
+  - true
+  '16':
+  - false
+  - false
+  - 
+  - true
+  - false
+  - true
+  '17':
+  - false
+  - false
+  - 
+  - true
+  - true
+  - false
+  '0':
+  - false
+  - false
+  - 
+  - true
+  - false
+  - false
+study_type_answers_version_3:
+  '1':
+  - true
+  - 
+  - 
+  - 
+  - 
+  - 
+  - 
+  '3':
+  - false
+  - true
+  - false
+  - false
+  - false
+  - 
+  - 
+  '4':
+  - false
+  - true
+  - false
+  - true
+  - false
+  - 
+  - 
+  '5':
+  - false
+  - true
+  - false
+  - false
+  - true
+  - 
+  - 
+  '6':
+  - false
+  - true
+  - false
+  - true
+  - true
+  - 
+  - 
+  '7':
+  - false
+  - true
+  - true
+  - false
+  - false
+  - 
+  - 
+  '8':
+  - false
+  - true
+  - true
+  - true
+  - false
+  - 
+  - 
+  '9':
+  - false
+  - true
+  - true
+  - false
+  - true
+  - 
+  - 
+  '10':
+  - false
+  - true
+  - true
+  - true
+  - true
+  - 
+  - 
+  '11':
+  - false
+  - false
+  - false
+  - false
+  - false
+  - 
+  - 
+  '12':
+  - false
+  - false
+  - false
+  - true
+  - false
+  - 
+  - 
+  '13':
+  - false
+  - false
+  - false
+  - false
+  - true
+  - 
+  - 
+  '14':
+  - false
+  - false
+  - false
+  - true
+  - true
+  - 
+  - 
+  '15':
+  - false
+  - false
+  - true
+  - false
+  - false
+  - 
+  - 
+  '16':
+  - false
+  - false
+  - true
+  - true
+  - false
+  - 
+  - 
+  '17':
+  - false
+  - false
+  - true
+  - false
+  - true
+  - 
+  - 
+  '0':
+  - false
+  - false
+  - true
+  - true
+  - true
+  - 
+  - 
+study_type_notes:
+  '1': De-identified Research Participant
+  '3': Break-The-Glass for research associated encounters
+  '4': 'Break-The-Glass for research associated encounters: no notification, pink
+    header, no MyChart access.'
+  '5': 'Break-The-Glass for research associated encounters: no notification, no pink
+    header, MyChart access.'
+  '6': 'Break-The-Glass for research associated encounters: no notification, pink
+    header, MyChart access.'
+  '7': 'Break-The-Glass for research associated encounters: notification, no pink
+    header, no MyChart access.'
+  '8': 'Break-The-Glass for research associated encounters: notification, pink header,
+    no MyChart access.'
+  '9': 'Break-The-Glass for research associated encounters: notification, no pink
+    header, MyChart access.'
+  '10': 'Break-The-Glass for research associated encounters: notification, pink header,
+    MyChart access.'
+  '11': 'Full Epic Functionality:  no notification, no pink header, no MyChart access.'
+  '12': 'Full Epic Functionality:  no notification, pink header, no MyChart access.'
+  '13': 'Full Epic Functionality:  no notification, no pink header, MyChart access.'
+  '14': 'Full Epic Functionality:  no notification, pink header, MyChart access.'
+  '15': 'Full Epic Functionality:  notification, no pink header, no MyChart access.'
+  '16': 'Full Epic Functionality:  notification, pink header, no MyChart access.'
+  '17': 'Full Epic Functionality:  notification, no pink header, MyChart access.'
+  '0': 'Full Epic Functionality:  notification, pink header, MyChart access.'
+study_type_questions:
+- 1a. Does your study require a higher level of privacy for the participants?
+- 1b. Does your study have a Certificate of Confidentiality?
+- 1c. Do participants enrolled in your study require a second DEIDENTIFIED Medical
+  Record that is not connected to their primary record in Epic?
+- 2. Do you wish to receive a notification via Epic InBasket when your research participants
+  are admitted to the hospital or ED?
+- '3. Do you wish to remove the ''Research: Active'' indicator in the Patient Header
+  for your study participants?'
+- 4. Do you need to restrict the sending of study related results, such as laboratory
+  and radiology results, to a participants MyChart?
+study_type_questions_version_2:
+- 1. Does your study have a Certificate of Confidentiality?*
+- 2. Does your study require a higher level of privacy for the participants?*
+- 2b. Do participants enrolled in your study require a second DEIDENTIFIED Medical
+  Record that is not connected to their primary record in Epic?*
+- 3. Do you wish to receive a notification via Epic InBasket when your research participants
+  are admitted to the hospital or ED?*
+- '4. Do you wish to remove the ''Research: Active'' indicator in the Patient Header
+  for your study participants?*'
+- 5. Do you need to restrict the sending of study related results, such as laboratory
+  and radiology results, to a participants MyChart?*
+study_type_questions_version_3:
+- 1. Does your Informed Consent provide information to the participant specifically
+  stating their study participation will be kept private from anyone outside the research
+  team? (i.e. your study has a Certificate of Confidentiality or involves sensitive
+  data collection which requires de-identification of the research participant in
+  Epic.)
+- 2. Does your study require a higher level of privacy protection for the participants?
+  (Your study needs "break the glass" functionality in Epic because it is collection
+  sensitive data, such as HIV/sexually transmitted disease, sexual practice/attitudes,
+  illegal substance, etc., which needs higher privacy protection, yet not complete
+  de-identification of the study participant.)
+- 3. Is it appropriate for study team members to receive Epic InBasket notifications
+  if research participants in this study are hospitalized or admitted to the Emergency
+  Department?
+- '4. Is it appropriate to display the pink "Research: Active" indicator in the Patient
+  Header for all study participants?'
+- 5. Is it appropriate for all study participants to receive associated test results,
+  such as labs and/or imaging findings, via MyChart?
+- 1. Does your Informed Consent provide information to the participant specifically
+  stating their study participation will be kept private from anyone outside the research
+  team? (i.e. your study has a Certificate of Confidentiality or involves sensitive
+  data collection which requires de-identification of the research participant.)
+- 2. Does your study require a higher level of privacy protection for the participants?
+  (Your study needs "break the glass" functionality because it is collection sensitive
+  data, such as HIV/sexually transmitted disease, sexual practice/attitudes, illegal
+  substance, etc., which needs higher privacy protection, yet not complete de-identification
+  of the study participant.)
+subject_ethnicities:
+  Caucasian: caucasian
+  African American/Black: black
+  Asian: asian
+  Middle Eastern: middle_eastern
+  Pacific Islander: pacific_islander
+  Native American/Alaskan: native_american/alaskan
+  Other: other
+subject_genders:
+  Male: male
+  Female: female
+  Other: other
+browser_versions:
+  Internet Explorer: '1'
+  Mozilla Firefox: '2'
+  Google Chrome: '3'
+  Safari: '4'
