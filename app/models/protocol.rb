@@ -127,7 +127,7 @@ class Protocol < ApplicationRecord
     if research_master_id.present? && !ids.include?(research_master_id)
       errors.add(:_, 'The entered Research Master ID does not exist. Please go to the Research Master website to create a new record.')
     end
-    
+
     rescue
       return "server_down"
   end
@@ -407,7 +407,7 @@ class Protocol < ApplicationRecord
     funding_source = case self.funding_status
       when 'pending_funding' then self.potential_funding_source
       when 'funded' then self.funding_source
-      else raise ArgumentError, "Invalid funding status: #{self.funding_status.inspect}"
+      # else raise ArgumentError, "Invalid funding status: #{self.funding_status.inspect}"
       end
 
     return funding_source
