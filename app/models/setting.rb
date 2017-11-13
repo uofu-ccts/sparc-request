@@ -38,6 +38,15 @@ class Setting < ApplicationRecord
     return nil if s.nil?
     s.value
   end
+  
+  def self.get_setting_by_key(key)
+    setting = Setting.find_by_key(key)
+    if !setting.nil?
+      setting.value
+    else
+      ''
+    end
+  end
 
   # Needed to correctly write boolean true and false as value in specs
   def value=(value)
