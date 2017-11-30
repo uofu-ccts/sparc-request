@@ -7,4 +7,8 @@ require 'json'
 require 'uri'
 require 'colorize'
 
-File.open('tmp/settings.json', 'w') { |file| file.write(Setting.all.to_json) }
+def beautify_json(json)
+  JSON.pretty_generate(JSON.parse(json))
+end
+
+File.open('tmp/settings.json', 'w') { |file| file.write(beautify_json(Setting.all.to_json)) }
