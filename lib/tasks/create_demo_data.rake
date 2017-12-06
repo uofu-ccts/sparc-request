@@ -127,9 +127,6 @@ namespace :demo do
     last_name:             last_name,
     first_name:            first_name,
     ldap_uid:              ldap_uid,
-    institution:           institution.name,
-    college:               'College of Medicine',
-    department:            'CCTS',
     email:                 email,
     credentials:           'BS,    MRA',
     catalog_overlord:      true,
@@ -138,7 +135,7 @@ namespace :demo do
     approved:              true)
 
 
-    # puts "EMAIL: #{email.green}, LDAP_UID: #{ldap_uid.red}, PASSWORD: #{password}, FIRST_NAME: #{first_name}, LAST_NAME: #{last_name}"
+    puts "EMAIL: #{email.green}, LDAP_UID: #{ldap_uid.red}, PASSWORD: #{password}, FIRST_NAME: #{first_name}, LAST_NAME: #{last_name}"
 
     Identity.where({:ldap_uid => ldap_uid}).first
   end
