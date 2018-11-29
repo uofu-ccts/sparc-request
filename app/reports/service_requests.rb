@@ -52,6 +52,8 @@ class ServiceRequestsReport < ReportingModule
 
     attrs["Protocol Short Title"] = "service_request.try(:protocol).try(:short_title)"
     attrs["Full Protocol Title"] = "service_request.try(:protocol).try(:title)"
+	attrs["Protocol Start Date"] = "service_request.try(:protocol).try(:start_date).try(:strftime, \"%D\")"
+	attrs["Protocol End Date"] = "service_request.try(:protocol).try(:end_date).try(:strftime, \"%D\")"
 
 
     if params[:institution_id]
